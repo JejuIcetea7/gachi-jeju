@@ -1,0 +1,9 @@
+# 원본 데이터의 이미지 파일 (용량 문제로 git 제외)
+data/raw/**/*.jpg
+data/raw/**/*.jpeg
+data/raw/**/*.png
+data/raw/**/*.gif
+data/raw/**/*.webp
+data/raw/**/*.bmp
+data/raw/**/*.tif
+data/raw/**/*.tiff
