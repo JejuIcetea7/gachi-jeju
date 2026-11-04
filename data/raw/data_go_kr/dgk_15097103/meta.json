@@ -1,0 +1,17 @@
+{
+  "data_id": "15097103",
+  "title": "제주특별자치도_검은여로_무장애여행코스",
+  "url": "https://www.data.go.kr/data/15097103/fileData.do",
+  "group": "D코스",
+  "downloaded_from": "jejudatahub",
+  "hub_id": "1051",
+  "provider_url": "https://www.jejudatahub.net/data/view/data/1051",
+  "attachment_count": 1,
+  "files": [
+    {
+      "file_name": "제주특별자치도_검은여로_무장애여행위치정보.csv",
+      "listed_name": "제주특별자치도_검은여로_무장애여행위치정보.csv",
+      "size_bytes": 1184
+    }
+  ]
+}
