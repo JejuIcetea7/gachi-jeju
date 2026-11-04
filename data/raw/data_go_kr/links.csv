@@ -1,0 +1,293 @@
+﻿data_id,title,url,group,provide_type,file_ext,status,local_folder,reason
+15075199,제주특별자치도_무장애여행정보_49-동문시장,https://www.data.go.kr/data/15075199/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_100,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075200,제주특별자치도_무장애여행정보_50-제주도립미술관,https://www.data.go.kr/data/15075200/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_101,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15043510,제주특별자치도_무장애여행정보_9.가파도,https://www.data.go.kr/data/15043510/fileData.do,A번호,허브연결,CSV,excluded,hub_9,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15075198,제주특별자치도_무장애여행정보_48-제주현대미술관,https://www.data.go.kr/data/15075198/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_99,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15043520,제주특별자치도_무장애여행정보_49.마라도,https://www.data.go.kr/data/15043520/fileData.do,A번호,허브연결,CSV,excluded,hub_49,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043501,제주특별자치도_무장애여행정보_18.박물관은살아있다,https://www.data.go.kr/data/15043501/fileData.do,A번호,허브연결,CSV,excluded,hub_18,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043535,제주특별자치도_무장애여행정보_35.섭지코지,https://www.data.go.kr/data/15043535/fileData.do,A번호,허브연결,CSV,excluded,hub_35,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043503,제주특별자치도_무장애여행정보_16.카멜리아힐,https://www.data.go.kr/data/15043503/fileData.do,A번호,허브연결,CSV,excluded,hub_16,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043502,제주특별자치도_무장애여행정보_17.여미지식물원,https://www.data.go.kr/data/15043502/fileData.do,A번호,허브연결,CSV,excluded,hub_17,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043546,제주특별자치도_무장애여행정보_23.감귤박물관,https://www.data.go.kr/data/15043546/fileData.do,A번호,허브연결,CSV,excluded,hub_23,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043509,제주특별자치도_무장애여행정보_10.협재해수욕장,https://www.data.go.kr/data/15043509/fileData.do,A번호,허브연결,CSV,excluded,hub_10,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043548,제주특별자치도_무장애여행정보_21.천지연폭포,https://www.data.go.kr/data/15043548/fileData.do,A번호,허브연결,CSV,excluded,hub_21,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043530,제주특별자치도_무장애여행정보_40.돌문화공원,https://www.data.go.kr/data/15043530/fileData.do,A번호,허브연결,CSV,excluded,hub_40,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043505,제주특별자치도_무장애여행정보_14.오설록,https://www.data.go.kr/data/15043505/fileData.do,A번호,허브연결,CSV,excluded,hub_14,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043526,제주특별자치도_무장애여행정보_44.한라수목원,https://www.data.go.kr/data/15043526/fileData.do,A번호,허브연결,CSV,excluded,hub_44,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043536,제주특별자치도_무장애여행정보_34.비자림,https://www.data.go.kr/data/15043536/fileData.do,A번호,허브연결,CSV,excluded,hub_34,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043508,제주특별자치도_무장애여행정보_11.비양도,https://www.data.go.kr/data/15043508/fileData.do,A번호,허브연결,CSV,excluded,hub_11,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043521,제주특별자치도_무장애여행정보_48.산굼부리,https://www.data.go.kr/data/15043521/fileData.do,A번호,허브연결,CSV,excluded,hub_48,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043512,제주특별자치도_무장애여행정보_7.싱계물해양공원,https://www.data.go.kr/data/15043512/fileData.do,A번호,허브연결,CSV,excluded,hub_7,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043522,제주특별자치도_무장애여행정보_47.러브랜드,https://www.data.go.kr/data/15043522/fileData.do,A번호,허브연결,CSV,excluded,hub_47,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043517,제주특별자치도_무장애여행정보_1.한림공원,https://www.data.go.kr/data/15043517/fileData.do,A번호,허브연결,CSV,excluded,hub_1,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043537,제주특별자치도_무장애여행정보_33.선녀와나무꾼,https://www.data.go.kr/data/15043537/fileData.do,A번호,허브연결,CSV,excluded,hub_33,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043542,제주특별자치도_무장애여행정보_27.상효원,https://www.data.go.kr/data/15043542/fileData.do,A번호,허브연결,CSV,excluded,hub_27,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043528,제주특별자치도_무장애여행정보_42.한라생태숲,https://www.data.go.kr/data/15043528/fileData.do,A번호,허브연결,CSV,excluded,hub_42,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043506,제주특별자치도_무장애여행정보_13.유리의성,https://www.data.go.kr/data/15043506/fileData.do,A번호,허브연결,CSV,excluded,hub_13,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043538,제주특별자치도_무장애여행정보_32.에코랜드,https://www.data.go.kr/data/15043538/fileData.do,A번호,허브연결,CSV,excluded,hub_32,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043547,제주특별자치도_무장애여행정보_22.주상절리(산책로),https://www.data.go.kr/data/15043547/fileData.do,A번호,허브연결,CSV,excluded,hub_22,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043544,제주특별자치도_무장애여행정보_25.제주민속촌,https://www.data.go.kr/data/15043544/fileData.do,A번호,허브연결,CSV,excluded,hub_25,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043507,제주특별자치도_무장애여행정보_12.생각하는정원,https://www.data.go.kr/data/15043507/fileData.do,A번호,허브연결,CSV,excluded,hub_12,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043516,제주특별자치도_무장애여행정보_2.더마파크,https://www.data.go.kr/data/15043516/fileData.do,A번호,허브연결,CSV,excluded,hub_2,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043529,제주특별자치도_무장애여행정보_41.민속자연사박물관,https://www.data.go.kr/data/15043529/fileData.do,A번호,허브연결,CSV,excluded,hub_41,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043525,제주특별자치도_무장애여행정보_45.워터서커스,https://www.data.go.kr/data/15043525/fileData.do,A번호,허브연결,CSV,excluded,hub_45,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043524,제주특별자치도_무장애여행정보_46.다희연,https://www.data.go.kr/data/15043524/fileData.do,A번호,허브연결,CSV,excluded,hub_46,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043545,제주특별자치도_무장애여행정보_24.서귀포치유의숲,https://www.data.go.kr/data/15043545/fileData.do,A번호,허브연결,CSV,excluded,hub_24,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043534,제주특별자치도_무장애여행정보_36.이생진거리,https://www.data.go.kr/data/15043534/fileData.do,A번호,허브연결,CSV,excluded,hub_36,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043511,제주특별자치도_무장애여행정보_8.송악산전망대,https://www.data.go.kr/data/15043511/fileData.do,A번호,허브연결,CSV,excluded,hub_8,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043498,제주특별자치도_무장애여행정보_3.애월한담공원,https://www.data.go.kr/data/15043498/fileData.do,A번호,허브연결,CSV,excluded,hub_3,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043523,제주특별자치도_무장애여행정보_30.일출랜드,https://www.data.go.kr/data/15043523/fileData.do,A번호,허브연결,CSV,excluded,hub_30,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043532,제주특별자치도_무장애여행정보_38.함덕서우봉해변,https://www.data.go.kr/data/15043532/fileData.do,A번호,허브연결,CSV,excluded,hub_38,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043539,제주특별자치도_무장애여행정보_31.성읍민속마을,https://www.data.go.kr/data/15043539/fileData.do,A번호,허브연결,CSV,excluded,hub_31,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043541,제주특별자치도_무장애여행정보_28.1100고지습지,https://www.data.go.kr/data/15043541/fileData.do,A번호,허브연결,CSV,excluded,hub_28,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043518,제주특별자치도_제주특별자치도_무장애여행정보_51.사려니숲길-2(붉은오름방향),https://www.data.go.kr/data/15043518/fileData.do,A번호,허브연결,CSV,excluded,hub_51,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043514,제주특별자치도_무장애여행정보_5.금릉석물원,https://www.data.go.kr/data/15043514/fileData.do,A번호,허브연결,CSV,excluded,hub_5,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043543,제주특별자치도_무장애여행정보_26.해비치올레길,https://www.data.go.kr/data/15043543/fileData.do,A번호,허브연결,CSV,excluded,hub_26,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043500,제주특별자치도_무장애여행정보_19.플레이케이팝,https://www.data.go.kr/data/15043500/fileData.do,A번호,허브연결,CSV,excluded,hub_19,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043504,제주특별자치도_무장애여행정보_15.항공우주박물관,https://www.data.go.kr/data/15043504/fileData.do,A번호,허브연결,CSV,excluded,hub_15,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043527,제주특별자치도_무장애여행정보_43.별빛누리공원,https://www.data.go.kr/data/15043527/fileData.do,A번호,허브연결,CSV,excluded,hub_43,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15075171,제주특별자치도_무장애여행정보_21-사려니숲길-무장애나눔길,https://www.data.go.kr/data/15075171/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_72,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15043519,제주특별자치도_무장애여행정보_50.우도성산항여객터미널,https://www.data.go.kr/data/15043519/fileData.do,A번호,허브연결,CSV,excluded,hub_50,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043531,제주특별자치도_무장애여행정보_39.절물휴양림,https://www.data.go.kr/data/15043531/fileData.do,A번호,허브연결,CSV,excluded,hub_39,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043513,제주특별자치도_무장애여행정보_6.차귀도-엉알해안로,https://www.data.go.kr/data/15043513/fileData.do,A번호,허브연결,CSV,excluded,hub_6,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043499,제주특별자치도_무장애여행정보_20.새연교(새섬),https://www.data.go.kr/data/15043499/fileData.do,A번호,허브연결,CSV,excluded,hub_20,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043540,제주특별자치도_무장애여행정보_29.남원큰엉해안경승지,https://www.data.go.kr/data/15043540/fileData.do,A번호,허브연결,CSV,excluded,hub_29,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043515,제주특별자치도_무장애여행정보_4.월령리선인장마을,https://www.data.go.kr/data/15043515/fileData.do,A번호,허브연결,CSV,excluded,hub_4,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15043533,제주특별자치도_무장애여행정보_37.사려니숲길-1(절물휴양림방향),https://www.data.go.kr/data/15043533/fileData.do,A번호,허브연결,CSV,excluded,hub_37,"번호+장소명 일치, 허브 미리보기와 로컬 좌표 파일 행 전부 일치(14번만 -2.csv 기준, -2.csv는 미대조)"
+15075185,제주특별자치도_무장애여행정보_35-해녀박물관,https://www.data.go.kr/data/15075185/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_86,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075191,제주특별자치도_무장애여행정보_41-제주국립박물관,https://www.data.go.kr/data/15075191/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_92,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075189,제주특별자치도_무장애여행정보_39-이호테우해변,https://www.data.go.kr/data/15075189/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_90,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075190,제주특별자치도_무장애여행정보_40-제주추사관,https://www.data.go.kr/data/15075190/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_91,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075193,제주특별자치도_무장애여행정보_43-보름왓,https://www.data.go.kr/data/15075193/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_94,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075188,제주특별자치도_무장애여행정보_38-어영공원,https://www.data.go.kr/data/15075188/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_89,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075182,제주특별자치도_무장애여행정보_32-서귀포매일올레시장,https://www.data.go.kr/data/15075182/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_83,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075177,제주특별자치도_무장애여행정보_27-남태해안로,https://www.data.go.kr/data/15075177/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_78,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075196,제주특별자치도_무장애여행정보_46-서귀포자연휴양림,https://www.data.go.kr/data/15075196/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_97,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075161,제주특별자치도_무장애여행정보_11-김녕고장난길,https://www.data.go.kr/data/15075161/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_62,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075181,제주특별자치도_무장애여행정보_31-삼양해수욕장,https://www.data.go.kr/data/15075181/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_82,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075195,제주특별자치도_무장애여행정보_45-그리스박물관,https://www.data.go.kr/data/15075195/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_96,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075186,제주특별자치도_무장애여행정보_36-누웨마루거리,https://www.data.go.kr/data/15075186/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_87,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075172,제주특별자치도_무장애여행정보_22-신도포구(돌고래소공원),https://www.data.go.kr/data/15075172/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_73,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075175,제주특별자치도_무장애여행정보_25-감수굴밭담길,https://www.data.go.kr/data/15075175/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_76,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075184,제주특별자치도_무장애여행정보_34-자구리공원,https://www.data.go.kr/data/15075184/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_85,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075192,제주특별자치도_무장애여행정보_42-제주조각공원,https://www.data.go.kr/data/15075192/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_93,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075174,제주특별자치도_무장애여행정보_24-해거름공원바다산책로,https://www.data.go.kr/data/15075174/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_75,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075194,제주특별자치도_무장애여행정보_44-제주도립김창열미술관,https://www.data.go.kr/data/15075194/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_95,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075176,제주특별자치도_무장애여행정보_26-남원문화의거리,https://www.data.go.kr/data/15075176/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_77,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075197,제주특별자치도_무장애여행정보_47-신천리벽화마을,https://www.data.go.kr/data/15075197/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_98,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075183,제주특별자치도_무장애여행정보_33-세화항과세화오일장,https://www.data.go.kr/data/15075183/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_84,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075179,제주특별자치도_무장애여행정보_29-송당당오름산책길과소원길,https://www.data.go.kr/data/15075179/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_80,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075173,제주특별자치도_무장애여행정보_23-싱게물공원과용당포구,https://www.data.go.kr/data/15075173/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_74,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075170,제주특별자치도_무장애여행정보_20-붉은오름자연휴양림,https://www.data.go.kr/data/15075170/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_71,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075153,제주특별자치도_무장애여행정보_03_새별오름,https://www.data.go.kr/data/15075153/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_54,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075178,제주특별자치도_무장애여행정보_28-보목포로(볼레낭개길),https://www.data.go.kr/data/15075178/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_79,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075159,제주특별자치도_무장애여행정보_09-온평환해장성해안길,https://www.data.go.kr/data/15075159/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_60,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075187,제주특별자치도_무장애여행정보_37-성김대건신부제주표착기념관,https://www.data.go.kr/data/15075187/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_88,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075094,제주특별자치도_무장애여행정보_01-낙천의자공원,https://www.data.go.kr/data/15075094/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_52,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075165,제주특별자치도_무장애여행정보_15-구엄돌염전,https://www.data.go.kr/data/15075165/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_66,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075162,제주특별자치도_무장애여행정보_12-법환포구,https://www.data.go.kr/data/15075162/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_63,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075180,제주특별자치도_무장애여행정보_30-너븐숭이4.3기념관과북촌43길,https://www.data.go.kr/data/15075180/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_81,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075155,제주특별자치도_무장애여행정보_05-걸매생태공원,https://www.data.go.kr/data/15075155/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_56,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075160,제주특별자치도_무장애여행정보_10-칠십리시공원,https://www.data.go.kr/data/15075160/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_61,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075169,제주특별자치도_무장애여행정보_19-올레길10코스휠체어올레길,https://www.data.go.kr/data/15075169/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_70,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075164,제주특별자치도_무장애여행정보_14-토끼섬과하도포구,https://www.data.go.kr/data/15075164/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_65,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075156,제주특별자치도_무장애여행정보_06-걸매예술마을,https://www.data.go.kr/data/15075156/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_57,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075163,제주특별자치도_무장애여행정보_13-열리해안길,https://www.data.go.kr/data/15075163/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_64,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075154,제주특별자치도_무장애여행정보_04-조천리용천수탐방길,https://www.data.go.kr/data/15075154/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_55,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075152,제주특별자치도_무장애여행정보_02-북촌마을해안길,https://www.data.go.kr/data/15075152/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_53,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075168,제주특별자치도_무장애여행정보_18-알뜨르비행장격납고밭길,https://www.data.go.kr/data/15075168/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_69,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075157,제주특별자치도_무장애여행정보_07-고성신양해녀의길,https://www.data.go.kr/data/15075157/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_58,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075166,제주특별자치도_무장애여행정보_16-금성비단교산책길,https://www.data.go.kr/data/15075166/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_67,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075167,제주특별자치도_무장애여행정보_17-신엄포구산책길,https://www.data.go.kr/data/15075167/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_68,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075158,제주특별자치도_무장애여행정보_08-오조포구마을길,https://www.data.go.kr/data/15075158/fileData.do,A번호,공공데이터포털,CSV,excluded,hub_59,"로컬 장소명 CSV와 장소·컬럼 동일(동문시장, 북촌마을해안길만 내용 대조)"
+15075719,제주특별자치도_무장애여행관광지주변정보-21-사려니숲길-무장애나눔길,https://www.data.go.kr/data/15075719/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075771,제주특별자치도_무장애여행관광지주변정보-50-제주도립미술관,https://www.data.go.kr/data/15075771/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075770,제주특별자치도_무장애여행관광지주변정보-49-동문시장,https://www.data.go.kr/data/15075770/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075726,제주특별자치도_무장애여행관광지주변정보-24-해거름바다산책로,https://www.data.go.kr/data/15075726/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075683,제주특별자치도_무장애여행관광지주변정보-03-새별오름,https://www.data.go.kr/data/15075683/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075748,제주특별자치도_무장애여행관광지주변정보-35-해녀박물관,https://www.data.go.kr/data/15075748/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075751,제주특별자치도_무장애여행관광지주변정보-38-어영공원,https://www.data.go.kr/data/15075751/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075765,제주특별자치도_무장애여행관광지주변정보-46-서귀포자연휴양림,https://www.data.go.kr/data/15075765/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075729,제주특별자치도_무장애여행관광지주변정보-27-남태해안로,https://www.data.go.kr/data/15075729/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075735,제주특별자치도_무장애여행관광지주변정보-31-삼양해수욕장,https://www.data.go.kr/data/15075735/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075706,제주특별자치도_무장애여행관광지주변정보-12-법환포구,https://www.data.go.kr/data/15075706/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075727,제주특별자치도_무장애여행관광지주변정보-25-감수굴밭담길,https://www.data.go.kr/data/15075727/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075769,제주특별자치도_무장애여행관광지주변정보-48-제주현대미술관,https://www.data.go.kr/data/15075769/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075711,제주특별자치도_무장애여행관광지주변정보-15-구엄돌염전,https://www.data.go.kr/data/15075711/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075718,제주특별자치도_무장애여행관광지주변정보-20-붉은오름자연휴양림,https://www.data.go.kr/data/15075718/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075685,제주특별자치도_무장애여행관광지주변정보-05-걸매생태공원,https://www.data.go.kr/data/15075685/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075692,제주특별자치도_무장애여행관광지주변정보-10-칠십리시공원,https://www.data.go.kr/data/15075692/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075680,제주특별자치도_무장애여행관광지주변정보-01-낙천의자공원,https://www.data.go.kr/data/15075680/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075754,제주특별자치도_무장애여행관광지주변정보-40-제주추사관,https://www.data.go.kr/data/15075754/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075715,제주특별자치도_무장애여행관광지주변정보-18-알뜨르격납고밭담길,https://www.data.go.kr/data/15075715/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075705,제주특별자치도_무장애여행관광지주변정보-11-김녕고장난길,https://www.data.go.kr/data/15075705/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075747,제주특별자치도_무장애여행관광지주변정보-34-자구리공원,https://www.data.go.kr/data/15075747/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075728,제주특별자치도_무장애여행관광지주변정보-26-남원문화의거리,https://www.data.go.kr/data/15075728/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075755,제주특별자치도_무장애여행관광지주변정보-41-국립제주박물관,https://www.data.go.kr/data/15075755/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075682,제주특별자치도_무장애여행관광지주변정보-02-북촌마을해안길,https://www.data.go.kr/data/15075682/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075724,제주특별자치도_무장애여행관광지주변정보-22-신도포구(돌고래소공원),https://www.data.go.kr/data/15075724/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075689,제주특별자치도_무장애여행관광지주변정보-07-고성신양해녀의길,https://www.data.go.kr/data/15075689/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075756,제주특별자치도_무장애여행관광지주변정보-42-제주조각공원,https://www.data.go.kr/data/15075756/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075762,제주특별자치도_무장애여행관광지주변정보-44-제주도립김창열미술관,https://www.data.go.kr/data/15075762/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075686,제주특별자치도_무장애여행관광지주변정보-06-걸매예술마을,https://www.data.go.kr/data/15075686/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075767,제주특별자치도_무장애여행관광지주변정보-47-신천리벽화마을,https://www.data.go.kr/data/15075767/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075684,제주특별자치도_무장애여행관광지주변정보-04-조천리용천수탐방길,https://www.data.go.kr/data/15075684/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075714,제주특별자치도_무장애여행관광지주변정보-17-신엄포구산책길,https://www.data.go.kr/data/15075714/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075763,제주특별자치도_무장애여행관광지주변정보-45-그리스신화박물관,https://www.data.go.kr/data/15075763/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075691,제주특별자치도_무장애여행관광지주변정보-09-온평환해장성해안길,https://www.data.go.kr/data/15075691/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075708,제주특별자치도_무장애여행관광지주변정보-13-열리해안길,https://www.data.go.kr/data/15075708/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075730,제주특별자치도_무장애여행관광지주변정보-28-보목포로(볼레낭개길),https://www.data.go.kr/data/15075730/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15097513,제주특별자치도_표선해수욕장_무장애여행관광정보,https://www.data.go.kr/data/15097513/fileData.do,D관광정보,허브연결,HWP,target,,
+15075712,제주특별자치도_무장애여행관광지주변정보-16-금성비단교산책길,https://www.data.go.kr/data/15075712/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075690,제주특별자치도_무장애여행관광지주변정보-08-오조포구마을길,https://www.data.go.kr/data/15075690/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075746,제주특별자치도_무장애여행관광지주변정보-33-세화항과세화오일장,https://www.data.go.kr/data/15075746/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075750,제주특별자치도_무장애여행관광지주변정보-37-성김대건신부표착기념관,https://www.data.go.kr/data/15075750/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15097464,제주특별자치도_농업생태원_무장애여행관광정보,https://www.data.go.kr/data/15097464/fileData.do,D관광정보,허브연결,HWP,target,,
+15097466,제주특별자치도_도두봉공원산책로_무장애여행관광정보,https://www.data.go.kr/data/15097466/fileData.do,D관광정보,허브연결,HWP,target,,
+15097517,제주특별자치도_한수리방파제길_무장애여행관광정보,https://www.data.go.kr/data/15097517/fileData.do,D관광정보,허브연결,HWP,target,,
+15097496,제주특별자치도_이중섭거리_무장애여행관광정보,https://www.data.go.kr/data/15097496/fileData.do,D관광정보,허브연결,HWP,target,,
+15097456,제주특별자치도_검은여로_무장애여행관광정보,https://www.data.go.kr/data/15097456/fileData.do,D관광정보,허브연결,HWP,target,,
+15097472,제주특별자치도_법화사_무장애여행관광정보,https://www.data.go.kr/data/15097472/fileData.do,D관광정보,허브연결,HWP,target,,
+15097481,제주특별자치도_세천포구_무장애여행관광정보,https://www.data.go.kr/data/15097481/fileData.do,D관광정보,허브연결,HWP,target,,
+15097476,제주특별자치도_산이물공원_무장애여행관광정보,https://www.data.go.kr/data/15097476/fileData.do,D관광정보,허브연결,HWP,target,,
+15097463,제주특별자치도_난미밭담길_무장애여행관광정보,https://www.data.go.kr/data/15097463/fileData.do,D관광정보,허브연결,HWP,target,,
+15097519,제주특별자치도_행원리풍차마을_무장애여행관광정보,https://www.data.go.kr/data/15097519/fileData.do,D관광정보,허브연결,HWP,target,,
+15097484,제주특별자치도_신천목장산책길_무장애여행관광정보,https://www.data.go.kr/data/15097484/fileData.do,D관광정보,허브연결,HWP,target,,
+15097474,제주특별자치도_사계마을과형제해안로_무장애여행관광정보,https://www.data.go.kr/data/15097474/fileData.do,D관광정보,허브연결,HWP,target,,
+15097504,제주특별자치도_종달항과해안길_무장애여행관광정보,https://www.data.go.kr/data/15097504/fileData.do,D관광정보,허브연결,HWP,target,,
+15097460,제주특별자치도_귀덕해안길_무장애여행관광정보,https://www.data.go.kr/data/15097460/fileData.do,D관광정보,허브연결,HWP,target,,
+15097489,제주특별자치도_연대포구와외도포구산책길_무장애여행관광정보,https://www.data.go.kr/data/15097489/fileData.do,D관광정보,허브연결,HWP,target,,
+15097499,제주특별자치도_제주올레길1코스(휠체어구간)종달리_무장애여행관광정보,https://www.data.go.kr/data/15097499/fileData.do,D관광정보,허브연결,HWP,target,,
+15097498,제주특별자치도_일과리해안도로_무장애여행관광정보,https://www.data.go.kr/data/15097498/fileData.do,D관광정보,허브연결,HWP,target,,
+15097483,제주특별자치도_수원리해안탐방로_무장애여행관광정보,https://www.data.go.kr/data/15097483/fileData.do,D관광정보,허브연결,HWP,target,,
+15097468,제주특별자치도_돔베낭길(올레7코스)_무장애여행관광정보,https://www.data.go.kr/data/15097468/fileData.do,D관광정보,허브연결,HWP,target,,
+15097487,제주특별자치도_신흥리방파제와환해장성_무장애여행관광정보,https://www.data.go.kr/data/15097487/fileData.do,D관광정보,허브연결,HWP,target,,
+15097485,제주특별자치도_신흥리무지개길_무장애여행관광정보,https://www.data.go.kr/data/15097485/fileData.do,D관광정보,허브연결,HWP,target,,
+15097491,제주특별자치도_월대천(외도물길20리)_무장애여행관광정보,https://www.data.go.kr/data/15097491/fileData.do,D관광정보,허브연결,HWP,target,,
+15097494,제주특별자치도_위미동백나무군락_무장애여행관광정보,https://www.data.go.kr/data/15097494/fileData.do,D관광정보,허브연결,HWP,target,,
+15097455,제주특별자치도_가문동해안길_무장애여행관광정보,https://www.data.go.kr/data/15097455/fileData.do,D관광정보,허브연결,HWP,target,,
+15097511,제주특별자치도_퍼시픽마리나요트공원_무장애여행관광정보,https://www.data.go.kr/data/15097511/fileData.do,D관광정보,허브연결,HWP,target,,
+15097471,제주특별자치도_무오법정사항일운동발상지_무장애여행관광정보,https://www.data.go.kr/data/15097471/fileData.do,D관광정보,허브연결,HWP,target,,
+15097469,제주특별자치도_동광마을길_무장애여행관광정보,https://www.data.go.kr/data/15097469/fileData.do,D관광정보,허브연결,HWP,target,,
+15097475,제주특별자치도_산방산과하멜상선_무장애여행관광정보,https://www.data.go.kr/data/15097475/fileData.do,D관광정보,허브연결,HWP,target,,
+15097506,제주특별자치도_중문단지축구장과대포연대_무장애여행관광정보,https://www.data.go.kr/data/15097506/fileData.do,D관광정보,허브연결,HWP,target,,
+15097462,제주특별자치도_김녕항길과윤씨하르방쉼터_무장애여행관광정보,https://www.data.go.kr/data/15097462/fileData.do,D관광정보,허브연결,HWP,target,,
+15097488,제주특별자치도_제주특별자치도_어영소공원-용두암(비행기이착륙포토스팟)_무장애여행관광정보,https://www.data.go.kr/data/15097488/fileData.do,D관광정보,허브연결,HWP,target,,
+15097510,제주특별자치도_태흥2리옥돔마을포구길_무장애여행관광정보,https://www.data.go.kr/data/15097510/fileData.do,D관광정보,허브연결,HWP,target,,
+15097508,제주특별자치도_칠머리당터와건입동벽화거리_무장애여행관광정보,https://www.data.go.kr/data/15097508/fileData.do,D관광정보,허브연결,HWP,target,,
+15097459,제주특별자치도_귀덕마을길(리사무소-라신동)_무장애여행관광정보,https://www.data.go.kr/data/15097459/fileData.do,D관광정보,허브연결,HWP,target,,
+15075749,제주특별자치도_무장애여행관광지주변정보-36-누웨마루거리,https://www.data.go.kr/data/15075749/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075717,제주특별자치도_무장애여행관광지주변정보-19-올레10코스휠체어길,https://www.data.go.kr/data/15075717/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075752,제주특별자치도_무장애여행관광지주변정보-39-이호테우해변,https://www.data.go.kr/data/15075752/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075745,제주특별자치도_무장애여행관광지주변정보-32-서귀포매일올레시장,https://www.data.go.kr/data/15075745/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15075732,제주특별자치도_무장애여행관광지주변정보-29-송당당오름산책길과소원길,https://www.data.go.kr/data/15075732/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15097129,제주특별자치도_수원리해안탐방로_무장애여행코스,https://www.data.go.kr/data/15097129/fileData.do,D코스,허브연결,CSV,target,,
+15075757,제주특별자치도_무장애여행관광지주변정보-43-보롬왓,https://www.data.go.kr/data/15075757/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15097145,제주특별자치도_제주올레길1코스(휠체어구간)종달리_무장애여행코스,https://www.data.go.kr/data/15097145/fileData.do,D코스,허브연결,CSV,target,,
+15097114,제주특별자치도_도두봉공원산책로_무장애여행코스,https://www.data.go.kr/data/15097114/fileData.do,D코스,허브연결,CSV,target,,
+15097146,제주특별자치도_제주올레길14코스(휠체어구간)금능리_무장애여행코스,https://www.data.go.kr/data/15097146/fileData.do,D코스,허브연결,CSV,target,,
+15097115,제주특별자치도_돔베낭길(올레7코스)_무장애여행코스,https://www.data.go.kr/data/15097115/fileData.do,D코스,허브연결,CSV,target,,
+15097516,제주특별자치도_하모해수욕장_무장애여행관광정보,https://www.data.go.kr/data/15097516/fileData.do,D관광정보,허브연결,HWP,target,,
+15097103,제주특별자치도_검은여로_무장애여행코스,https://www.data.go.kr/data/15097103/fileData.do,D코스,허브연결,CSV,target,,
+15097127,제주특별자치도_세천포구_무장애여행코스,https://www.data.go.kr/data/15097127/fileData.do,D코스,허브연결,CSV,target,,
+15075710,제주특별자치도_무장애여행관광지주변정보-14-토끼섬과하도포구,https://www.data.go.kr/data/15075710/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15097153,제주특별자치도_표선해수욕장_무장애여행코스,https://www.data.go.kr/data/15097153/fileData.do,D코스,허브연결,CSV,target,,
+15097122,제주특별자치도_산이물공원_무장애여행코스,https://www.data.go.kr/data/15097122/fileData.do,D코스,허브연결,CSV,target,,
+15097152,제주특별자치도_퍼시픽마리나요트공원_무장애여행코스,https://www.data.go.kr/data/15097152/fileData.do,D코스,허브연결,CSV,target,,
+15097112,제주특별자치도_농업생태원_무장애여행코스,https://www.data.go.kr/data/15097112/fileData.do,D코스,허브연결,CSV,target,,
+15097111,제주특별자치도_난미밭담길_무장애여행코스,https://www.data.go.kr/data/15097111/fileData.do,D코스,허브연결,CSV,target,,
+15097408,제주특별자치도_세천포구_무장애주변관광지,https://www.data.go.kr/data/15097408/fileData.do,그 외,허브연결,CSV,target,,
+15075734,제주특별자치도_무장애여행관광지주변정보-30-너븐숭이4.3기념관과 북촌4.3길,https://www.data.go.kr/data/15075734/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15097520,제주특별자치도_향기마을용흥리_무장애여행관광정보,https://www.data.go.kr/data/15097520/fileData.do,D관광정보,허브연결,HWP,target,,
+15097119,제주특별자치도_법화사_무장애여행코스,https://www.data.go.kr/data/15097119/fileData.do,D코스,허브연결,CSV,target,,
+15097130,제주특별자치도_신천목장산책길_무장애여행코스,https://www.data.go.kr/data/15097130/fileData.do,D코스,허브연결,CSV,target,,
+15097156,제주특별자치도_행원리풍차마을_무장애여행코스,https://www.data.go.kr/data/15097156/fileData.do,D코스,허브연결,CSV,target,,
+15097416,제주특별자치도_월대천(외도물길20리)_무장애주변관광지,https://www.data.go.kr/data/15097416/fileData.do,그 외,허브연결,CSV,target,,
+15097155,제주특별자치도_한수리방파제길_무장애여행코스,https://www.data.go.kr/data/15097155/fileData.do,D코스,허브연결,CSV,target,,
+15097134,제주특별자치도_신흥리방파제와환해장성_무장애여행코스,https://www.data.go.kr/data/15097134/fileData.do,D코스,허브연결,CSV,target,,
+15075725,제주특별자치도_무장애여행관광지주변정보-23-싱게물공원용당포구길,https://www.data.go.kr/data/15075725/fileData.do,B주변정보,공공데이터포털,CSV,target,,
+15097404,제주특별자치도_산이물공원_무장애주변관광지,https://www.data.go.kr/data/15097404/fileData.do,그 외,허브연결,CSV,target,,
+15097108,제주특별자치도_귀덕해안길_무장애여행코스,https://www.data.go.kr/data/15097108/fileData.do,D코스,허브연결,CSV,target,,
+15097141,제주특별자치도_위미동백나무군락_무장애여행코스,https://www.data.go.kr/data/15097141/fileData.do,D코스,허브연결,CSV,target,,
+15097120,제주특별자치도_사계마을과형제해안로_무장애여행코스,https://www.data.go.kr/data/15097120/fileData.do,D코스,허브연결,CSV,target,,
+15097434,제주특별자치도_퍼시픽마리나요트공원_무장애주변관광지,https://www.data.go.kr/data/15097434/fileData.do,그 외,허브연결,CSV,target,,
+15097497,제주특별자치도_이호테우해변과내도동알작지_무장애여행관광정보,https://www.data.go.kr/data/15097497/fileData.do,D관광정보,허브연결,HWP,target,,
+15097132,제주특별자치도_신흥리무지개길_무장애여행코스,https://www.data.go.kr/data/15097132/fileData.do,D코스,허브연결,CSV,target,,
+15097396,제주특별자치도_도두봉공원산책로_무장애주변관광지,https://www.data.go.kr/data/15097396/fileData.do,그 외,허브연결,CSV,target,,
+15097142,제주특별자치도_이중섭거리_무장애여행코스,https://www.data.go.kr/data/15097142/fileData.do,D코스,허브연결,CSV,target,,
+15097393,제주특별자치도_난미밭담길_무장애주변관광지,https://www.data.go.kr/data/15097393/fileData.do,그 외,허브연결,CSV,target,,
+15097139,제주특별자치도_월대천(외도물길20리)_무장애여행코스,https://www.data.go.kr/data/15097139/fileData.do,D코스,허브연결,CSV,target,,
+15097102,제주특별자치도_가문동해안길_무장애여행코스,https://www.data.go.kr/data/15097102/fileData.do,D코스,허브연결,CSV,target,,
+15097143,제주특별자치도_이호테우해변과내도동알작지_무장애여행코스,https://www.data.go.kr/data/15097143/fileData.do,D코스,허브연결,CSV,target,,
+15097138,제주특별자치도_연대포구와외도포구산책길_무장애여행코스,https://www.data.go.kr/data/15097138/fileData.do,D코스,허브연결,CSV,target,,
+15097435,제주특별자치도_표선해수욕장_무장애주변관광지,https://www.data.go.kr/data/15097435/fileData.do,그 외,허브연결,CSV,target,,
+15097137,제주특별자치도_제주특별자치도_어영소공원-용두암(비행기이착륙포토스팟)_무장애여행코스,https://www.data.go.kr/data/15097137/fileData.do,D코스,허브연결,CSV,target,,
+15097144,제주특별자치도_일과리해안도로_무장애여행코스,https://www.data.go.kr/data/15097144/fileData.do,D코스,허브연결,CSV,target,,
+15097436,제주특별자치도_하모해수욕장_무장애주변관광지,https://www.data.go.kr/data/15097436/fileData.do,그 외,허브연결,CSV,target,,
+15097440,제주특별자치도_향기마을용흥리_무장애주변관광지,https://www.data.go.kr/data/15097440/fileData.do,그 외,허브연결,CSV,target,,
+15097116,제주특별자치도_동광마을길_무장애여행코스,https://www.data.go.kr/data/15097116/fileData.do,D코스,허브연결,CSV,target,,
+15097105,제주특별자치도_곤을동환해장성_무장애여행코스,https://www.data.go.kr/data/15097105/fileData.do,D코스,허브연결,CSV,target,,
+15097154,제주특별자치도_하모해수욕장_무장애여행코스,https://www.data.go.kr/data/15097154/fileData.do,D코스,허브연결,CSV,target,,
+15097147,제주특별자치도_종달항과해안길_무장애여행코스,https://www.data.go.kr/data/15097147/fileData.do,D코스,허브연결,CSV,target,,
+15097457,제주특별자치도_곤을동환해장성_무장애여행관광정보,https://www.data.go.kr/data/15097457/fileData.do,D관광정보,허브연결,HWP,target,,
+15097437,제주특별자치도_한수리방파제길_무장애주변관광지,https://www.data.go.kr/data/15097437/fileData.do,그 외,허브연결,CSV,target,,
+15097401,제주특별자치도_법화사_무장애주변관광지,https://www.data.go.kr/data/15097401/fileData.do,그 외,허브연결,CSV,target,,
+15097148,제주특별자치도_중문단지축구장과대포연대_무장애여행코스,https://www.data.go.kr/data/15097148/fileData.do,D코스,허브연결,CSV,target,,
+15097106,제주특별자치도_공천포구와넙빌레_무장애여행코스,https://www.data.go.kr/data/15097106/fileData.do,D코스,허브연결,CSV,target,,
+15097110,제주특별자치도_김녕항길과윤씨하르방쉼터_무장애여행코스,https://www.data.go.kr/data/15097110/fileData.do,D코스,허브연결,CSV,target,,
+15097398,제주특별자치도_동광마을길_무장애주변관광지,https://www.data.go.kr/data/15097398/fileData.do,그 외,허브연결,CSV,target,,
+15097388,제주특별자치도_귀덕해안길_무장애주변관광지,https://www.data.go.kr/data/15097388/fileData.do,그 외,허브연결,CSV,target,,
+15097482,제주특별자치도_수산저수지와물메둑길_무장애여행관광정보,https://www.data.go.kr/data/15097482/fileData.do,D관광정보,허브연결,HWP,target,,
+15097118,제주특별자치도_무오법정사항일운동발상지_무장애여행코스,https://www.data.go.kr/data/15097118/fileData.do,D코스,허브연결,CSV,target,,
+15097107,제주특별자치도_귀덕마을길(리사무소-라신동)_무장애여행코스,https://www.data.go.kr/data/15097107/fileData.do,D코스,허브연결,CSV,target,,
+15097477,제주특별자치도_삼양환해장성과벌낭포구해안길_무장애여행관광정보,https://www.data.go.kr/data/15097477/fileData.do,D관광정보,허브연결,HWP,target,,
+15097438,제주특별자치도_행원리풍차마을_무장애주변관광지,https://www.data.go.kr/data/15097438/fileData.do,그 외,허브연결,CSV,target,,
+15097150,제주특별자치도_칠머리당터와건입동벽화거리_무장애여행코스,https://www.data.go.kr/data/15097150/fileData.do,D코스,허브연결,CSV,target,,
+15097421,제주특별자치도_일과리해안도로_무장애주변관광지,https://www.data.go.kr/data/15097421/fileData.do,그 외,허브연결,CSV,target,,
+15097128,제주특별자치도_수산저수지와물메둑길_무장애여행코스,https://www.data.go.kr/data/15097128/fileData.do,D코스,허브연결,CSV,target,,
+15097410,제주특별자치도_수원리해안탐방로_무장애주변관광지,https://www.data.go.kr/data/15097410/fileData.do,그 외,허브연결,CSV,target,,
+15097124,제주특별자치도_상가리퐁낭마을길_무장애여행코스,https://www.data.go.kr/data/15097124/fileData.do,D코스,허브연결,CSV,target,,
+15097126,제주특별자치도_선흘리동백마을_무장애여행코스,https://www.data.go.kr/data/15097126/fileData.do,D코스,허브연결,CSV,target,,
+15097400,제주특별자치도_무오법정사항일운동발상지_무장애주변관광지,https://www.data.go.kr/data/15097400/fileData.do,그 외,허브연결,CSV,target,,
+15097413,제주특별자치도_신흥리방파제와환해장성_무장애주변관광지,https://www.data.go.kr/data/15097413/fileData.do,그 외,허브연결,CSV,target,,
+15097470,제주특별자치도_두맹이골목_무장애여행관광정보,https://www.data.go.kr/data/15097470/fileData.do,D관광정보,허브연결,HWP,target,,
+15097465,제주특별자치도_대문없는마을상명정낭마을_무장애여행관광정보,https://www.data.go.kr/data/15097465/fileData.do,D관광정보,허브연결,HWP,target,,
+15097424,제주특별자치도_종달항과해안길_무장애주변관광지,https://www.data.go.kr/data/15097424/fileData.do,그 외,허브연결,CSV,target,,
+15097502,제주특별자치도_제주올레길14코스(휠체어구간)금능리_무장애여행관광정보,https://www.data.go.kr/data/15097502/fileData.do,D관광정보,허브연결,HWP,target,,
+15097402,제주특별자치도_사계마을과형제해안로_무장애주변관광지,https://www.data.go.kr/data/15097402/fileData.do,그 외,허브연결,CSV,target,,
+15097140,제주특별자치도_월정리진빌레밭담길_무장애여행코스,https://www.data.go.kr/data/15097140/fileData.do,D코스,허브연결,CSV,target,,
+15097419,제주특별자치도_이중섭거리_무장애주변관광지,https://www.data.go.kr/data/15097419/fileData.do,그 외,허브연결,CSV,target,,
+15097423,제주특별자치도_제주올레길14코스(휠체어구간)금능리_무장애주변관광지,https://www.data.go.kr/data/15097423/fileData.do,그 외,허브연결,CSV,target,,
+15097414,제주특별자치도_제주특별자치도_어영소공원-용두암(비행기이착륙포토스팟)_무장애주변관광지,https://www.data.go.kr/data/15097414/fileData.do,그 외,허브연결,CSV,target,,
+15097415,제주특별자치도_연대포구와외도포구산책길_무장애주변관광지,https://www.data.go.kr/data/15097415/fileData.do,그 외,허브연결,CSV,target,,
+15097385,제주특별자치도_곤을동환해장성_무장애주변관광지,https://www.data.go.kr/data/15097385/fileData.do,그 외,허브연결,CSV,target,,
+15097420,제주특별자치도_이호테우해변과내도동알작지_무장애주변관광지,https://www.data.go.kr/data/15097420/fileData.do,그 외,허브연결,CSV,target,,
+15097461,제주특별자치도_금악리골목식당투어_무장애여행관광정보,https://www.data.go.kr/data/15097461/fileData.do,D관광정보,허브연결,HWP,target,,
+15097151,제주특별자치도_태흥2리옥돔마을포구길_무장애여행코스,https://www.data.go.kr/data/15097151/fileData.do,D코스,허브연결,CSV,target,,
+15097123,제주특별자치도_삼양환해장성과벌낭포구해안길_무장애여행코스,https://www.data.go.kr/data/15097123/fileData.do,D코스,허브연결,CSV,target,,
+15097121,제주특별자치도_산방산과하멜상선_무장애여행코스,https://www.data.go.kr/data/15097121/fileData.do,D코스,허브연결,CSV,target,,
+15097442,제주특별자치도_가문동해안길_무장애주변관광지,https://www.data.go.kr/data/15097442/fileData.do,그 외,허브연결,CSV,target,,
+15097109,제주특별자치도_금악리골목식당투어_무장애여행코스,https://www.data.go.kr/data/15097109/fileData.do,D코스,허브연결,CSV,target,,
+15097387,제주특별자치도_귀덕마을길(리사무소-라신동)_무장애주변관광지,https://www.data.go.kr/data/15097387/fileData.do,그 외,허브연결,CSV,target,,
+15097113,제주특별자치도_대문없는마을상명정낭마을_무장애여행코스,https://www.data.go.kr/data/15097113/fileData.do,D코스,허브연결,CSV,target,,
+15097430,제주특별자치도_칠머리당터와건입동벽화거리_무장애주변관광지,https://www.data.go.kr/data/15097430/fileData.do,그 외,허브연결,CSV,target,,
+15097384,제주특별자치도_검은여로_무장애주변관광지,https://www.data.go.kr/data/15097384/fileData.do,그 외,허브연결,CSV,target,,
+15097149,제주특별자치도_제주특별자치도_추억애거리와도두등대_무장애여헹코스,https://www.data.go.kr/data/15097149/fileData.do,그 외,허브연결,CSV,target,,
+15097407,제주특별자치도_선흘리동백마을_무장애주변관광지,https://www.data.go.kr/data/15097407/fileData.do,그 외,허브연결,CSV,target,,
+15097395,제주특별자치도_대문없는마을상명정낭마을_무장애주변관광지,https://www.data.go.kr/data/15097395/fileData.do,그 외,허브연결,CSV,target,,
+15097458,제주특별자치도_공천포구와넙빌레_무장애여행관광정보,https://www.data.go.kr/data/15097458/fileData.do,D관광정보,허브연결,HWP,target,,
+15097431,제주특별자치도_태흥2리옥돔마을포구길_무장애주변관광지,https://www.data.go.kr/data/15097431/fileData.do,그 외,허브연결,CSV,target,,
+15097479,제주특별자치도_선흘리동백마을_무장애여행관광정보,https://www.data.go.kr/data/15097479/fileData.do,D관광정보,허브연결,HWP,target,,
+15097389,제주특별자치도_금악리골목식당투어_무장애주변관광지,https://www.data.go.kr/data/15097389/fileData.do,그 외,허브연결,CSV,target,,
+15097426,제주특별자치도_중문단지축구장과대포연대_무장애주변관광지,https://www.data.go.kr/data/15097426/fileData.do,그 외,허브연결,CSV,target,,
+15097157,제주특별자치도_향기마을용흥리_무장애여행코스,https://www.data.go.kr/data/15097157/fileData.do,D코스,허브연결,CSV,target,,
+15097403,제주특별자치도_산방산과하멜상선_무장애주변관광지,https://www.data.go.kr/data/15097403/fileData.do,그 외,허브연결,CSV,target,,
+15097390,제주특별자치도_김녕항길과윤씨하르방쉼터_무장애주변관광지,https://www.data.go.kr/data/15097390/fileData.do,그 외,허브연결,CSV,target,,
+15097427,제주특별자치도_추억애거리와도두등대_무장애주변관광지,https://www.data.go.kr/data/15097427/fileData.do,그 외,허브연결,CSV,target,,
+15097405,제주특별자치도_삼양환해장성과벌낭포구해안길_무장애주변관광지,https://www.data.go.kr/data/15097405/fileData.do,그 외,허브연결,CSV,target,,
+15097386,제주특별자치도_공천포구와넙빌레_무장애주변관광지,https://www.data.go.kr/data/15097386/fileData.do,그 외,허브연결,CSV,target,,
+15097117,제주특별자치도_두멩이골목_무장애여행코스,https://www.data.go.kr/data/15097117/fileData.do,D코스,허브연결,CSV,target,,
+15097417,제주특별자치도_월정리진빌레밭담길_무장애주변관광지,https://www.data.go.kr/data/15097417/fileData.do,그 외,허브연결,CSV,target,,
+15097478,제주특별자치도_상가리퐁낭마을길_무장애여행관광정보,https://www.data.go.kr/data/15097478/fileData.do,D관광정보,허브연결,HWP,target,,
+15097493,제주특별자치도_월정리진빌레밭담길_무장애여행관광정보,https://www.data.go.kr/data/15097493/fileData.do,D관광정보,허브연결,HWP,target,,
+15097399,제주특별자치도_두맹이골목_무장애주변관광지,https://www.data.go.kr/data/15097399/fileData.do,그 외,허브연결,CSV,target,,
