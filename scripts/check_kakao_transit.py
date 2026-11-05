@@ -46,6 +46,31 @@ if data.get("status") != "OK" or not routes:
     raise SystemExit("조회된 대중교통 경로가 없습니다.")
 
 route = routes[0]
+sample = {
+    "status": data.get("status"),
+    "properties": data.get("properties"),
+    "routes": [
+        {
+            "properties": route.get("properties", {}),
+            "steps": [
+                {"properties": step.get("properties", {})}
+                for step in route.get("steps", [])
+            ],
+        }
+    ],
+}
+sample_path = (
+    Path(__file__).resolve().parents[1]
+    / "tests"
+    / "sample_responses"
+    / "kakao_transit_success.json"
+)
+sample_path.write_text(
+    json.dumps(sample, ensure_ascii=False, indent=2),
+    encoding="utf-8",
+)
+print("실제 응답 샘플 저장 : ", sample_path)
+
 properties = route["properties"]
 print("첫 번째 경로 예상 소요 시간(초):", properties["totalTime"])
 print("환승 횟수:", properties["transfers"])
