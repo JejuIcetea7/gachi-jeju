@@ -7,3 +7,4 @@ data/raw/**/*.webp
 data/raw/**/*.bmp
 data/raw/**/*.tif
 data/raw/**/*.tiff
+/.env
