@@ -1,0 +1,106 @@
+[
+  {
+    "ROUTE_DIST": 0,
+    "STATION_NM": "제주국제컨벤션센터  중문대포해안주상절리대",
+    "ROUTE_ID": 405324052,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 1,
+    "STATION_ID": 406000028
+  },
+  {
+    "ROUTE_DIST": 703,
+    "STATION_NM": "구멍물",
+    "ROUTE_ID": 405324052,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 2,
+    "STATION_ID": 406001907
+  },
+  {
+    "ROUTE_DIST": 34514,
+    "STATION_NM": "제주아트리움",
+    "ROUTE_ID": 405324052,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 3,
+    "STATION_ID": 405000515
+  },
+  {
+    "ROUTE_DIST": 36288,
+    "STATION_NM": "월산정수장입구",
+    "ROUTE_ID": 405324052,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 4,
+    "STATION_ID": 405000441
+  },
+  {
+    "ROUTE_DIST": 37198,
+    "STATION_NM": "노형초등학교",
+    "ROUTE_ID": 405324052,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 5,
+    "STATION_ID": 405000445
+  },
+  {
+    "ROUTE_DIST": 37756,
+    "STATION_NM": "노형오거리(한라병원방면)",
+    "ROUTE_ID": 405324052,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 6,
+    "STATION_ID": 405000371
+  },
+  {
+    "ROUTE_DIST": 38009,
+    "STATION_NM": "남녕고등학교",
+    "ROUTE_ID": 405324052,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 7,
+    "STATION_ID": 405000372
+  },
+  {
+    "ROUTE_DIST": 38331,
+    "STATION_NM": "한라병원",
+    "ROUTE_ID": 405324052,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 8,
+    "STATION_ID": 405000368
+  },
+  {
+    "ROUTE_DIST": 38644,
+    "STATION_NM": "연동한일시티파크",
+    "ROUTE_ID": 405324052,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 9,
+    "STATION_ID": 405002363
+  },
+  {
+    "ROUTE_DIST": 39326,
+    "STATION_NM": "명주주택",
+    "ROUTE_ID": 405324052,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 10,
+    "STATION_ID": 405000180
+  },
+  {
+    "ROUTE_DIST": 40694,
+    "STATION_NM": "월구마을",
+    "ROUTE_ID": 405324052,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 11,
+    "STATION_ID": 405000176
+  },
+  {
+    "ROUTE_DIST": 41069,
+    "STATION_NM": "동성마을",
+    "ROUTE_ID": 405324052,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 12,
+    "STATION_ID": 405000174
+  },
+  {
+    "ROUTE_DIST": 41480,
+    "STATION_NM": "제주버스터미널(종점)",
+    "ROUTE_ID": 405324052,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 13,
+    "STATION_ID": 405001894
+  }
+]
