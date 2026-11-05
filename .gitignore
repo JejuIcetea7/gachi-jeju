@@ -8,3 +8,6 @@ data/raw/**/*.bmp
 data/raw/**/*.tif
 data/raw/**/*.tiff
 /.env
+.venv/
+__pycache__/
+*.pyc

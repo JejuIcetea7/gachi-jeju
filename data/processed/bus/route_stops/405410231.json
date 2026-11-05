@@ -1,0 +1,98 @@
+[
+  {
+    "ROUTE_DIST": 0,
+    "STATION_NM": "제주버스터미널(가상정류소)",
+    "ROUTE_ID": 405410231,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 1,
+    "STATION_ID": 405002811
+  },
+  {
+    "ROUTE_DIST": 2902,
+    "STATION_NM": "제주국제공항4(대정,화순,일주서로)",
+    "ROUTE_ID": 405410231,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 2,
+    "STATION_ID": 405002100
+  },
+  {
+    "ROUTE_DIST": 6605,
+    "STATION_NM": "제주민속오일장",
+    "ROUTE_ID": 405410231,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 3,
+    "STATION_ID": 405000097
+  },
+  {
+    "ROUTE_DIST": 10770,
+    "STATION_NM": "외도초등학교",
+    "ROUTE_ID": 405410231,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 4,
+    "STATION_ID": 405000029
+  },
+  {
+    "ROUTE_DIST": 13114,
+    "STATION_NM": "하귀환승정류장(하귀하나로마트)",
+    "ROUTE_ID": 405410231,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 5,
+    "STATION_ID": 405000046
+  },
+  {
+    "ROUTE_DIST": 20831,
+    "STATION_NM": "애월고등학교",
+    "ROUTE_ID": 405410231,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 6,
+    "STATION_ID": 405001194
+  },
+  {
+    "ROUTE_DIST": 22334,
+    "STATION_NM": "애월환승정류장(애월리)",
+    "ROUTE_ID": 405410231,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 7,
+    "STATION_ID": 405002077
+  },
+  {
+    "ROUTE_DIST": 30882,
+    "STATION_NM": "한림환승정류장(한림리)",
+    "ROUTE_ID": 405410231,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 8,
+    "STATION_ID": 405001243
+  },
+  {
+    "ROUTE_DIST": 33048,
+    "STATION_NM": "한림고등학교",
+    "ROUTE_ID": 405410231,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 9,
+    "STATION_ID": 405000842
+  },
+  {
+    "ROUTE_DIST": 35205,
+    "STATION_NM": "협재 너븐밭(해수욕장입구)",
+    "ROUTE_ID": 405410231,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 10,
+    "STATION_ID": 405002838
+  },
+  {
+    "ROUTE_DIST": 42481,
+    "STATION_NM": "신창환승정류장(한경면사무소)",
+    "ROUTE_ID": 405410231,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 11,
+    "STATION_ID": 405000989
+  },
+  {
+    "ROUTE_DIST": 48224,
+    "STATION_NM": "고산환승정류장(고산1리)",
+    "ROUTE_ID": 405410231,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 12,
+    "STATION_ID": 405000892
+  }
+]

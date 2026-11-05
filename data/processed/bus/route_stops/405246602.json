@@ -1,0 +1,410 @@
+[
+  {
+    "ROUTE_DIST": 0,
+    "STATION_NM": "제주버스터미널(동광로 방향)",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 1,
+    "STATION_ID": 405002799
+  },
+  {
+    "ROUTE_DIST": 327,
+    "STATION_NM": "한국병원(동광로 방향)",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 2,
+    "STATION_ID": 405002797
+  },
+  {
+    "ROUTE_DIST": 717,
+    "STATION_NM": "용천마을/남서광마을(동광로 방향)",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 3,
+    "STATION_ID": 405002795
+  },
+  {
+    "ROUTE_DIST": 1174,
+    "STATION_NM": "탐라장애인 종합복지관(동광로 방향)",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 4,
+    "STATION_ID": 405002794
+  },
+  {
+    "ROUTE_DIST": 1649,
+    "STATION_NM": "동광양",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 5,
+    "STATION_ID": 405000283
+  },
+  {
+    "ROUTE_DIST": 2176,
+    "STATION_NM": "문예회관",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 6,
+    "STATION_ID": 405000285
+  },
+  {
+    "ROUTE_DIST": 2417,
+    "STATION_NM": "인화초등학교",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 7,
+    "STATION_ID": 405000287
+  },
+  {
+    "ROUTE_DIST": 2792,
+    "STATION_NM": "인화동",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 8,
+    "STATION_ID": 405000218
+  },
+  {
+    "ROUTE_DIST": 3004,
+    "STATION_NM": "일도2동주민센터",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 9,
+    "STATION_ID": 405000220
+  },
+  {
+    "ROUTE_DIST": 3246,
+    "STATION_NM": "인화동입구",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 10,
+    "STATION_ID": 405000222
+  },
+  {
+    "ROUTE_DIST": 3620,
+    "STATION_NM": "사라봉경로당입구",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 11,
+    "STATION_ID": 405001511
+  },
+  {
+    "ROUTE_DIST": 3916,
+    "STATION_NM": "이화아파트",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 12,
+    "STATION_ID": 405001510
+  },
+  {
+    "ROUTE_DIST": 4680,
+    "STATION_NM": "임항로",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 13,
+    "STATION_ID": 405001883
+  },
+  {
+    "ROUTE_DIST": 4928,
+    "STATION_NM": "제4부두",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 14,
+    "STATION_ID": 405000226
+  },
+  {
+    "ROUTE_DIST": 5179,
+    "STATION_NM": "제주연안여객터미널",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 15,
+    "STATION_ID": 405000110
+  },
+  {
+    "ROUTE_DIST": 5526,
+    "STATION_NM": "마음에온건입",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 16,
+    "STATION_ID": 405000111
+  },
+  {
+    "ROUTE_DIST": 5821,
+    "STATION_NM": "김만덕기념관",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 17,
+    "STATION_ID": 405002327
+  },
+  {
+    "ROUTE_DIST": 6029,
+    "STATION_NM": "탐라광장/제주여성가족연구원",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 18,
+    "STATION_ID": 405002096
+  },
+  {
+    "ROUTE_DIST": 6271,
+    "STATION_NM": "동문로터리, 동문시장",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 19,
+    "STATION_ID": 405000289
+  },
+  {
+    "ROUTE_DIST": 6845,
+    "STATION_NM": "관덕정",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 20,
+    "STATION_ID": 405000335
+  },
+  {
+    "ROUTE_DIST": 7182,
+    "STATION_NM": "서문시장",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 21,
+    "STATION_ID": 405000332
+  },
+  {
+    "ROUTE_DIST": 7633,
+    "STATION_NM": "용담1동주민센터",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 22,
+    "STATION_ID": 405000317
+  },
+  {
+    "ROUTE_DIST": 7965,
+    "STATION_NM": "용문사거리",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 23,
+    "STATION_ID": 405000315
+  },
+  {
+    "ROUTE_DIST": 8107,
+    "STATION_NM": "용문마을",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 24,
+    "STATION_ID": 405000313
+  },
+  {
+    "ROUTE_DIST": 8354,
+    "STATION_NM": "용문마을회관",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 25,
+    "STATION_ID": 405000311
+  },
+  {
+    "ROUTE_DIST": 8772,
+    "STATION_NM": "화물청사입구",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 26,
+    "STATION_ID": 405000309
+  },
+  {
+    "ROUTE_DIST": 9940,
+    "STATION_NM": "제주국제공항6(노형,연동)",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 27,
+    "STATION_ID": 405001478
+  },
+  {
+    "ROUTE_DIST": 10928,
+    "STATION_NM": "다호마을",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 28,
+    "STATION_ID": 405000645
+  },
+  {
+    "ROUTE_DIST": 11873,
+    "STATION_NM": "연동입구",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 29,
+    "STATION_ID": 405000654
+  },
+  {
+    "ROUTE_DIST": 12438,
+    "STATION_NM": "제주도청 신제주로터리",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 30,
+    "STATION_ID": 405000331
+  },
+  {
+    "ROUTE_DIST": 12766,
+    "STATION_NM": "연동주민센터",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 31,
+    "STATION_ID": 405000328
+  },
+  {
+    "ROUTE_DIST": 13172,
+    "STATION_NM": "도호동",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 32,
+    "STATION_ID": 405000194
+  },
+  {
+    "ROUTE_DIST": 13407,
+    "STATION_NM": "은남동",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 33,
+    "STATION_ID": 405000192
+  },
+  {
+    "ROUTE_DIST": 13926,
+    "STATION_NM": "메종글래드 제주",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 34,
+    "STATION_ID": 405001636
+  },
+  {
+    "ROUTE_DIST": 14272,
+    "STATION_NM": "원노형",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 35,
+    "STATION_ID": 405001880
+  },
+  {
+    "ROUTE_DIST": 14765,
+    "STATION_NM": "원노형마을",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 36,
+    "STATION_ID": 405000613
+  },
+  {
+    "ROUTE_DIST": 15168,
+    "STATION_NM": "롯데마트",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 37,
+    "STATION_ID": 405000013
+  },
+  {
+    "ROUTE_DIST": 15559,
+    "STATION_NM": "해오름아파트",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 38,
+    "STATION_ID": 405000630
+  },
+  {
+    "ROUTE_DIST": 16060,
+    "STATION_NM": "연동대림1차아파트",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 39,
+    "STATION_ID": 405000496
+  },
+  {
+    "ROUTE_DIST": 16381,
+    "STATION_NM": "대림2차아파트",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 40,
+    "STATION_ID": 405000494
+  },
+  {
+    "ROUTE_DIST": 16545,
+    "STATION_NM": "한라초등학교",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 41,
+    "STATION_ID": 405000493
+  },
+  {
+    "ROUTE_DIST": 16843,
+    "STATION_NM": "한화아파트",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 42,
+    "STATION_ID": 405000491
+  },
+  {
+    "ROUTE_DIST": 17025,
+    "STATION_NM": "으뜸마을",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 43,
+    "STATION_ID": 405000462
+  },
+  {
+    "ROUTE_DIST": 17692,
+    "STATION_NM": "제주고등학교",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 44,
+    "STATION_ID": 405000480
+  },
+  {
+    "ROUTE_DIST": 17951,
+    "STATION_NM": "한라수목원",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 45,
+    "STATION_ID": 405000653
+  },
+  {
+    "ROUTE_DIST": 18701,
+    "STATION_NM": "노형교차로",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 46,
+    "STATION_ID": 405002534
+  },
+  {
+    "ROUTE_DIST": 19269,
+    "STATION_NM": "브릭캠퍼스",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 47,
+    "STATION_ID": 405002235
+  },
+  {
+    "ROUTE_DIST": 19701,
+    "STATION_NM": "제주도립미술관입구",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 48,
+    "STATION_ID": 405001482
+  },
+  {
+    "ROUTE_DIST": 20258,
+    "STATION_NM": "주르레마을",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 49,
+    "STATION_ID": 405000710
+  },
+  {
+    "ROUTE_DIST": 20594,
+    "STATION_NM": "축산생명연구원입구",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 50,
+    "STATION_ID": 405001560
+  },
+  {
+    "ROUTE_DIST": 21369,
+    "STATION_NM": "신비마을(종점)",
+    "ROUTE_ID": 405246602,
+    "ROUTE_NUM": "466",
+    "STATION_ORD": 51,
+    "STATION_ID": 405001802
+  }
+]
