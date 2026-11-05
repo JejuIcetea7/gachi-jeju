@@ -1,0 +1,226 @@
+[
+  {
+    "ROUTE_DIST": 0,
+    "STATION_NM": "애월하나로마트",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 1,
+    "STATION_ID": 405001806
+  },
+  {
+    "ROUTE_DIST": 610,
+    "STATION_NM": "애월신협",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 2,
+    "STATION_ID": 405001470
+  },
+  {
+    "ROUTE_DIST": 912,
+    "STATION_NM": "애월중학교",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 3,
+    "STATION_ID": 405001199
+  },
+  {
+    "ROUTE_DIST": 1500,
+    "STATION_NM": "애월읍사무소",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 4,
+    "STATION_ID": 405001196
+  },
+  {
+    "ROUTE_DIST": 1897,
+    "STATION_NM": "애월고등학교",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 5,
+    "STATION_ID": 405001195
+  },
+  {
+    "ROUTE_DIST": 2215,
+    "STATION_NM": "고내리",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 6,
+    "STATION_ID": 405001192
+  },
+  {
+    "ROUTE_DIST": 3366,
+    "STATION_NM": "고내리 애월119센터",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 7,
+    "STATION_ID": 405001190
+  },
+  {
+    "ROUTE_DIST": 4074,
+    "STATION_NM": "자운당",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 8,
+    "STATION_ID": 405001189
+  },
+  {
+    "ROUTE_DIST": 5189,
+    "STATION_NM": "신엄리",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 9,
+    "STATION_ID": 405001188
+  },
+  {
+    "ROUTE_DIST": 5787,
+    "STATION_NM": "중엄리",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 10,
+    "STATION_ID": 405001186
+  },
+  {
+    "ROUTE_DIST": 6047,
+    "STATION_NM": "구엄리",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 11,
+    "STATION_ID": 405001184
+  },
+  {
+    "ROUTE_DIST": 6428,
+    "STATION_NM": "모감동",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 12,
+    "STATION_ID": 405000022
+  },
+  {
+    "ROUTE_DIST": 7554,
+    "STATION_NM": "수산저수지입구",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 13,
+    "STATION_ID": 405001824
+  },
+  {
+    "ROUTE_DIST": 8118,
+    "STATION_NM": "수산교차로",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 14,
+    "STATION_ID": 405001826
+  },
+  {
+    "ROUTE_DIST": 9130,
+    "STATION_NM": "서부경찰서",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 15,
+    "STATION_ID": 405000708
+  },
+  {
+    "ROUTE_DIST": 9432,
+    "STATION_NM": "상귀리",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 16,
+    "STATION_ID": 405002215
+  },
+  {
+    "ROUTE_DIST": 9798,
+    "STATION_NM": "상귀동카름",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 17,
+    "STATION_ID": 405002332
+  },
+  {
+    "ROUTE_DIST": 10313,
+    "STATION_NM": "하귀1리",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 18,
+    "STATION_ID": 405001692
+  },
+  {
+    "ROUTE_DIST": 11000,
+    "STATION_NM": "광령저수지 / 하귀농협장례식장",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 19,
+    "STATION_ID": 405001691
+  },
+  {
+    "ROUTE_DIST": 11874,
+    "STATION_NM": "애조로 광령1리입구",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 20,
+    "STATION_ID": 405001694
+  },
+  {
+    "ROUTE_DIST": 12414,
+    "STATION_NM": "사라마을",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 21,
+    "STATION_ID": 405001696
+  },
+  {
+    "ROUTE_DIST": 13963,
+    "STATION_NM": "제주아트리움",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 22,
+    "STATION_ID": 405000515
+  },
+  {
+    "ROUTE_DIST": 14951,
+    "STATION_NM": "월산마을",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 23,
+    "STATION_ID": 405000439
+  },
+  {
+    "ROUTE_DIST": 15736,
+    "STATION_NM": "월산정수장입구",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 24,
+    "STATION_ID": 405000441
+  },
+  {
+    "ROUTE_DIST": 16548,
+    "STATION_NM": "제주한라대학교",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 25,
+    "STATION_ID": 405000457
+  },
+  {
+    "ROUTE_DIST": 17206,
+    "STATION_NM": "제주고등학교/중흥S클래스",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 26,
+    "STATION_ID": 405000459
+  },
+  {
+    "ROUTE_DIST": 17451,
+    "STATION_NM": "부영아파트",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 27,
+    "STATION_ID": 405000461
+  },
+  {
+    "ROUTE_DIST": 17834,
+    "STATION_NM": "한라중학교/부영아파트",
+    "ROUTE_ID": 405327005,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 28,
+    "STATION_ID": 405000492
+  }
+]

@@ -1,0 +1,1362 @@
+[
+  {
+    "ROUTE_DIST": 0,
+    "STATION_NM": "서귀포버스터미널(가상정류소)",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 1,
+    "STATION_ID": 406001488
+  },
+  {
+    "ROUTE_DIST": 229,
+    "STATION_NM": "성산하이츠빌라",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 2,
+    "STATION_ID": 406000044
+  },
+  {
+    "ROUTE_DIST": 476,
+    "STATION_NM": "반참모르",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 3,
+    "STATION_ID": 406000045
+  },
+  {
+    "ROUTE_DIST": 1230,
+    "STATION_NM": "염돈동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 4,
+    "STATION_ID": 406000048
+  },
+  {
+    "ROUTE_DIST": 1775,
+    "STATION_NM": "묵은길입구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 5,
+    "STATION_ID": 406000049
+  },
+  {
+    "ROUTE_DIST": 2323,
+    "STATION_NM": "용흥동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 6,
+    "STATION_ID": 406000052
+  },
+  {
+    "ROUTE_DIST": 2807,
+    "STATION_NM": "대천동주민센터",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 7,
+    "STATION_ID": 406000023
+  },
+  {
+    "ROUTE_DIST": 3128,
+    "STATION_NM": "도순동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 8,
+    "STATION_ID": 406000024
+  },
+  {
+    "ROUTE_DIST": 3590,
+    "STATION_NM": "속도르",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 9,
+    "STATION_ID": 406000026
+  },
+  {
+    "ROUTE_DIST": 4145,
+    "STATION_NM": "서진아파트",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 10,
+    "STATION_ID": 406000036
+  },
+  {
+    "ROUTE_DIST": 4466,
+    "STATION_NM": "하원동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 11,
+    "STATION_ID": 406000038
+  },
+  {
+    "ROUTE_DIST": 5692,
+    "STATION_NM": "중문고등학교",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 12,
+    "STATION_ID": 406000040
+  },
+  {
+    "ROUTE_DIST": 6569,
+    "STATION_NM": "어두모루",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 13,
+    "STATION_ID": 406000444
+  },
+  {
+    "ROUTE_DIST": 6974,
+    "STATION_NM": "중문보건지소",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 14,
+    "STATION_ID": 406000443
+  },
+  {
+    "ROUTE_DIST": 7312,
+    "STATION_NM": "중문초등학교",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 15,
+    "STATION_ID": 406000440
+  },
+  {
+    "ROUTE_DIST": 7608,
+    "STATION_NM": "중문동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 16,
+    "STATION_ID": 406000439
+  },
+  {
+    "ROUTE_DIST": 7989,
+    "STATION_NM": "중문환승정류장(중문우체국)",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 17,
+    "STATION_ID": 406000436
+  },
+  {
+    "ROUTE_DIST": 8463,
+    "STATION_NM": "천제연폭포",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 18,
+    "STATION_ID": 406000528
+  },
+  {
+    "ROUTE_DIST": 9099,
+    "STATION_NM": "중문관광단지입구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 19,
+    "STATION_ID": 406000013
+  },
+  {
+    "ROUTE_DIST": 9903,
+    "STATION_NM": "예래입구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 20,
+    "STATION_ID": 406000015
+  },
+  {
+    "ROUTE_DIST": 11377,
+    "STATION_NM": "우남동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 21,
+    "STATION_ID": 406000007
+  },
+  {
+    "ROUTE_DIST": 12044,
+    "STATION_NM": "예래헬스사우나",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 22,
+    "STATION_ID": 406001383
+  },
+  {
+    "ROUTE_DIST": 12233,
+    "STATION_NM": "소보리당입구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 23,
+    "STATION_ID": 406000009
+  },
+  {
+    "ROUTE_DIST": 12699,
+    "STATION_NM": "상예2동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 24,
+    "STATION_ID": 406000031
+  },
+  {
+    "ROUTE_DIST": 13347,
+    "STATION_NM": "창천초등학교",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 25,
+    "STATION_ID": 406000520
+  },
+  {
+    "ROUTE_DIST": 13872,
+    "STATION_NM": "창천리남당물동산",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 26,
+    "STATION_ID": 406000517
+  },
+  {
+    "ROUTE_DIST": 14282,
+    "STATION_NM": "감산입구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 27,
+    "STATION_ID": 406001171
+  },
+  {
+    "ROUTE_DIST": 14780,
+    "STATION_NM": "감산리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 28,
+    "STATION_ID": 406000513
+  },
+  {
+    "ROUTE_DIST": 15271,
+    "STATION_NM": "안덕계곡",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 29,
+    "STATION_ID": 406000601
+  },
+  {
+    "ROUTE_DIST": 15602,
+    "STATION_NM": "감산리서동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 30,
+    "STATION_ID": 406000967
+  },
+  {
+    "ROUTE_DIST": 16024,
+    "STATION_NM": "성박물관",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 31,
+    "STATION_ID": 406001262
+  },
+  {
+    "ROUTE_DIST": 16482,
+    "STATION_NM": "화순굴렁밭",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 32,
+    "STATION_ID": 406001992
+  },
+  {
+    "ROUTE_DIST": 16937,
+    "STATION_NM": "화순동취락지구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 33,
+    "STATION_ID": 406000940
+  },
+  {
+    "ROUTE_DIST": 17478,
+    "STATION_NM": "화순환승정류장(안덕농협)",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 34,
+    "STATION_ID": 406000939
+  },
+  {
+    "ROUTE_DIST": 17779,
+    "STATION_NM": "화순리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 35,
+    "STATION_ID": 406000937
+  },
+  {
+    "ROUTE_DIST": 18192,
+    "STATION_NM": "코아루푸르나임아파트",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 36,
+    "STATION_ID": 406001899
+  },
+  {
+    "ROUTE_DIST": 18520,
+    "STATION_NM": "안덕119센터",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 37,
+    "STATION_ID": 406001498
+  },
+  {
+    "ROUTE_DIST": 19206,
+    "STATION_NM": "제주조각공원입구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 38,
+    "STATION_ID": 406001500
+  },
+  {
+    "ROUTE_DIST": 19907,
+    "STATION_NM": "덕수리군물왓",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 39,
+    "STATION_ID": 406000943
+  },
+  {
+    "ROUTE_DIST": 20507,
+    "STATION_NM": "덕수리동동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 40,
+    "STATION_ID": 406000945
+  },
+  {
+    "ROUTE_DIST": 20944,
+    "STATION_NM": "덕수초등학교",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 41,
+    "STATION_ID": 406000833
+  },
+  {
+    "ROUTE_DIST": 21938,
+    "STATION_NM": "산방 유채꽃길",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 42,
+    "STATION_ID": 406002020
+  },
+  {
+    "ROUTE_DIST": 22762,
+    "STATION_NM": "산방산",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 43,
+    "STATION_ID": 406000933
+  },
+  {
+    "ROUTE_DIST": 23100,
+    "STATION_NM": "사계리동동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 44,
+    "STATION_ID": 406000932
+  },
+  {
+    "ROUTE_DIST": 23722,
+    "STATION_NM": "산방복지회관",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 45,
+    "STATION_ID": 406001259
+  },
+  {
+    "ROUTE_DIST": 24131,
+    "STATION_NM": "사계리사무소",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 46,
+    "STATION_ID": 406000930
+  },
+  {
+    "ROUTE_DIST": 24685,
+    "STATION_NM": "사계리서동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 47,
+    "STATION_ID": 406000928
+  },
+  {
+    "ROUTE_DIST": 26891,
+    "STATION_NM": "이교동삼거리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 48,
+    "STATION_ID": 406001349
+  },
+  {
+    "ROUTE_DIST": 27247,
+    "STATION_NM": "상모리 이교동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 49,
+    "STATION_ID": 406000924
+  },
+  {
+    "ROUTE_DIST": 27800,
+    "STATION_NM": "상모리 대동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 50,
+    "STATION_ID": 406000921
+  },
+  {
+    "ROUTE_DIST": 28183,
+    "STATION_NM": "상모2리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 51,
+    "STATION_ID": 406000919
+  },
+  {
+    "ROUTE_DIST": 28413,
+    "STATION_NM": "모슬포우체국",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 52,
+    "STATION_ID": 406000832
+  },
+  {
+    "ROUTE_DIST": 28860,
+    "STATION_NM": "하모3리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 53,
+    "STATION_ID": 406000710
+  },
+  {
+    "ROUTE_DIST": 30085,
+    "STATION_NM": "동일1리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 54,
+    "STATION_ID": 406000911
+  },
+  {
+    "ROUTE_DIST": 30663,
+    "STATION_NM": "대정서초등학교",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 55,
+    "STATION_ID": 406000909
+  },
+  {
+    "ROUTE_DIST": 31238,
+    "STATION_NM": "일과1리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 56,
+    "STATION_ID": 406000908
+  },
+  {
+    "ROUTE_DIST": 31648,
+    "STATION_NM": "대수동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 57,
+    "STATION_ID": 406000906
+  },
+  {
+    "ROUTE_DIST": 32372,
+    "STATION_NM": "일과2리 서림수원지입구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 58,
+    "STATION_ID": 406000739
+  },
+  {
+    "ROUTE_DIST": 32762,
+    "STATION_NM": "일과2리 사무소",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 59,
+    "STATION_ID": 406000904
+  },
+  {
+    "ROUTE_DIST": 33234,
+    "STATION_NM": "대정농공단지입구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 60,
+    "STATION_ID": 406000717
+  },
+  {
+    "ROUTE_DIST": 34275,
+    "STATION_NM": "영락3교차로",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 61,
+    "STATION_ID": 406002001
+  },
+  {
+    "ROUTE_DIST": 34692,
+    "STATION_NM": "영락리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 62,
+    "STATION_ID": 406000703
+  },
+  {
+    "ROUTE_DIST": 35064,
+    "STATION_NM": "영락사통",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 63,
+    "STATION_ID": 406000901
+  },
+  {
+    "ROUTE_DIST": 36457,
+    "STATION_NM": "무릉1리 학교앞",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 64,
+    "STATION_ID": 406000899
+  },
+  {
+    "ROUTE_DIST": 36748,
+    "STATION_NM": "무릉문화의 집",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 65,
+    "STATION_ID": 406000897
+  },
+  {
+    "ROUTE_DIST": 37736,
+    "STATION_NM": "신도1리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 66,
+    "STATION_ID": 406000895
+  },
+  {
+    "ROUTE_DIST": 38795,
+    "STATION_NM": "신도3리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 67,
+    "STATION_ID": 406000893
+  },
+  {
+    "ROUTE_DIST": 40487,
+    "STATION_NM": "한경면종합복지회관",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 68,
+    "STATION_ID": 405002294
+  },
+  {
+    "ROUTE_DIST": 40762,
+    "STATION_NM": "고산환승정류장(고산1리 고산성당 앞)",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 69,
+    "STATION_ID": 405001277
+  },
+  {
+    "ROUTE_DIST": 41140,
+    "STATION_NM": "고산우체국앞",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 70,
+    "STATION_ID": 405001275
+  },
+  {
+    "ROUTE_DIST": 41403,
+    "STATION_NM": "고산1리(구 출장소)",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 71,
+    "STATION_ID": 405001274
+  },
+  {
+    "ROUTE_DIST": 42488,
+    "STATION_NM": "제석머리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 72,
+    "STATION_ID": 405001946
+  },
+  {
+    "ROUTE_DIST": 43132,
+    "STATION_NM": "용수리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 73,
+    "STATION_ID": 405001272
+  },
+  {
+    "ROUTE_DIST": 44700,
+    "STATION_NM": "용당리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 74,
+    "STATION_ID": 405000976
+  },
+  {
+    "ROUTE_DIST": 45370,
+    "STATION_NM": "신흥동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 75,
+    "STATION_ID": 405001271
+  },
+  {
+    "ROUTE_DIST": 45754,
+    "STATION_NM": "구 한경의원 앞",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 76,
+    "STATION_ID": 405001266
+  },
+  {
+    "ROUTE_DIST": 46148,
+    "STATION_NM": "신창리한경수협",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 77,
+    "STATION_ID": 405001267
+  },
+  {
+    "ROUTE_DIST": 46415,
+    "STATION_NM": "신창환승정류장(한경면사무소)",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 78,
+    "STATION_ID": 405001268
+  },
+  {
+    "ROUTE_DIST": 46864,
+    "STATION_NM": "두모리사무소",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 79,
+    "STATION_ID": 405001269
+  },
+  {
+    "ROUTE_DIST": 48043,
+    "STATION_NM": "금등리마을",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 80,
+    "STATION_ID": 405001264
+  },
+  {
+    "ROUTE_DIST": 48803,
+    "STATION_NM": "판포리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 81,
+    "STATION_ID": 405001262
+  },
+  {
+    "ROUTE_DIST": 49311,
+    "STATION_NM": "판포리 상동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 82,
+    "STATION_ID": 405001261
+  },
+  {
+    "ROUTE_DIST": 50495,
+    "STATION_NM": "월령말쌍알",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 83,
+    "STATION_ID": 405002714
+  },
+  {
+    "ROUTE_DIST": 50919,
+    "STATION_NM": "월령리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 84,
+    "STATION_ID": 405001259
+  },
+  {
+    "ROUTE_DIST": 51595,
+    "STATION_NM": "금능웨이브제주",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 85,
+    "STATION_ID": 405001963
+  },
+  {
+    "ROUTE_DIST": 52018,
+    "STATION_NM": "일성콘도미니엄",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 86,
+    "STATION_ID": 405001582
+  },
+  {
+    "ROUTE_DIST": 52454,
+    "STATION_NM": "금능석물원",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 87,
+    "STATION_ID": 405000901
+  },
+  {
+    "ROUTE_DIST": 53072,
+    "STATION_NM": "금능리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 88,
+    "STATION_ID": 405001256
+  },
+  {
+    "ROUTE_DIST": 53469,
+    "STATION_NM": "금능해수욕장",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 89,
+    "STATION_ID": 405001746
+  },
+  {
+    "ROUTE_DIST": 53884,
+    "STATION_NM": "한림공원",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 90,
+    "STATION_ID": 405001253
+  },
+  {
+    "ROUTE_DIST": 54203,
+    "STATION_NM": "협재해수욕장",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 91,
+    "STATION_ID": 405001251
+  },
+  {
+    "ROUTE_DIST": 54752,
+    "STATION_NM": "협재리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 92,
+    "STATION_ID": 405001249
+  },
+  {
+    "ROUTE_DIST": 55679,
+    "STATION_NM": "옹포리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 93,
+    "STATION_ID": 405001235
+  },
+  {
+    "ROUTE_DIST": 56121,
+    "STATION_NM": "옹포사거리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 94,
+    "STATION_ID": 405001237
+  },
+  {
+    "ROUTE_DIST": 56750,
+    "STATION_NM": "한림여자 중학교",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 95,
+    "STATION_ID": 405001239
+  },
+  {
+    "ROUTE_DIST": 57061,
+    "STATION_NM": "한국통신",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 96,
+    "STATION_ID": 405001241
+  },
+  {
+    "ROUTE_DIST": 57414,
+    "STATION_NM": "한림환승정류장(한림리)",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 97,
+    "STATION_ID": 405001244
+  },
+  {
+    "ROUTE_DIST": 57743,
+    "STATION_NM": "한림천주교회",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 98,
+    "STATION_ID": 405001247
+  },
+  {
+    "ROUTE_DIST": 58333,
+    "STATION_NM": "한수리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 99,
+    "STATION_ID": 405001245
+  },
+  {
+    "ROUTE_DIST": 58594,
+    "STATION_NM": "수원주유소",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 100,
+    "STATION_ID": 405001584
+  },
+  {
+    "ROUTE_DIST": 58993,
+    "STATION_NM": "수원리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 101,
+    "STATION_ID": 405001231
+  },
+  {
+    "ROUTE_DIST": 59349,
+    "STATION_NM": "대림입구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 102,
+    "STATION_ID": 405001229
+  },
+  {
+    "ROUTE_DIST": 59847,
+    "STATION_NM": "용운동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 103,
+    "STATION_ID": 405001228
+  },
+  {
+    "ROUTE_DIST": 60125,
+    "STATION_NM": "라신동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 104,
+    "STATION_ID": 405001226
+  },
+  {
+    "ROUTE_DIST": 60660,
+    "STATION_NM": "귀덕2리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 105,
+    "STATION_ID": 405001223
+  },
+  {
+    "ROUTE_DIST": 60997,
+    "STATION_NM": "귀덕새마을금고",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 106,
+    "STATION_ID": 405001221
+  },
+  {
+    "ROUTE_DIST": 61343,
+    "STATION_NM": "귀덕리 초록마을",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 107,
+    "STATION_ID": 405001219
+  },
+  {
+    "ROUTE_DIST": 61678,
+    "STATION_NM": "사동복지회관",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 108,
+    "STATION_ID": 405001217
+  },
+  {
+    "ROUTE_DIST": 62096,
+    "STATION_NM": "귀덕초등학교",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 109,
+    "STATION_ID": 405001215
+  },
+  {
+    "ROUTE_DIST": 62350,
+    "STATION_NM": "하동복지회관",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 110,
+    "STATION_ID": 405001213
+  },
+  {
+    "ROUTE_DIST": 62783,
+    "STATION_NM": "금성리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 111,
+    "STATION_ID": 405001212
+  },
+  {
+    "ROUTE_DIST": 63257,
+    "STATION_NM": "금빛신협",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 112,
+    "STATION_ID": 405001209
+  },
+  {
+    "ROUTE_DIST": 63503,
+    "STATION_NM": "곽지해수욕장",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 113,
+    "STATION_ID": 405001208
+  },
+  {
+    "ROUTE_DIST": 63928,
+    "STATION_NM": "곽지모우물",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 114,
+    "STATION_ID": 405001206
+  },
+  {
+    "ROUTE_DIST": 64630,
+    "STATION_NM": "놀우시 동산(한담삼거리)",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 115,
+    "STATION_ID": 405002820
+  },
+  {
+    "ROUTE_DIST": 65211,
+    "STATION_NM": "한담동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 116,
+    "STATION_ID": 405001205
+  },
+  {
+    "ROUTE_DIST": 65622,
+    "STATION_NM": "신설동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 117,
+    "STATION_ID": 405001202
+  },
+  {
+    "ROUTE_DIST": 65954,
+    "STATION_NM": "애월환승정류장(애월리)",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 118,
+    "STATION_ID": 405001201
+  },
+  {
+    "ROUTE_DIST": 66066,
+    "STATION_NM": "애월신협",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 119,
+    "STATION_ID": 405001470
+  },
+  {
+    "ROUTE_DIST": 66368,
+    "STATION_NM": "애월중학교",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 120,
+    "STATION_ID": 405001199
+  },
+  {
+    "ROUTE_DIST": 66957,
+    "STATION_NM": "애월읍사무소",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 121,
+    "STATION_ID": 405001196
+  },
+  {
+    "ROUTE_DIST": 67354,
+    "STATION_NM": "애월고등학교",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 122,
+    "STATION_ID": 405001195
+  },
+  {
+    "ROUTE_DIST": 67672,
+    "STATION_NM": "고내리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 123,
+    "STATION_ID": 405001192
+  },
+  {
+    "ROUTE_DIST": 68823,
+    "STATION_NM": "고내리 애월119센터",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 124,
+    "STATION_ID": 405001190
+  },
+  {
+    "ROUTE_DIST": 69531,
+    "STATION_NM": "자운당",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 125,
+    "STATION_ID": 405001189
+  },
+  {
+    "ROUTE_DIST": 70646,
+    "STATION_NM": "신엄리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 126,
+    "STATION_ID": 405001188
+  },
+  {
+    "ROUTE_DIST": 71243,
+    "STATION_NM": "중엄리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 127,
+    "STATION_ID": 405001186
+  },
+  {
+    "ROUTE_DIST": 71504,
+    "STATION_NM": "구엄리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 128,
+    "STATION_ID": 405001184
+  },
+  {
+    "ROUTE_DIST": 71885,
+    "STATION_NM": "모감동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 129,
+    "STATION_ID": 405000022
+  },
+  {
+    "ROUTE_DIST": 73119,
+    "STATION_NM": "번대동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 130,
+    "STATION_ID": 405000025
+  },
+  {
+    "ROUTE_DIST": 73402,
+    "STATION_NM": "하귀리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 131,
+    "STATION_ID": 405000065
+  },
+  {
+    "ROUTE_DIST": 74024,
+    "STATION_NM": "하귀초등학교",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 132,
+    "STATION_ID": 405000027
+  },
+  {
+    "ROUTE_DIST": 74281,
+    "STATION_NM": "하귀우체국",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 133,
+    "STATION_ID": 405000039
+  },
+  {
+    "ROUTE_DIST": 74524,
+    "STATION_NM": "안남동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 134,
+    "STATION_ID": 405000042
+  },
+  {
+    "ROUTE_DIST": 74739,
+    "STATION_NM": "남주동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 135,
+    "STATION_ID": 405000043
+  },
+  {
+    "ROUTE_DIST": 75145,
+    "STATION_NM": "하귀환승정류장(하귀하나로마트)",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 136,
+    "STATION_ID": 405000045
+  },
+  {
+    "ROUTE_DIST": 75491,
+    "STATION_NM": "큰구릉내",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 137,
+    "STATION_ID": 405000649
+  },
+  {
+    "ROUTE_DIST": 75884,
+    "STATION_NM": "관전동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 138,
+    "STATION_ID": 405000016
+  },
+  {
+    "ROUTE_DIST": 76328,
+    "STATION_NM": "연대마을 서쪽입구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 139,
+    "STATION_ID": 405000018
+  },
+  {
+    "ROUTE_DIST": 76904,
+    "STATION_NM": "수정동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 140,
+    "STATION_ID": 405000020
+  },
+  {
+    "ROUTE_DIST": 77342,
+    "STATION_NM": "외도초등학교",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 141,
+    "STATION_ID": 405000028
+  },
+  {
+    "ROUTE_DIST": 77846,
+    "STATION_NM": "내도동 서마을",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 142,
+    "STATION_ID": 405000030
+  },
+  {
+    "ROUTE_DIST": 78226,
+    "STATION_NM": "내도동 동마을",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 143,
+    "STATION_ID": 405000032
+  },
+  {
+    "ROUTE_DIST": 78505,
+    "STATION_NM": "신산마을",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 144,
+    "STATION_ID": 405000035
+  },
+  {
+    "ROUTE_DIST": 78974,
+    "STATION_NM": "현사마을",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 145,
+    "STATION_ID": 405000036
+  },
+  {
+    "ROUTE_DIST": 79551,
+    "STATION_NM": "오광로입구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 146,
+    "STATION_ID": 405000002
+  },
+  {
+    "ROUTE_DIST": 80024,
+    "STATION_NM": "이호2동",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 147,
+    "STATION_ID": 405000004
+  },
+  {
+    "ROUTE_DIST": 80253,
+    "STATION_NM": "대동마을",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 148,
+    "STATION_ID": 405000665
+  },
+  {
+    "ROUTE_DIST": 81034,
+    "STATION_NM": "월랑로 입구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 149,
+    "STATION_ID": 405000100
+  },
+  {
+    "ROUTE_DIST": 81546,
+    "STATION_NM": "제주민속오일장",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 150,
+    "STATION_ID": 405000098
+  },
+  {
+    "ROUTE_DIST": 81795,
+    "STATION_NM": "월랑초등학교",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 151,
+    "STATION_ID": 405000363
+  },
+  {
+    "ROUTE_DIST": 82219,
+    "STATION_NM": "남녕마트",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 152,
+    "STATION_ID": 405000366
+  },
+  {
+    "ROUTE_DIST": 82698,
+    "STATION_NM": "한라병원",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 153,
+    "STATION_ID": 405000368
+  },
+  {
+    "ROUTE_DIST": 83010,
+    "STATION_NM": "연동한일시티파크",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 154,
+    "STATION_ID": 405002363
+  },
+  {
+    "ROUTE_DIST": 83531,
+    "STATION_NM": "신광사거리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 155,
+    "STATION_ID": 405000090
+  },
+  {
+    "ROUTE_DIST": 84037,
+    "STATION_NM": "연동입구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 156,
+    "STATION_ID": 405000617
+  },
+  {
+    "ROUTE_DIST": 84976,
+    "STATION_NM": "제주국제공항입구",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 157,
+    "STATION_ID": 405000646
+  },
+  {
+    "ROUTE_DIST": 85793,
+    "STATION_NM": "월성마을/선사유적지",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 158,
+    "STATION_ID": 405000662
+  },
+  {
+    "ROUTE_DIST": 86111,
+    "STATION_NM": "용문마을회관",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 159,
+    "STATION_ID": 405000310
+  },
+  {
+    "ROUTE_DIST": 86420,
+    "STATION_NM": "용문마을",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 160,
+    "STATION_ID": 405000312
+  },
+  {
+    "ROUTE_DIST": 86594,
+    "STATION_NM": "용문사거리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 161,
+    "STATION_ID": 405000314
+  },
+  {
+    "ROUTE_DIST": 86914,
+    "STATION_NM": "용담1동주민센터",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 162,
+    "STATION_ID": 405000316
+  },
+  {
+    "ROUTE_DIST": 87171,
+    "STATION_NM": "제주중학교/제주향교",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 163,
+    "STATION_ID": 405000318
+  },
+  {
+    "ROUTE_DIST": 87462,
+    "STATION_NM": "서문시장",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 164,
+    "STATION_ID": 405000333
+  },
+  {
+    "ROUTE_DIST": 87643,
+    "STATION_NM": "서문사거리",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 165,
+    "STATION_ID": 405000401
+  },
+  {
+    "ROUTE_DIST": 88083,
+    "STATION_NM": "농협지역본부/제주평생교육장학진흥원",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 166,
+    "STATION_ID": 405000337
+  },
+  {
+    "ROUTE_DIST": 88326,
+    "STATION_NM": "제주중앙여자중학교",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 167,
+    "STATION_ID": 405000338
+  },
+  {
+    "ROUTE_DIST": 88588,
+    "STATION_NM": "삼도1동 주민센터",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 168,
+    "STATION_ID": 405000159
+  },
+  {
+    "ROUTE_DIST": 88760,
+    "STATION_NM": "중앙마을",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 169,
+    "STATION_ID": 405000157
+  },
+  {
+    "ROUTE_DIST": 89631,
+    "STATION_NM": "제주버스터미널(종점)",
+    "ROUTE_ID": 405320220,
+    "ROUTE_NUM": "202",
+    "STATION_ORD": 170,
+    "STATION_ID": 405001893
+  }
+]

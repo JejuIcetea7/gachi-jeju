@@ -1,0 +1,42 @@
+[
+  {
+    "ROUTE_DIST": 0,
+    "STATION_NM": "모슬포 남항 여객선 터미널(운진항)",
+    "ROUTE_ID": 405410230,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 1,
+    "STATION_ID": 406001553
+  },
+  {
+    "ROUTE_DIST": 1171,
+    "STATION_NM": "하모체육공원",
+    "ROUTE_ID": 405410230,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 2,
+    "STATION_ID": 406001222
+  },
+  {
+    "ROUTE_DIST": 1973,
+    "STATION_NM": "대정환승정류장(대정읍사무소)",
+    "ROUTE_ID": 405410230,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 3,
+    "STATION_ID": 406001547
+  },
+  {
+    "ROUTE_DIST": 8899,
+    "STATION_NM": "무릉리 사장동",
+    "ROUTE_ID": 405410230,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 4,
+    "STATION_ID": 406001567
+  },
+  {
+    "ROUTE_DIST": 13695,
+    "STATION_NM": "고산환승정류장(고산1리 고산성당 앞)",
+    "ROUTE_ID": 405410230,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 5,
+    "STATION_ID": 405001277
+  }
+]
