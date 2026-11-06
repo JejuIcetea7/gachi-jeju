@@ -7,3 +7,17 @@ data/raw/**/*.webp
 data/raw/**/*.bmp
 data/raw/**/*.tif
 data/raw/**/*.tiff
+
+# 원본 데이터는 로컬에만 보관 (받는 방법: docs/raw-data.md)
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/*/
+data/raw/*/*
+!data/raw/*/.gitkeep
+!data/raw/data_go_kr/links.csv
+
+# 환경 · 파이썬
+/.env
+.venv/
+__pycache__/
+*.pyc

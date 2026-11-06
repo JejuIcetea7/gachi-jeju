@@ -1,0 +1,418 @@
+[
+  {
+    "ROUTE_DIST": 0,
+    "STATION_NM": "동광환승정류장2(영어교육도시방면)",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 1,
+    "STATION_ID": 406001227
+  },
+  {
+    "ROUTE_DIST": 543,
+    "STATION_NM": "삼밭구석 입구",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 2,
+    "STATION_ID": 406002044
+  },
+  {
+    "ROUTE_DIST": 1865,
+    "STATION_NM": "제주신화월드 입구",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 3,
+    "STATION_ID": 406001927
+  },
+  {
+    "ROUTE_DIST": 2446,
+    "STATION_NM": "신화월드리조트",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 4,
+    "STATION_ID": 406001752
+  },
+  {
+    "ROUTE_DIST": 2878,
+    "STATION_NM": "제주신화월드 테마파크",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 5,
+    "STATION_ID": 406001753
+  },
+  {
+    "ROUTE_DIST": 3586,
+    "STATION_NM": "제주신화월드 소방서",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 6,
+    "STATION_ID": 406001852
+  },
+  {
+    "ROUTE_DIST": 4166,
+    "STATION_NM": "제주항공우주박물관",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 7,
+    "STATION_ID": 406001596
+  },
+  {
+    "ROUTE_DIST": 5075,
+    "STATION_NM": "제주항공우주호텔",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 8,
+    "STATION_ID": 406001920
+  },
+  {
+    "ROUTE_DIST": 5823,
+    "STATION_NM": "제주오설록 티뮤지엄",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 9,
+    "STATION_ID": 406001367
+  },
+  {
+    "ROUTE_DIST": 7649,
+    "STATION_NM": "제주유리의성",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 10,
+    "STATION_ID": 405001792
+  },
+  {
+    "ROUTE_DIST": 8036,
+    "STATION_NM": "명리동",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 11,
+    "STATION_ID": 405001047
+  },
+  {
+    "ROUTE_DIST": 8343,
+    "STATION_NM": "명리동",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 12,
+    "STATION_ID": 405001046
+  },
+  {
+    "ROUTE_DIST": 8867,
+    "STATION_NM": "환상숲곶자왈공원",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 13,
+    "STATION_ID": 405002020
+  },
+  {
+    "ROUTE_DIST": 9399,
+    "STATION_NM": "각시물",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 14,
+    "STATION_ID": 405001948
+  },
+  {
+    "ROUTE_DIST": 9809,
+    "STATION_NM": "생각하는정원",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 15,
+    "STATION_ID": 405001933
+  },
+  {
+    "ROUTE_DIST": 10079,
+    "STATION_NM": "제주서부신협",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 16,
+    "STATION_ID": 405001043
+  },
+  {
+    "ROUTE_DIST": 10415,
+    "STATION_NM": "저지리",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 17,
+    "STATION_ID": 405001042
+  },
+  {
+    "ROUTE_DIST": 10811,
+    "STATION_NM": "저지리사무소",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 18,
+    "STATION_ID": 405001040
+  },
+  {
+    "ROUTE_DIST": 10996,
+    "STATION_NM": "저지리",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 19,
+    "STATION_ID": 405001037
+  },
+  {
+    "ROUTE_DIST": 11064,
+    "STATION_NM": "저지리 중동",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 20,
+    "STATION_ID": 405002418
+  },
+  {
+    "ROUTE_DIST": 11474,
+    "STATION_NM": "서부신협 유통영농조합",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 21,
+    "STATION_ID": 405001841
+  },
+  {
+    "ROUTE_DIST": 11705,
+    "STATION_NM": "저지리알못",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 22,
+    "STATION_ID": 405001492
+  },
+  {
+    "ROUTE_DIST": 12066,
+    "STATION_NM": "방림원",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 23,
+    "STATION_ID": 405001493
+  },
+  {
+    "ROUTE_DIST": 12260,
+    "STATION_NM": "제주현대미술관, 김창열미술관",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 24,
+    "STATION_ID": 405002026
+  },
+  {
+    "ROUTE_DIST": 12491,
+    "STATION_NM": "신흥동",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 25,
+    "STATION_ID": 405001496
+  },
+  {
+    "ROUTE_DIST": 12828,
+    "STATION_NM": "실내영상스튜디오",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 26,
+    "STATION_ID": 405002662
+  },
+  {
+    "ROUTE_DIST": 13128,
+    "STATION_NM": "저지리성전동",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 27,
+    "STATION_ID": 405001035
+  },
+  {
+    "ROUTE_DIST": 13828,
+    "STATION_NM": "월림리",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 28,
+    "STATION_ID": 405001034
+  },
+  {
+    "ROUTE_DIST": 14259,
+    "STATION_NM": "월림삼거리",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 29,
+    "STATION_ID": 405001032
+  },
+  {
+    "ROUTE_DIST": 15257,
+    "STATION_NM": "서부농업기술센터",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 30,
+    "STATION_ID": 405001790
+  },
+  {
+    "ROUTE_DIST": 15907,
+    "STATION_NM": "더마파크",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 31,
+    "STATION_ID": 405001789
+  },
+  {
+    "ROUTE_DIST": 16179,
+    "STATION_NM": "금능농공단지",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 32,
+    "STATION_ID": 405001787
+  },
+  {
+    "ROUTE_DIST": 16748,
+    "STATION_NM": "금능농공단지입구",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 33,
+    "STATION_ID": 405001785
+  },
+  {
+    "ROUTE_DIST": 17672,
+    "STATION_NM": "정월오름",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 34,
+    "STATION_ID": 405002435
+  },
+  {
+    "ROUTE_DIST": 18620,
+    "STATION_NM": "청소년수련원",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 35,
+    "STATION_ID": 405001782
+  },
+  {
+    "ROUTE_DIST": 19874,
+    "STATION_NM": "금능리",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 36,
+    "STATION_ID": 405001256
+  },
+  {
+    "ROUTE_DIST": 20270,
+    "STATION_NM": "금능해수욕장",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 37,
+    "STATION_ID": 405001746
+  },
+  {
+    "ROUTE_DIST": 20685,
+    "STATION_NM": "한림공원",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 38,
+    "STATION_ID": 405001253
+  },
+  {
+    "ROUTE_DIST": 21004,
+    "STATION_NM": "협재해수욕장",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 39,
+    "STATION_ID": 405001251
+  },
+  {
+    "ROUTE_DIST": 21553,
+    "STATION_NM": "협재리",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 40,
+    "STATION_ID": 405001249
+  },
+  {
+    "ROUTE_DIST": 22480,
+    "STATION_NM": "옹포리",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 41,
+    "STATION_ID": 405001235
+  },
+  {
+    "ROUTE_DIST": 22922,
+    "STATION_NM": "옹포사거리",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 42,
+    "STATION_ID": 405001237
+  },
+  {
+    "ROUTE_DIST": 23552,
+    "STATION_NM": "한림여자 중학교",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 43,
+    "STATION_ID": 405001239
+  },
+  {
+    "ROUTE_DIST": 23863,
+    "STATION_NM": "한국통신",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 44,
+    "STATION_ID": 405001241
+  },
+  {
+    "ROUTE_DIST": 24215,
+    "STATION_NM": "한림환승정류장(한림리)",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 45,
+    "STATION_ID": 405001244
+  },
+  {
+    "ROUTE_DIST": 24544,
+    "STATION_NM": "한림천주교회",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 46,
+    "STATION_ID": 405001247
+  },
+  {
+    "ROUTE_DIST": 24701,
+    "STATION_NM": "한림천주교회",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 47,
+    "STATION_ID": 405001812
+  },
+  {
+    "ROUTE_DIST": 25478,
+    "STATION_NM": "한림2리",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 48,
+    "STATION_ID": 405001233
+  },
+  {
+    "ROUTE_DIST": 25897,
+    "STATION_NM": "한림읍사무소",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 49,
+    "STATION_ID": 405002675
+  },
+  {
+    "ROUTE_DIST": 26153,
+    "STATION_NM": "동명리",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 50,
+    "STATION_ID": 405000929
+  },
+  {
+    "ROUTE_DIST": 26451,
+    "STATION_NM": "한림항공우주고등학교",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 51,
+    "STATION_ID": 405002636
+  },
+  {
+    "ROUTE_DIST": 27372,
+    "STATION_NM": "한림체육관 후문",
+    "ROUTE_ID": 405578402,
+    "ROUTE_NUM": "784-1",
+    "STATION_ORD": 52,
+    "STATION_ID": 405002638
+  }
+]

@@ -1,0 +1,34 @@
+table,place_id,name,check,value,source_file
+place_spots,P040,,완전히 같은 지점 행,"33.44824101,126.6611",data/raw/jeju_datahub/hub_40/040-2.csv
+place_spots,P041,장애인 화장실 내부,완전히 같은 지점 행,"33.50621293,126.531932",data/raw/jeju_datahub/hub_41/041-2.csv
+place_spots,P041,출구,완전히 같은 지점 행,"33.50638309,126.5314127",data/raw/jeju_datahub/hub_41/041-2.csv
+place_spots,P041,출구,완전히 같은 지점 행,"33.50638309,126.5314127",data/raw/jeju_datahub/hub_41/041-2.csv
+place_spots,P047,,완전히 같은 지점 행,"33.451619,126.490157",data/raw/jeju_datahub/hub_47/047-2.csv
+place_nearby,P052,블루하와이호텔,주변시설 거리 10km 초과,12200,data/raw/data_go_kr/dgk_15075680/제주특별자치도_무장애여행관광지주변정보-01-낙천의자공원_20201230.csv
+place_nearby,P067,큰여식당,주변시설 거리 10km 초과,513000,data/raw/data_go_kr/dgk_15075712/제주특별자치도_무장애여행관광지주변정보-16-금성비단교산책길_20201230.csv
+place_nearby,P073,블루하와이호텔,주변시설 거리 10km 초과,15000,data/raw/data_go_kr/dgk_15075724/제주특별자치도_무장애여행관광지주변정보-22-신도포구(돌고래소공원)_20201230.csv
+place_nearby,P088,금능석물원,주변시설 거리 10km 초과,10800,data/raw/data_go_kr/dgk_15075750/제주특별자치도_무장애여행관광지주변정보-37-성김대건신부표착기념관_20201230.csv
+place_nearby,P088,제주도립김창열미술관,주변시설 거리 10km 초과,11700,data/raw/data_go_kr/dgk_15075750/제주특별자치도_무장애여행관광지주변정보-37-성김대건신부표착기념관_20201230.csv
+place_nearby,P094,제주리시온관광호텔,주변시설 거리 10km 초과,11000,data/raw/data_go_kr/dgk_15075757/제주특별자치도_무장애여행관광지주변정보-43-보롬왓_20201230.csv
+place_nearby,P096,오라관광제주항공우주호텔,주변시설 거리 10km 초과,10900,data/raw/data_go_kr/dgk_15075763/제주특별자치도_무장애여행관광지주변정보-45-그리스신화박물관_20201230.csv
+place_nearby,P096,더마파크,주변시설 거리 10km 초과,14100,data/raw/data_go_kr/dgk_15075763/제주특별자치도_무장애여행관광지주변정보-45-그리스신화박물관_20201230.csv
+place_nearby,P096,유리의성,주변시설 거리 10km 초과,11800,data/raw/data_go_kr/dgk_15075763/제주특별자치도_무장애여행관광지주변정보-45-그리스신화박물관_20201230.csv
+place_nearby,P097,폴에이리조트,주변시설 거리 10km 초과,13000,data/raw/data_go_kr/dgk_15075765/제주특별자치도_무장애여행관광지주변정보-46-서귀포자연휴양림_20201230.csv
+place_nearby,P097,박물관은살아있다,주변시설 거리 10km 초과,11000,data/raw/data_go_kr/dgk_15075765/제주특별자치도_무장애여행관광지주변정보-46-서귀포자연휴양림_20201230.csv
+place_nearby,P097,카멜리아힐,주변시설 거리 10km 초과,13000,data/raw/data_go_kr/dgk_15075765/제주특별자치도_무장애여행관광지주변정보-46-서귀포자연휴양림_20201230.csv
+place_nearby,P129,비자림,주변시설 거리 10km 초과,16600,data/raw/data_go_kr/dgk_15097390/제주특별자치도_김녕항길과윤씨하르방쉼터_무장애여행주변시설.csv
+place_nearby,P137,누이밥집,주변시설 거리 10km 초과,11000,data/raw/data_go_kr/dgk_15097400/제주특별자치도_무오법정사항일운동발상지_무장애여행주변시설.csv
+place_nearby,P137,대포주상절리,주변시설 거리 10km 초과,11100,data/raw/data_go_kr/dgk_15097400/제주특별자치도_무오법정사항일운동발상지_무장애여행주변시설.csv
+place_nearby,P137,여미지식물원,주변시설 거리 10km 초과,11800,data/raw/data_go_kr/dgk_15097400/제주특별자치도_무오법정사항일운동발상지_무장애여행주변시설.csv
+place_nearby,P141,노리매,주변시설 거리 10km 초과,11400,data/raw/data_go_kr/dgk_15097404/제주특별자치도_산이물공원_무장애여행주변시설.csv
+place_nearby,P142,함덕서우봉해변,주변시설 거리 10km 초과,11800,data/raw/data_go_kr/dgk_15097405/제주특별자치도_삼양환해장성과벌랑포구해안길_무장애여행주변시설.csv
+place_nearby,P154,비자림,주변시설 거리 10km 초과,13300,data/raw/data_go_kr/dgk_15097417/제주특별자치도_월정리진빌레밭담길_무장애여행주변시설.csv
+place_nearby,P158,용수포구,주변시설 거리 10km 초과,10400,data/raw/data_go_kr/dgk_15097421/제주특별자치도_일과리해안도로_무장애여행주변시설.csv
+place_nearby,P158,싱계물공원,주변시설 거리 10km 초과,13600,data/raw/data_go_kr/dgk_15097421/제주특별자치도_일과리해안도로_무장애여행주변시설.csv
+place_nearby,P165,허브동산,주변시설 거리 10km 초과,11100,data/raw/data_go_kr/dgk_15097431/제주특별자치도_태흥2리옥돔마을포구길_무장애여행주변시설.csv
+place_nearby,P165,제주특별자치도 민속촌,주변시설 거리 10km 초과,11300,data/raw/data_go_kr/dgk_15097431/제주특별자치도_태흥2리옥돔마을포구길_무장애여행주변시설.csv
+place_nearby,P168,노리매,주변시설 거리 10km 초과,12900,data/raw/data_go_kr/dgk_15097436/제주특별자치도_하모해수욕장_무장애여행주변시설.csv
+place_nearby,P170,비자림,주변시설 거리 10km 초과,10600,data/raw/data_go_kr/dgk_15097438/제주특별자치도_행원리풍차마을_무장애여행주변시설.csv
+place_nearby,P171,비양도,주변시설 거리 10km 초과,16800,data/raw/data_go_kr/dgk_15097440/제주특별자치도_향기마을용흥리_무장애여행주변시설.csv
+place_nearby,P122,수목원테마파크,주변시설 거리 10km 초과,11500,data/raw/data_go_kr/dgk_15097442/제주특별자치도_가문동해안길_무장애여행주변시설.csv
+place_nearby,P122,한라수목원,주변시설 거리 10km 초과,11800,data/raw/data_go_kr/dgk_15097442/제주특별자치도_가문동해안길_무장애여행주변시설.csv
