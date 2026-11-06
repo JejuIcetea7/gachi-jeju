@@ -1,0 +1,274 @@
+[
+  {
+    "ROUTE_DIST": 0,
+    "STATION_NM": "인화초등학교",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 1,
+    "STATION_ID": 405000288
+  },
+  {
+    "ROUTE_DIST": 322,
+    "STATION_NM": "문예회관",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 2,
+    "STATION_ID": 405000286
+  },
+  {
+    "ROUTE_DIST": 841,
+    "STATION_NM": "동광양",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 3,
+    "STATION_ID": 405000284
+  },
+  {
+    "ROUTE_DIST": 1368,
+    "STATION_NM": "탐라장애인 종합복지관(노형로 방향)",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 4,
+    "STATION_ID": 405002793
+  },
+  {
+    "ROUTE_DIST": 1823,
+    "STATION_NM": "용천마을/남서광마을(노형로 방향)",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 5,
+    "STATION_ID": 405002796
+  },
+  {
+    "ROUTE_DIST": 2212,
+    "STATION_NM": "한국병원(노형로 방향)",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 6,
+    "STATION_ID": 405002798
+  },
+  {
+    "ROUTE_DIST": 2540,
+    "STATION_NM": "제주버스터미널(노형로 방향)",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 7,
+    "STATION_ID": 405002800
+  },
+  {
+    "ROUTE_DIST": 3134,
+    "STATION_NM": "월구마을/동성마을(노형로 방향)",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 8,
+    "STATION_ID": 405002802
+  },
+  {
+    "ROUTE_DIST": 3531,
+    "STATION_NM": "월성마을회관",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 9,
+    "STATION_ID": 405000404
+  },
+  {
+    "ROUTE_DIST": 4918,
+    "STATION_NM": "제주국제공항6(노형,연동)",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 10,
+    "STATION_ID": 405001478
+  },
+  {
+    "ROUTE_DIST": 5906,
+    "STATION_NM": "다호마을",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 11,
+    "STATION_ID": 405000645
+  },
+  {
+    "ROUTE_DIST": 6851,
+    "STATION_NM": "연동입구",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 12,
+    "STATION_ID": 405000654
+  },
+  {
+    "ROUTE_DIST": 7415,
+    "STATION_NM": "제주도청 신제주로터리",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 13,
+    "STATION_ID": 405000331
+  },
+  {
+    "ROUTE_DIST": 7744,
+    "STATION_NM": "연동주민센터",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 14,
+    "STATION_ID": 405000328
+  },
+  {
+    "ROUTE_DIST": 8150,
+    "STATION_NM": "도호동",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 15,
+    "STATION_ID": 405000194
+  },
+  {
+    "ROUTE_DIST": 8385,
+    "STATION_NM": "은남동",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 16,
+    "STATION_ID": 405000192
+  },
+  {
+    "ROUTE_DIST": 8904,
+    "STATION_NM": "메종글래드 제주",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 17,
+    "STATION_ID": 405001636
+  },
+  {
+    "ROUTE_DIST": 9250,
+    "STATION_NM": "원노형",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 18,
+    "STATION_ID": 405001880
+  },
+  {
+    "ROUTE_DIST": 9743,
+    "STATION_NM": "원노형마을",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 19,
+    "STATION_ID": 405000613
+  },
+  {
+    "ROUTE_DIST": 10146,
+    "STATION_NM": "롯데마트",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 20,
+    "STATION_ID": 405000013
+  },
+  {
+    "ROUTE_DIST": 10537,
+    "STATION_NM": "해오름아파트",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 21,
+    "STATION_ID": 405000630
+  },
+  {
+    "ROUTE_DIST": 11038,
+    "STATION_NM": "연동대림1차아파트",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 22,
+    "STATION_ID": 405000496
+  },
+  {
+    "ROUTE_DIST": 11359,
+    "STATION_NM": "대림2차아파트",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 23,
+    "STATION_ID": 405000494
+  },
+  {
+    "ROUTE_DIST": 11523,
+    "STATION_NM": "한라초등학교",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 24,
+    "STATION_ID": 405000493
+  },
+  {
+    "ROUTE_DIST": 11821,
+    "STATION_NM": "한화아파트",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 25,
+    "STATION_ID": 405000491
+  },
+  {
+    "ROUTE_DIST": 12003,
+    "STATION_NM": "으뜸마을",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 26,
+    "STATION_ID": 405000462
+  },
+  {
+    "ROUTE_DIST": 12670,
+    "STATION_NM": "제주고등학교",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 27,
+    "STATION_ID": 405000480
+  },
+  {
+    "ROUTE_DIST": 12929,
+    "STATION_NM": "한라수목원",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 28,
+    "STATION_ID": 405000653
+  },
+  {
+    "ROUTE_DIST": 13679,
+    "STATION_NM": "노형교차로",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 29,
+    "STATION_ID": 405002534
+  },
+  {
+    "ROUTE_DIST": 14247,
+    "STATION_NM": "브릭캠퍼스",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 30,
+    "STATION_ID": 405002235
+  },
+  {
+    "ROUTE_DIST": 14679,
+    "STATION_NM": "제주도립미술관입구",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 31,
+    "STATION_ID": 405001482
+  },
+  {
+    "ROUTE_DIST": 15236,
+    "STATION_NM": "주르레마을",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 32,
+    "STATION_ID": 405000710
+  },
+  {
+    "ROUTE_DIST": 15572,
+    "STATION_NM": "축산생명연구원입구",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 33,
+    "STATION_ID": 405001560
+  },
+  {
+    "ROUTE_DIST": 16347,
+    "STATION_NM": "신비마을(종점)",
+    "ROUTE_ID": 405246508,
+    "ROUTE_NUM": "465",
+    "STATION_ORD": 34,
+    "STATION_ID": 405001802
+  }
+]
