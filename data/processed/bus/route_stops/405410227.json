@@ -1,0 +1,106 @@
+[
+  {
+    "ROUTE_DIST": 0,
+    "STATION_NM": "외도초등학교",
+    "ROUTE_ID": 405410227,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 1,
+    "STATION_ID": 405000029
+  },
+  {
+    "ROUTE_DIST": 2344,
+    "STATION_NM": "하귀환승정류장(하귀하나로마트)",
+    "ROUTE_ID": 405410227,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 2,
+    "STATION_ID": 405000046
+  },
+  {
+    "ROUTE_DIST": 10060,
+    "STATION_NM": "애월고등학교",
+    "ROUTE_ID": 405410227,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 3,
+    "STATION_ID": 405001194
+  },
+  {
+    "ROUTE_DIST": 11564,
+    "STATION_NM": "애월환승정류장(애월리)",
+    "ROUTE_ID": 405410227,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 4,
+    "STATION_ID": 405002077
+  },
+  {
+    "ROUTE_DIST": 20112,
+    "STATION_NM": "한림환승정류장(한림리)",
+    "ROUTE_ID": 405410227,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 5,
+    "STATION_ID": 405001243
+  },
+  {
+    "ROUTE_DIST": 22277,
+    "STATION_NM": "한림고등학교",
+    "ROUTE_ID": 405410227,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 6,
+    "STATION_ID": 405000842
+  },
+  {
+    "ROUTE_DIST": 24435,
+    "STATION_NM": "협재 너븐밭(해수욕장입구)",
+    "ROUTE_ID": 405410227,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 7,
+    "STATION_ID": 405002838
+  },
+  {
+    "ROUTE_DIST": 31711,
+    "STATION_NM": "신창환승정류장(한경면사무소)",
+    "ROUTE_ID": 405410227,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 8,
+    "STATION_ID": 405000989
+  },
+  {
+    "ROUTE_DIST": 37592,
+    "STATION_NM": "고산환승정류장(고산1리)",
+    "ROUTE_ID": 405410227,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 9,
+    "STATION_ID": 405000892
+  },
+  {
+    "ROUTE_DIST": 42462,
+    "STATION_NM": "무릉리 사장동",
+    "ROUTE_ID": 405410227,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 10,
+    "STATION_ID": 406001568
+  },
+  {
+    "ROUTE_DIST": 49344,
+    "STATION_NM": "대정읍사무소",
+    "ROUTE_ID": 405410227,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 11,
+    "STATION_ID": 406000913
+  },
+  {
+    "ROUTE_DIST": 50254,
+    "STATION_NM": "하모체육공원",
+    "ROUTE_ID": 405410227,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 12,
+    "STATION_ID": 406001220
+  },
+  {
+    "ROUTE_DIST": 51337,
+    "STATION_NM": "모슬포 남항 여객선 터미널(운진항)",
+    "ROUTE_ID": 405410227,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 13,
+    "STATION_ID": 406001554
+  }
+]
