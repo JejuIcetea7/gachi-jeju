@@ -1,0 +1,122 @@
+[
+  {
+    "ROUTE_DIST": 0,
+    "STATION_NM": "모슬포 남항 여객선 터미널(운진항)",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 1,
+    "STATION_ID": 406001553
+  },
+  {
+    "ROUTE_DIST": 1171,
+    "STATION_NM": "하모체육공원",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 2,
+    "STATION_ID": 406001222
+  },
+  {
+    "ROUTE_DIST": 1973,
+    "STATION_NM": "대정환승정류장(대정읍사무소)",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 3,
+    "STATION_ID": 406001547
+  },
+  {
+    "ROUTE_DIST": 8899,
+    "STATION_NM": "무릉리 사장동",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 4,
+    "STATION_ID": 406001567
+  },
+  {
+    "ROUTE_DIST": 13695,
+    "STATION_NM": "고산환승정류장(고산1리 고산성당 앞)",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 5,
+    "STATION_ID": 405001277
+  },
+  {
+    "ROUTE_DIST": 19469,
+    "STATION_NM": "신창환승정류장(한경면사무소)",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 6,
+    "STATION_ID": 405001268
+  },
+  {
+    "ROUTE_DIST": 26798,
+    "STATION_NM": "협재 너븐밭(해수욕장입구)",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 7,
+    "STATION_ID": 405002839
+  },
+  {
+    "ROUTE_DIST": 28934,
+    "STATION_NM": "한림고등학교",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 8,
+    "STATION_ID": 405000843
+  },
+  {
+    "ROUTE_DIST": 31194,
+    "STATION_NM": "한림환승정류장(한림리)",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 9,
+    "STATION_ID": 405001244
+  },
+  {
+    "ROUTE_DIST": 39733,
+    "STATION_NM": "애월환승정류장(애월리)",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 10,
+    "STATION_ID": 405001201
+  },
+  {
+    "ROUTE_DIST": 41133,
+    "STATION_NM": "애월고등학교",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 11,
+    "STATION_ID": 405001195
+  },
+  {
+    "ROUTE_DIST": 47804,
+    "STATION_NM": "하귀초등학교",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 12,
+    "STATION_ID": 405000027
+  },
+  {
+    "ROUTE_DIST": 51121,
+    "STATION_NM": "외도초등학교",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 13,
+    "STATION_ID": 405000028
+  },
+  {
+    "ROUTE_DIST": 55325,
+    "STATION_NM": "제주민속오일장",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 14,
+    "STATION_ID": 405000098
+  },
+  {
+    "ROUTE_DIST": 59089,
+    "STATION_NM": "제주버스터미널(종점)",
+    "ROUTE_ID": 405410228,
+    "ROUTE_NUM": "102",
+    "STATION_ORD": 15,
+    "STATION_ID": 405001894
+  }
+]

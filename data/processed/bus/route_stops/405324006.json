@@ -1,0 +1,338 @@
+[
+  {
+    "ROUTE_DIST": 0,
+    "STATION_NM": "제주국제컨벤션센터  중문대포해안주상절리대",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 1,
+    "STATION_ID": 406000028
+  },
+  {
+    "ROUTE_DIST": 703,
+    "STATION_NM": "구멍물",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 2,
+    "STATION_ID": 406001907
+  },
+  {
+    "ROUTE_DIST": 1219,
+    "STATION_NM": "1100도로입구",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 3,
+    "STATION_ID": 406000021
+  },
+  {
+    "ROUTE_DIST": 1479,
+    "STATION_NM": "중문동주민센터",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 4,
+    "STATION_ID": 406001751
+  },
+  {
+    "ROUTE_DIST": 1921,
+    "STATION_NM": "볼목당",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 5,
+    "STATION_ID": 406000019
+  },
+  {
+    "ROUTE_DIST": 2676,
+    "STATION_NM": "회수삼거리",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 6,
+    "STATION_ID": 406000018
+  },
+  {
+    "ROUTE_DIST": 2871,
+    "STATION_NM": "회수사거리, 연화빌",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 7,
+    "STATION_ID": 406001841
+  },
+  {
+    "ROUTE_DIST": 3054,
+    "STATION_NM": "회수동",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 8,
+    "STATION_ID": 406001555
+  },
+  {
+    "ROUTE_DIST": 3537,
+    "STATION_NM": "망원대",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 9,
+    "STATION_ID": 406002056
+  },
+  {
+    "ROUTE_DIST": 5684,
+    "STATION_NM": "위호텔",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 10,
+    "STATION_ID": 406001100
+  },
+  {
+    "ROUTE_DIST": 6207,
+    "STATION_NM": "서귀포천문 과학문화관",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 11,
+    "STATION_ID": 406001103
+  },
+  {
+    "ROUTE_DIST": 8578,
+    "STATION_NM": "법정사입구",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 12,
+    "STATION_ID": 406001104
+  },
+  {
+    "ROUTE_DIST": 9406,
+    "STATION_NM": "거린사슴전망대",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 13,
+    "STATION_ID": 406000748
+  },
+  {
+    "ROUTE_DIST": 9999,
+    "STATION_NM": "서귀포자연휴양림",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 14,
+    "STATION_ID": 406001106
+  },
+  {
+    "ROUTE_DIST": 13224,
+    "STATION_NM": "영실입구",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 15,
+    "STATION_ID": 406001099
+  },
+  {
+    "ROUTE_DIST": 15657,
+    "STATION_NM": "한라산국립공원 영실지소",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 16,
+    "STATION_ID": 406001107
+  },
+  {
+    "ROUTE_DIST": 18072,
+    "STATION_NM": "영실입구",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 17,
+    "STATION_ID": 406001108
+  },
+  {
+    "ROUTE_DIST": 18657,
+    "STATION_NM": "1100 둘레길 입구",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 18,
+    "STATION_ID": 406002174
+  },
+  {
+    "ROUTE_DIST": 21639,
+    "STATION_NM": "1100고지휴게소",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 19,
+    "STATION_ID": 406001109
+  },
+  {
+    "ROUTE_DIST": 26985,
+    "STATION_NM": "어리목",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 20,
+    "STATION_ID": 405001365
+  },
+  {
+    "ROUTE_DIST": 29899,
+    "STATION_NM": "한라산둘레길(천아숲길입구)",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 21,
+    "STATION_ID": 405001364
+  },
+  {
+    "ROUTE_DIST": 32323,
+    "STATION_NM": "제주호국원",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 22,
+    "STATION_ID": 405002572
+  },
+  {
+    "ROUTE_DIST": 33020,
+    "STATION_NM": "제주호국원 입구",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 23,
+    "STATION_ID": 405001363
+  },
+  {
+    "ROUTE_DIST": 33158,
+    "STATION_NM": "제주시 공동묘지관리소",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 24,
+    "STATION_ID": 405002301
+  },
+  {
+    "ROUTE_DIST": 33476,
+    "STATION_NM": "노루생이 삼거리",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 25,
+    "STATION_ID": 405002299
+  },
+  {
+    "ROUTE_DIST": 36544,
+    "STATION_NM": "축산생명연구원입구",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 26,
+    "STATION_ID": 405001559
+  },
+  {
+    "ROUTE_DIST": 36951,
+    "STATION_NM": "주르레마을",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 27,
+    "STATION_ID": 405000709
+  },
+  {
+    "ROUTE_DIST": 37432,
+    "STATION_NM": "제주도립미술관입구",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 28,
+    "STATION_ID": 405001483
+  },
+  {
+    "ROUTE_DIST": 38372,
+    "STATION_NM": "노형교차로",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 29,
+    "STATION_ID": 405002533
+  },
+  {
+    "ROUTE_DIST": 39158,
+    "STATION_NM": "한라수목원",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 30,
+    "STATION_ID": 405000518
+  },
+  {
+    "ROUTE_DIST": 39667,
+    "STATION_NM": "제주고등학교",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 31,
+    "STATION_ID": 405000481
+  },
+  {
+    "ROUTE_DIST": 39960,
+    "STATION_NM": "부영아파트",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 32,
+    "STATION_ID": 405000461
+  },
+  {
+    "ROUTE_DIST": 40330,
+    "STATION_NM": "제주제일고등학교",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 33,
+    "STATION_ID": 405000517
+  },
+  {
+    "ROUTE_DIST": 40720,
+    "STATION_NM": "원노형마을",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 34,
+    "STATION_ID": 405000618
+  },
+  {
+    "ROUTE_DIST": 40904,
+    "STATION_NM": "노형오거리/이마트",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 35,
+    "STATION_ID": 405000012
+  },
+  {
+    "ROUTE_DIST": 41426,
+    "STATION_NM": "남녕고등학교",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 36,
+    "STATION_ID": 405000372
+  },
+  {
+    "ROUTE_DIST": 41748,
+    "STATION_NM": "한라병원",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 37,
+    "STATION_ID": 405000368
+  },
+  {
+    "ROUTE_DIST": 42060,
+    "STATION_NM": "연동한일시티파크",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 38,
+    "STATION_ID": 405002363
+  },
+  {
+    "ROUTE_DIST": 42743,
+    "STATION_NM": "명주주택",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 39,
+    "STATION_ID": 405000180
+  },
+  {
+    "ROUTE_DIST": 44111,
+    "STATION_NM": "월구마을",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 40,
+    "STATION_ID": 405000176
+  },
+  {
+    "ROUTE_DIST": 44486,
+    "STATION_NM": "동성마을",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 41,
+    "STATION_ID": 405000174
+  },
+  {
+    "ROUTE_DIST": 44897,
+    "STATION_NM": "제주버스터미널(종점)",
+    "ROUTE_ID": 405324006,
+    "ROUTE_NUM": "240",
+    "STATION_ORD": 42,
+    "STATION_ID": 405001894
+  }
+]

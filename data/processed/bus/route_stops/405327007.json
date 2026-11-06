@@ -1,0 +1,234 @@
+[
+  {
+    "ROUTE_DIST": 0,
+    "STATION_NM": "제주대학교",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 1,
+    "STATION_ID": 405000208
+  },
+  {
+    "ROUTE_DIST": 442,
+    "STATION_NM": "제대아파트",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 2,
+    "STATION_ID": 405000210
+  },
+  {
+    "ROUTE_DIST": 755,
+    "STATION_NM": "제대마을",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 3,
+    "STATION_ID": 405000212
+  },
+  {
+    "ROUTE_DIST": 1256,
+    "STATION_NM": "제주대학교입구",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 4,
+    "STATION_ID": 405000725
+  },
+  {
+    "ROUTE_DIST": 1814,
+    "STATION_NM": "남국사",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 5,
+    "STATION_ID": 405000117
+  },
+  {
+    "ROUTE_DIST": 2071,
+    "STATION_NM": "웃 인다 마을",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 6,
+    "STATION_ID": 405000119
+  },
+  {
+    "ROUTE_DIST": 2648,
+    "STATION_NM": "제주대학교병원",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 7,
+    "STATION_ID": 405000123
+  },
+  {
+    "ROUTE_DIST": 2899,
+    "STATION_NM": "인다마을",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 8,
+    "STATION_ID": 405000125
+  },
+  {
+    "ROUTE_DIST": 3175,
+    "STATION_NM": "아라주공아파트/아라스위첸아파트",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 9,
+    "STATION_ID": 405000127
+  },
+  {
+    "ROUTE_DIST": 3486,
+    "STATION_NM": "아라동주민센터",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 10,
+    "STATION_ID": 405000135
+  },
+  {
+    "ROUTE_DIST": 3911,
+    "STATION_NM": "남국원(광양방면)",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 11,
+    "STATION_ID": 405002046
+  },
+  {
+    "ROUTE_DIST": 4677,
+    "STATION_NM": "제주여자중고등학교/제주지방해양경찰청",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 12,
+    "STATION_ID": 405001644
+  },
+  {
+    "ROUTE_DIST": 5094,
+    "STATION_NM": "구산마을",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 13,
+    "STATION_ID": 405001563
+  },
+  {
+    "ROUTE_DIST": 5418,
+    "STATION_NM": "구산마을입구",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 14,
+    "STATION_ID": 405001642
+  },
+  {
+    "ROUTE_DIST": 6061,
+    "STATION_NM": "오등동입구",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 15,
+    "STATION_ID": 405001671
+  },
+  {
+    "ROUTE_DIST": 6721,
+    "STATION_NM": "부민장례식장",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 16,
+    "STATION_ID": 405001627
+  },
+  {
+    "ROUTE_DIST": 7411,
+    "STATION_NM": "한라도서관입구/제주문학관",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 17,
+    "STATION_ID": 405001670
+  },
+  {
+    "ROUTE_DIST": 7752,
+    "STATION_NM": "사평마을입구",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 18,
+    "STATION_ID": 405000692
+  },
+  {
+    "ROUTE_DIST": 8052,
+    "STATION_NM": "연미뭘왓/제주복십자의원 입구",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 19,
+    "STATION_ID": 405001985
+  },
+  {
+    "ROUTE_DIST": 8756,
+    "STATION_NM": "민오름, 제주꿈바당어린이도서관",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 20,
+    "STATION_ID": 405000694
+  },
+  {
+    "ROUTE_DIST": 9514,
+    "STATION_NM": "연동365의원/한국건강관리협회",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 21,
+    "STATION_ID": 405001637
+  },
+  {
+    "ROUTE_DIST": 9927,
+    "STATION_NM": "연동대림1차아파트",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 22,
+    "STATION_ID": 405000496
+  },
+  {
+    "ROUTE_DIST": 10248,
+    "STATION_NM": "대림2차아파트",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 23,
+    "STATION_ID": 405000494
+  },
+  {
+    "ROUTE_DIST": 10412,
+    "STATION_NM": "한라초등학교",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 24,
+    "STATION_ID": 405000493
+  },
+  {
+    "ROUTE_DIST": 10710,
+    "STATION_NM": "한화아파트",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 25,
+    "STATION_ID": 405000491
+  },
+  {
+    "ROUTE_DIST": 10892,
+    "STATION_NM": "으뜸마을",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 26,
+    "STATION_ID": 405000462
+  },
+  {
+    "ROUTE_DIST": 11202,
+    "STATION_NM": "중흥S클래스아파트",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 27,
+    "STATION_ID": 405000460
+  },
+  {
+    "ROUTE_DIST": 11423,
+    "STATION_NM": "시티주유소",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 28,
+    "STATION_ID": 405000458
+  },
+  {
+    "ROUTE_DIST": 11939,
+    "STATION_NM": "제주한라대학교",
+    "ROUTE_ID": 405327007,
+    "ROUTE_NUM": "270",
+    "STATION_ORD": 29,
+    "STATION_ID": 405000455
+  }
+]
