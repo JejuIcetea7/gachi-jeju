@@ -33,7 +33,7 @@ Python 3.12와 프로젝트용 가상환경을 사용합니다.
 프로젝트 루트에서 의존성을 설치합니다.
 
 ```cmd
-python -m pip install -r backend\requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 프로젝트 루트의 `.env`에 다음 환경변수를 설정합니다.
