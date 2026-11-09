@@ -1,0 +1,28 @@
+{
+  "documents": [
+    {
+      "address_name": "제주특별자치도 제주시 용담이동 2002",
+      "category_group_code": "",
+      "category_group_name": "",
+      "category_name": "교통,수송 > 교통시설 > 공항",
+      "distance": "",
+      "id": "10808261",
+      "phone": "1661-2626",
+      "place_name": "제주국제공항",
+      "place_url": "http://place.map.kakao.com/10808261",
+      "road_address_name": "제주특별자치도 제주시 공항로 2",
+      "x": "126.49272304493574",
+      "y": "33.50683984835887"
+    }
+  ],
+  "meta": {
+    "is_end": false,
+    "pageable_count": 45,
+    "same_name": {
+      "keyword": "제주국제공항",
+      "region": [],
+      "selected_region": ""
+    },
+    "total_count": 350
+  }
+}
