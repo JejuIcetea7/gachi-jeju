@@ -82,6 +82,7 @@ function App() {
   const [returnToOrigin, setReturnToOrigin] = useState(false)
   const [summaryData, setSummaryData] = useState(null)
   const [hasAttemptedReview, setHasAttemptedReview] = useState(false)
+  const [chatMessages, setChatMessages] = useState([])
 
   const selectedTheme = TRAVEL_THEMES.find(
     (theme) => theme.id === selectedThemeId,
@@ -125,6 +126,26 @@ function App() {
         originPlace: place,
       }
     })
+  }
+
+  function handleChatSend(content) {
+    const requestText = content.trim()
+
+    if (!requestText || !summaryData) {
+      return
+    }
+
+    const nextMessage = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: requestText,
+      conditions: summaryData,
+    }
+
+    setChatMessages((previousMessages) => [
+      ...previousMessages,
+      nextMessage,
+    ])
   }
 
   const hasInvalidTime = Boolean(
@@ -517,6 +538,8 @@ function App() {
           <TripSummary
             summary={summaryData}
             onOriginConfirm={handleOriginConfirm}
+            chatMessages={chatMessages}
+            onChatSend={handleChatSend}
             onEdit={() => {
               setHasAttemptedReview(false)
               setCurrentStep('conditions')
