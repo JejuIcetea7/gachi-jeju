@@ -69,6 +69,9 @@ def get_bus_trip(
     if result["status"] != "ok":
         return result
 
+    return _build_bus_trip(result)
+
+def _build_bus_trip(result: dict) -> dict:
     try:
         catalog, stops_by_route = load_bus_data()
     except (OSError, ValueError):
@@ -155,3 +158,88 @@ def _attach_realtime(result: dict) -> dict:
                 info["realtime_status"] = "ok"
 
     return result
+def _select_best_route(routes: list[dict]) -> dict:
+    """환승 횟수가 가장 적은 경로를 고르고, 같으면 소요시간이 짧은 경로를 고릅니다."""
+    best_route = routes[0]
+    for route in routes[1:]:
+        route_transfers = route["transfers"] or 0
+        best_transfers = best_route["transfers"] or 0
+        if route_transfers < best_transfers:
+            best_route = route
+            continue
+
+        same_transfers = route_transfers == best_transfers
+        route_duration = route["duration_seconds"] or 0
+        best_duration = best_route["duration_seconds"] or 0
+        if same_transfers and route_duration < best_duration:
+            best_route = route
+
+    return best_route
+
+def _summarize_segment(segment: dict) -> dict:
+    summary = {
+        "type": segment["type"],
+        "distance_m": segment["distance_m"],
+        "duration_seconds": segment["duration_seconds"],
+    }
+    if segment["type"] != "BUS":
+        return summary
+
+    stop_names = segment.get("stop_names") or []
+    info = segment.get("bus_info") or {}
+
+    arriving_buses = []
+    for vehicle in info.get("vehicles") or []:
+        arriving_bus = {
+            "route_number": vehicle["route_number"],
+            "low_floor": vehicle["low_floor"],
+            "arrival_minutes": vehicle["arrival_minutes"],
+            "remaining_stops": vehicle["remaining_stops"],
+        }
+        arriving_buses.append(arriving_bus)
+
+    summary["route_numbers"] = segment.get("route_numbers")
+    summary["boarding_stop"] = segment.get("boarding_stop")
+    summary["alighting_stop"] = segment.get("alighting_stop")
+    summary["stop_count"] = len(stop_names)
+    summary["realtime_status"] = info.get("realtime_status", "not_requested")
+    summary["arriving_buses"] = arriving_buses
+    return summary
+
+def get_bus_route_summary(
+    *,
+    origin_latitude: float,
+    origin_longitude: float,
+    destination_latitude: float,
+    destination_longitude: float,
+) -> dict:
+    """두 지점 사이의 버스 경로 1개(환승이 가장 적고, 같으면 빠른 경로)를 돌려줍니다.
+    구간별 버스 번호, 탑승·하차 정류장, 소요시간(초)과 실시간 도착 예정 버스(저상버스 여부, 남은 분)를 포함합니다."""
+    result = get_transit_routes(
+        origin_latitude=origin_latitude,
+        origin_longitude=origin_longitude,
+        destination_latitude=destination_latitude,
+        destination_longitude=destination_longitude,
+        api_key=get_kakao_api_key(),
+    )
+    if result["status"] != "ok":
+        return result
+
+    best_route = _select_best_route(result["routes"])
+    result["routes"] = [best_route]
+    trip = _build_bus_trip(result)
+    route = trip["routes"][0]
+
+    segments = []
+    for segment in route["segments"]:
+        segment_summary = _summarize_segment(segment)
+        segments.append(segment_summary)
+
+    return {
+        "status": trip["status"],
+        "duration_seconds": route["duration_seconds"],
+        "distance_m": route["distance_m"],
+        "transfers": route["transfers"],
+        "fare_krw": route["fare_krw"],
+        "segments": segments,
+    }

@@ -125,3 +125,40 @@ class BusToolTests(unittest.TestCase):
         self.assertEqual(result, expected)
         self.arrivals.assert_not_called()
         self.positions.assert_not_called()
+    def test_summary_keeps_only_needed_fields(self):
+        result = bus_tool.get_bus_route_summary(**ROUTE_INPUT)
+
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["duration_seconds"], 5389)
+        self.assertEqual(result["transfers"], 2)
+        last_segment = result["segments"][-1]
+        self.assertEqual(last_segment["type"], "BUS")
+        self.assertNotIn("bus_info", last_segment)
+        self.assertNotIn("stop_names", last_segment)
+        self.assertEqual(last_segment["arriving_buses"], [{
+            "route_number": "202",
+            "low_floor": True,
+            "arrival_minutes": 5,
+            "remaining_stops": None,
+        }])
+
+    def test_summary_no_route_skips_bus_requests(self):
+        expected = {"status": "no_route", "reason": "NO_RESULTS"}
+        self.transit.return_value = expected
+
+        result = bus_tool.get_bus_route_summary(**ROUTE_INPUT)
+
+        self.assertEqual(result, expected)
+        self.arrivals.assert_not_called()
+
+class SelectBestRouteTests(unittest.TestCase):
+    def test_fewest_transfers_then_shortest_duration(self):
+        routes = [
+            {"name": "A", "transfers": 2, "duration_seconds": 3000},
+            {"name": "B", "transfers": 1, "duration_seconds": 5000},
+            {"name": "C", "transfers": 1, "duration_seconds": 4000},
+        ]
+
+        best_route = bus_tool._select_best_route(routes)
+
+        self.assertEqual(best_route["name"], "C")
