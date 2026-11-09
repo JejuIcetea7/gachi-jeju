@@ -31,7 +31,7 @@
 | 구분 | 기술 | 목적 |
 | --- | --- | --- |
 | 버전 관리 | git, github | 소스코드 버전 관리 및 협업 |
-| LLM | Gemini 3.8 Flash (1순위) | 사용자 의도 파악, 여행 일정 생성 및 수정 |
+| LLM | OpenAI GPT-6 Luna (`gpt-6-luna`, Responses API, 생각 강도 low) | 사용자 의도 파악, 여행 일정 생성 및 수정 |
 | Agent 프레임워크 | LangGraph | Agent 작업 흐름 및 상태 관리 |
 | LLM 연동 | LangChain (선택) | LLM 및 외부 도구 연동 |
 | 데이터베이스 | SQLite | 무장애 관광지 데이터 저장 및 검색 |
