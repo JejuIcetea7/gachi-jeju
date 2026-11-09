@@ -1,6 +1,13 @@
 import OriginMap from './OriginMap.jsx'
+import TravelChat from './TravelChat.jsx'
 
-function TripSummary({ summary, onEdit, onOriginConfirm }) {
+function TripSummary({
+  summary,
+  onEdit,
+  onOriginConfirm,
+  chatMessages,
+  onChatSend,
+}) {
   if (!summary) {
     return null
   }
@@ -80,6 +87,12 @@ function TripSummary({ summary, onEdit, onOriginConfirm }) {
           </div>
         ))}
       </dl>
+
+      <TravelChat
+        messages={chatMessages}
+        onSend={onChatSend}
+      />
+
       <OriginMap
         initialKeyword={summary.originName}
         confirmedPlace={summary.originPlace}
