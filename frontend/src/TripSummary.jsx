@@ -1,10 +1,9 @@
-import OriginMap from './OriginMap.jsx'
 import TravelChat from './TravelChat.jsx'
 
 function TripSummary({
   summary,
   onEdit,
-  onOriginConfirm,
+  onEditOrigin,
   chatMessages,
   onChatSend,
 }) {
@@ -79,6 +78,14 @@ function TripSummary({
         </p>
       </div>
 
+      <button
+        type="button"
+        className="back-button"
+        onClick={onEditOrigin}
+      >
+        출발지 변경
+      </button>
+
       <dl className="summary-list">
         {summaryItems.map((item) => (
           <div key={item.label}>
@@ -91,12 +98,6 @@ function TripSummary({
       <TravelChat
         messages={chatMessages}
         onSend={onChatSend}
-      />
-
-      <OriginMap
-        initialKeyword={summary.originName}
-        confirmedPlace={summary.originPlace}
-        onConfirm={onOriginConfirm}
       />
     </section>
   )
