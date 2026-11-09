@@ -584,3 +584,55 @@
     width: 100%;
   }
 }
+
+.origin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.origin-picker .origin-map-panel {
+  margin-top: 16px;
+}
+
+.origin-map-layout.is-map-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.origin-results:empty {
+  display: none;
+}
+
+.origin-results {
+  max-height: 280px;
+  padding: 8px;
+  overflow-y: auto;
+}
+
+.origin-map-canvas {
+  height: 280px;
+}
+
+.theme-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.theme-card:disabled:hover {
+  border-color: #d9e4da;
+}
+
+@media (max-width: 640px) {
+  .origin-actions {
+    flex-direction: column;
+  }
+
+  .origin-actions .map-search-button {
+    width: 100%;
+  }
+
+  .origin-map-canvas {
+    height: 260px;
+  }
+}
