@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import TripSummary from './TripSummary.jsx'
 import './App.css'
 import { loadTravelSession, saveTravelSession } from './services/travelSession.js'
+import OriginPicker from './OriginPicker.jsx'
 
 const DEFAULT_ORIGIN = '제주빅데이터센터'
 
@@ -72,7 +73,7 @@ const ACCESS_REQUIREMENTS = [
 function App() {
   const [savedState] = useState(loadTravelSession)
   const [currentStep, setCurrentStep] = useState(
-    savedState?.currentStep ?? 'theme',
+    savedState?.originPlace ? savedState.currentStep : 'theme',
   )
   const [originName, setOriginName] = useState(
     savedState?.originName ?? DEFAULT_ORIGIN,
@@ -148,10 +149,8 @@ function App() {
     (theme) => theme.id === selectedThemeId,
   )
 
-  function handleThemeSelect(event, themeId) {
-    const form = event.currentTarget.form
-
-    if (!form.reportValidity() || !originName.trim()) {
+  function handleThemeSelect(themeId) {
+    if (!originPlace) {
       return
     }
 
@@ -217,8 +216,8 @@ function App() {
   )
 
   function getConditionsError() {
-    if (!originName.trim()) {
-      return '출발지를 입력해 주세요.'
+    if (!originName.trim() || !originPlace) {
+      return '첫 화면에서 출발지를 선택해 주세요.'
     }
 
     if (!selectedTheme || !selectedTransport) {
@@ -293,73 +292,51 @@ function App() {
             <div className="page-heading">
               <p className="eyebrow">함께 계획하는 제주 나들이</p>
               <h1 id="welcome-title">
-                제주빅데이터센터에서
+                어디에서
                 <br />
-                시작하는 제주 여행
+                제주 여행을 시작할까요?
               </h1>
-              <p>
-                원하는 여행을 선택하면 이동 조건에 맞춰
-                함께 일정을 계획합니다.
-              </p>
+              <p>출발지를 선택한 뒤 원하는 여행을 골라 주세요.</p>
             </div>
 
-            <form
-              onSubmit={(event) => {
-                event.preventDefault()
-              }}
-            >
-              <div className="origin-field">
-                <label htmlFor="origin-name">출발지</label>
-                <input
-                  id="origin-name"
-                  type="text"
-                  value={originName}
-                  onChange={(event) => {
-                    const nextOrigin = event.target.value
+            <OriginPicker
+              initialKeyword={originName}
+              confirmedPlace={originPlace}
+              onConfirm={handleOriginConfirm}
+            />
 
-                    event.target.setCustomValidity(
-                      nextOrigin.trim()
-                        ? ''
-                        : '출발지를 입력해 주세요.',
-                    )
+            {!originPlace && (
+              <p className="map-status" role="status">
+                출발지를 검색한 뒤 출발지 사용 버튼을 눌러 주세요.
+              </p>
+            )}
 
-                    setOriginName(nextOrigin)
-                    setOriginPlace(null)
-                  }}
-                  placeholder="출발할 장소 이름을 입력하세요"
-                  maxLength={100}
-                  required
-                />
-              </div>
+            <fieldset className="choice-fieldset">
+              <legend>어떤 제주를 만나고 싶으신가요?</legend>
 
-              <fieldset className="choice-fieldset">
-                <legend>어떤 제주를 만나고 싶으신가요?</legend>
-
-                <div className="theme-grid">
-                  {TRAVEL_THEMES.map((theme) => (
-                    <button
-                      key={theme.id}
-                      type="button"
-                      className={
-                        selectedThemeId === theme.id
-                          ? 'theme-card is-selected'
-                          : 'theme-card'
-                      }
-                      onClick={(event) => {
-                        handleThemeSelect(event, theme.id)
-                      }}
-                    >
-                      <span>
-                        <strong>{theme.name}</strong>
-                        <span className="theme-description">
-                          {theme.description}
-                        </span>
+              <div className="theme-grid">
+                {TRAVEL_THEMES.map((theme) => (
+                  <button
+                    key={theme.id}
+                    type="button"
+                    className={
+                      selectedThemeId === theme.id
+                        ? 'theme-card is-selected'
+                        : 'theme-card'
+                    }
+                    disabled={!originPlace}
+                    onClick={() => handleThemeSelect(theme.id)}
+                  >
+                    <span>
+                      <strong>{theme.name}</strong>
+                      <span className="theme-description">
+                        {theme.description}
                       </span>
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-            </form>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
           </section>
         ) : currentStep === 'conditions' ? (
           <section aria-labelledby="conditions-title">
@@ -597,7 +574,10 @@ function App() {
         ) : (
           <TripSummary
             summary={summaryData}
-            onOriginConfirm={handleOriginConfirm}
+            onEditOrigin={() => {
+              setHasAttemptedReview(false)
+              setCurrentStep('theme')
+            }}
             chatMessages={chatMessages}
             onChatSend={handleChatSend}
             onEdit={() => {

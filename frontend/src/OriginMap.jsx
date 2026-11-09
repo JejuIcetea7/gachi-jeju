@@ -34,8 +34,13 @@ function searchPlaces(maps, keyword) {
   })
 }
 
-function OriginMap({ initialKeyword, confirmedPlace, onConfirm }) {
-  const [keyword, setKeyword] = useState(initialKeyword)
+function OriginMap({
+  keyword,
+  onKeywordChange,
+  confirmedPlace,
+  onConfirm,
+  disabled = false,
+}) {
   const [places, setPlaces] = useState([])
   const [selectedPlace, setSelectedPlace] = useState(null)
   const [isSearching, setIsSearching] = useState(false)
@@ -62,10 +67,79 @@ function OriginMap({ initialKeyword, confirmedPlace, onConfirm }) {
     }
   }, [])
 
+  useEffect(() => {
+    if (!confirmedPlace) {
+      return
+    }
+
+    const requestId = ++requestIdRef.current
+    markerRef.current?.setMap(null)
+    markerRef.current = null
+
+    async function restorePlace() {
+      try {
+        const maps = await loadKakaoMaps()
+        if (requestId !== requestIdRef.current || !containerRef.current) return
+        mapsRef.current = maps
+        const position = new maps.LatLng(
+          confirmedPlace.latitude,
+          confirmedPlace.longitude,
+        )
+
+        if (!mapRef.current) {
+          mapRef.current = new maps.Map(containerRef.current, {
+            center: position,
+            level: 3,
+            scrollwheel: false,
+            keyboardShortcuts: true,
+          })
+          mapRef.current.addControl(
+            new maps.ZoomControl(),
+            maps.ControlPosition.TOPRIGHT,
+          )
+        } else {
+          mapRef.current.setCenter(position)
+          mapRef.current.setLevel(3)
+        }
+
+        markerRef.current = new maps.Marker({
+          map: mapRef.current,
+          position,
+          title: confirmedPlace.name,
+        })
+        setSelectedPlace(confirmedPlace)
+        setPlaces([])
+        setMessage('선택한 출발지를 지도에 표시했습니다.')
+      } catch (error) {
+        if (requestId === requestIdRef.current) {
+          setSelectedPlace(null)
+          setMessage(error.message)
+        }
+      } finally {
+        if (requestId === requestIdRef.current) setIsSearching(false)
+      }
+    }
+
+    restorePlace()
+    return () => {
+      if (requestId === requestIdRef.current) {
+        requestIdRef.current += 1
+      }
+    }
+  }, [confirmedPlace])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    const center = map.getCenter()
+    map.relayout()
+    map.setCenter(center)
+  }, [places.length])
+
   async function handleSearch(event) {
     event.preventDefault()
 
-    if (isSearching) {
+    if (isSearching || disabled) {
       return
     }
 
@@ -189,6 +263,15 @@ function OriginMap({ initialKeyword, confirmedPlace, onConfirm }) {
     setSelectedPlace(place)
   }
 
+  const isConfirmed = Boolean(
+    selectedPlace && confirmedPlace &&
+    selectedPlace.id === confirmedPlace.id &&
+    selectedPlace.latitude === confirmedPlace.latitude &&
+    selectedPlace.longitude === confirmedPlace.longitude &&
+    selectedPlace.name === confirmedPlace.name &&
+    selectedPlace.address === confirmedPlace.address,
+  )
+
   return (
     <section
       className="origin-map-panel"
@@ -202,9 +285,9 @@ function OriginMap({ initialKeyword, confirmedPlace, onConfirm }) {
           <input
             id="map-keyword"
             value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
+            onChange={(event) => onKeywordChange(event.target.value)}
             maxLength={100}
-            disabled={isSearching}
+            disabled={isSearching || disabled}
             required
           />
         </label>
@@ -212,7 +295,7 @@ function OriginMap({ initialKeyword, confirmedPlace, onConfirm }) {
         <button
           className="map-search-button"
           type="submit"
-          disabled={isSearching}
+          disabled={isSearching || disabled}
         >
           {isSearching ? '검색 중…' : '장소 검색'}
         </button>
@@ -220,12 +303,15 @@ function OriginMap({ initialKeyword, confirmedPlace, onConfirm }) {
 
       <p className="map-status" role="status">{message}</p>
 
-      <div className="origin-map-layout">
+      <div className={places.length > 0
+        ? 'origin-map-layout'
+        : 'origin-map-layout is-map-only'}>
         <ul className="origin-results">
           {places.map((place) => (
             <li key={place.id}>
               <button
                 type="button"
+                disabled={isSearching || disabled}
                 className={selectedPlace?.id === place.id
                   ? 'theme-card is-selected'
                   : 'theme-card'}
@@ -252,7 +338,7 @@ function OriginMap({ initialKeyword, confirmedPlace, onConfirm }) {
         />
       </div>
 
-      {selectedPlace && (
+      {selectedPlace && !isConfirmed && (
         <div>
           <p className="map-status" role="status">
             지도에서 보는 장소: {selectedPlace.name} · {selectedPlace.address}
@@ -261,9 +347,9 @@ function OriginMap({ initialKeyword, confirmedPlace, onConfirm }) {
           <button
             type="button"
             className="map-search-button"
+            disabled={isSearching || disabled}
             onClick={() => {
               onConfirm(selectedPlace)
-              setKeyword(selectedPlace.name)
               setMessage('선택한 장소를 출발지에 반영했습니다.')
             }}
           >
