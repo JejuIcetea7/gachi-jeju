@@ -71,6 +71,7 @@ const ACCESS_REQUIREMENTS = [
 function App() {
   const [currentStep, setCurrentStep] = useState('theme')
   const [originName, setOriginName] = useState(DEFAULT_ORIGIN)
+  const [originPlace, setOriginPlace] = useState(null)
   const [selectedThemeId, setSelectedThemeId] = useState('')
   const [selectedTransportMode, setSelectedTransportMode] = useState('')
   const [travelDate, setTravelDate] = useState('')
@@ -106,6 +107,23 @@ function App() {
       }
 
       return [...previousRequirements, requirementId]
+    })
+  }
+
+  function handleOriginConfirm(place) {
+    setOriginPlace(place)
+    setOriginName(place.name)
+
+    setSummaryData((previousSummary) => {
+      if (!previousSummary) {
+        return previousSummary
+      }
+
+      return {
+        ...previousSummary,
+        originName: place.name,
+        originPlace: place,
+      }
     })
   }
 
@@ -165,6 +183,7 @@ function App() {
 
     setSummaryData({
       originName: originName.trim(),
+      originPlace,
       themeName: selectedTheme.name,
       transportName: selectedTransport.name,
       travelDate,
@@ -224,6 +243,7 @@ function App() {
                     )
 
                     setOriginName(nextOrigin)
+                    setOriginPlace(null)
                   }}
                   placeholder="출발할 장소 이름을 입력하세요"
                   maxLength={100}
@@ -496,6 +516,7 @@ function App() {
         ) : (
           <TripSummary
             summary={summaryData}
+            onOriginConfirm={handleOriginConfirm}
             onEdit={() => {
               setHasAttemptedReview(false)
               setCurrentStep('conditions')
