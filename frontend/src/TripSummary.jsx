@@ -1,4 +1,6 @@
-function TripSummary({ summary, onEdit }) {
+import OriginMap from './OriginMap.jsx'
+
+function TripSummary({ summary, onEdit, onOriginConfirm }) {
   if (!summary) {
     return null
   }
@@ -7,6 +9,11 @@ function TripSummary({ summary, onEdit }) {
     {
       label: '출발지',
       value: summary.originName,
+    },
+    {
+      label: '출발지 주소',
+      value: summary.originPlace?.address
+        || '지도에서 출발지를 선택해 주세요.',
     },
     {
       label: '여행 종류',
@@ -73,6 +80,11 @@ function TripSummary({ summary, onEdit }) {
           </div>
         ))}
       </dl>
+      <OriginMap
+        initialKeyword={summary.originName}
+        confirmedPlace={summary.originPlace}
+        onConfirm={onOriginConfirm}
+      />
     </section>
   )
 }
