@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import TripSummary from './TripSummary.jsx'
 import './App.css'
+import { loadTravelSession, saveTravelSession } from './services/travelSession.js'
 
 const DEFAULT_ORIGIN = '제주빅데이터센터'
 
@@ -69,20 +70,79 @@ const ACCESS_REQUIREMENTS = [
 ]
 
 function App() {
-  const [currentStep, setCurrentStep] = useState('theme')
-  const [originName, setOriginName] = useState(DEFAULT_ORIGIN)
-  const [originPlace, setOriginPlace] = useState(null)
-  const [selectedThemeId, setSelectedThemeId] = useState('')
-  const [selectedTransportMode, setSelectedTransportMode] = useState('')
-  const [travelDate, setTravelDate] = useState('')
-  const [startTime, setStartTime] = useState('')
-  const [endTime, setEndTime] = useState('')
-  const [selectedRequirements, setSelectedRequirements] = useState([])
-  const [restMinutes, setRestMinutes] = useState(0)
-  const [returnToOrigin, setReturnToOrigin] = useState(false)
-  const [summaryData, setSummaryData] = useState(null)
+  const [savedState] = useState(loadTravelSession)
+  const [currentStep, setCurrentStep] = useState(
+    savedState?.currentStep ?? 'theme',
+  )
+  const [originName, setOriginName] = useState(
+    savedState?.originName ?? DEFAULT_ORIGIN,
+  )
+  const [originPlace, setOriginPlace] = useState(
+    savedState?.originPlace ?? null,
+  )
+  const [selectedThemeId, setSelectedThemeId] = useState(
+    savedState?.selectedThemeId ?? '',
+  )
+  const [selectedTransportMode, setSelectedTransportMode] = useState(
+    savedState?.selectedTransportMode ?? '',
+  )
+  const [travelDate, setTravelDate] = useState(
+    savedState?.travelDate ?? '',
+  )
+  const [startTime, setStartTime] = useState(
+    savedState?.startTime ?? '',
+  )
+  const [endTime, setEndTime] = useState(
+    savedState?.endTime ?? '',
+  )
+  const [selectedRequirements, setSelectedRequirements] = useState(
+    savedState?.selectedRequirements ?? [],
+  )
+  const [restMinutes, setRestMinutes] = useState(
+    savedState?.restMinutes ?? 0,
+  )
+  const [returnToOrigin, setReturnToOrigin] = useState(
+    savedState?.returnToOrigin ?? false,
+  )
+  const [summaryData, setSummaryData] = useState(
+    savedState?.summaryData ?? null,
+  )
   const [hasAttemptedReview, setHasAttemptedReview] = useState(false)
-  const [chatMessages, setChatMessages] = useState([])
+  const [chatMessages, setChatMessages] = useState(
+    savedState?.chatMessages ?? [],
+  )
+
+  useEffect(() => {
+    saveTravelSession({
+      currentStep,
+      originName,
+      originPlace,
+      selectedThemeId,
+      selectedTransportMode,
+      travelDate,
+      startTime,
+      endTime,
+      selectedRequirements,
+      restMinutes,
+      returnToOrigin,
+      summaryData,
+      chatMessages,
+    })
+  }, [
+    currentStep,
+    originName,
+    originPlace,
+    selectedThemeId,
+    selectedTransportMode,
+    travelDate,
+    startTime,
+    endTime,
+    selectedRequirements,
+    restMinutes,
+    returnToOrigin,
+    summaryData,
+    chatMessages,
+  ])
 
   const selectedTheme = TRAVEL_THEMES.find(
     (theme) => theme.id === selectedThemeId,
