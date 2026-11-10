@@ -62,6 +62,11 @@ class ScheduleItem(BaseModel):
     duration_minutes: int | None = Field(default=None, description="머무는 시간 또는 이동 시간(분)")
     distance_km: float | None = Field(default=None, description="move일 때 이동 거리(km)")
     accessibility_notes: list[str] = Field(default_factory=list, description="주차, 경사·동선, 화장실, 대여 등 접근성 메모")
+    route_id: str | None = Field(
+        default=None,
+        max_length=80,
+        description="move일 때 이동 도구가 반환한 route_id. 식별값이 없거나 visit이면 null",
+    )
 
 class DayPlan(BaseModel):
     day: int = Field(description="여행 N일차")

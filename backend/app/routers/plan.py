@@ -115,7 +115,9 @@ class PlanItemResponse(BaseModel):
     item_type: Literal["visit", "move"]
     title: str
     place_id: str | None
-    verified: bool | None = Field(description="visit: DB에 있는 장소면 true, 없으면 false. move: null")
+    verified: bool | None = Field(
+        description="visit: DB에 있는 장소면 true, 없으면 false. move: null"
+    )
     category: str | None
     latitude: float | None
     longitude: float | None
@@ -123,6 +125,7 @@ class PlanItemResponse(BaseModel):
     duration_minutes: int | None
     distance_km: float | None
     accessibility_notes: list[str]
+    route_id: str | None = Field(default=None, max_length=80)
 
 class PlanDayResponse(BaseModel):
     day: int
