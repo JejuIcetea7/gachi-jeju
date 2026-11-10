@@ -110,7 +110,7 @@ class PlanApiTests(unittest.TestCase):
     def test_invalid_requests(self):
         cases = [
             ("departure", {"departure": "   "}),
-            ("message", {"message": "가" * 301}),
+            ("message", {"message": "가" * 1001}),
             ("transport", {"transport": "airplane"}),
             ("trip_days", {"trip_days": 4}),
             ("travel_styles", {"travel_styles": []}),

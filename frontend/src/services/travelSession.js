@@ -1,3 +1,5 @@
+import { isPlanResponse } from './planApi.js'
+
 const STORAGE_KEY = 'gachi-jeju.travel-session'
 const STORAGE_VERSION = 1
 
@@ -84,7 +86,12 @@ export function loadTravelSession() {
       return null
     }
 
-    return saved.state
+    return {
+      ...saved.state,
+      planResult: isPlanResponse(saved.state.planResult)
+        ? saved.state.planResult
+        : null,
+    }
   } catch {
     return null
   }
