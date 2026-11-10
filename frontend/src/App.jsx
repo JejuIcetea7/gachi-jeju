@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import TripSummary from './TripSummary.jsx'
 import './App.css'
+import logoImage from './assets/gachi-jeju-logo.png'
 import { loadTravelSession, saveTravelSession } from './services/travelSession.js'
 import OriginPicker from './OriginPicker.jsx'
 import { buildPlanRequest } from './services/planRequest.js'
@@ -341,7 +342,7 @@ function App() {
   return (
     <div className="travel-app">
       <header className="app-header">
-        <span className="brand-name">같이 가는 제주</span>
+        <img className="brand-logo" src={logoImage} alt="같이 가는 제주" />
         <span className="brand-tagline">
           당신의 속도로 만나는 제주
         </span>
