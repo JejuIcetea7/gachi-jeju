@@ -1,0 +1,12 @@
+{
+  "name": "gachi-jeju",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n back,front -c blue,green \"npm:dev:back\" \"npm:dev:front\"",
+    "dev:back": "python -m uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000",
+    "dev:front": "npm --prefix frontend run dev"
+  },
+  "devDependencies": {
+    "concurrently": "10.0.7"
+  }
+}
