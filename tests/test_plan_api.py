@@ -26,7 +26,7 @@ def build_trip_plan(place_id: str) -> TripPlan:
         item_type="move",
         title="제주국제공항 → 한라수목원",
         transport="렌터카",
-        duration_minutes=19,
+        duration_minutes=20,
         distance_km=6.2,
     )
     visit_item = ScheduleItem(
@@ -180,6 +180,127 @@ class PlanApiTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 502)
         self.assertEqual(response.json()["error"]["code"], "llm_invalid_response")
+
+    def test_invalid_generated_times_are_rejected_before_place_lookup(self):
+        cases = [
+            (
+                "before_window",
+                {},
+                {"start_time": "10:01"},
+                "여행 가능 시간",
+            ),
+            (
+                "after_window",
+                {},
+                {"end_time": "11:59"},
+                "여행 가능 시간",
+            ),
+            (
+                "overlap",
+                {"start_time": "10:19", "duration_minutes": 101},
+                {},
+                "겹치거나",
+            ),
+            (
+                "duration_mismatch",
+                {"duration_minutes": 99},
+                {},
+                "소요시간",
+            ),
+            (
+                "missing_duration",
+                {"duration_minutes": None},
+                {},
+                "소요시간",
+            ),
+            (
+                "invalid_time_format",
+                {"start_time": "오전 10시"},
+                {},
+                "HH:MM",
+            ),
+        ]
+
+        for name, item_changes, request_changes, expected_reason in cases:
+            with self.subTest(case=name):
+                agent_result = build_agent_result("P044")
+                visit_item = agent_result["trip_plan"].days[0].items[1]
+
+                for field, value in item_changes.items():
+                    setattr(visit_item, field, value)
+
+                self.plan_trip.reset_mock()
+                self.plan_trip.return_value = agent_result
+
+                request_body = {
+                    **VALID_REQUEST,
+                    "start_time": "10:00",
+                    "end_time": "17:00",
+                    **request_changes,
+                }
+
+                with patch.object(plan_router, "verify_places") as verify:
+                    response = self.client.post("/plan", json=request_body)
+
+                self.assertEqual(response.status_code, 502)
+
+                body = response.json()
+                self.assertNotIn("plan", body)
+
+                error = body["error"]
+                self.assertEqual(error["code"], "plan_validation_failed")
+                self.assertTrue(error["details"])
+                self.assertTrue(
+                    all(
+                        detail["field"] == "plan"
+                        for detail in error["details"]
+                    )
+                )
+                self.assertTrue(
+                    any(
+                        expected_reason in detail["reason"]
+                        for detail in error["details"]
+                    )
+                )
+
+                verify.assert_not_called()
+                self.plan_trip.assert_called_once()
+
+    def test_valid_timed_plan_can_finish_before_deadline(self):
+        self.plan_trip.return_value = build_agent_result("P044")
+        request_body = {
+            **VALID_REQUEST,
+            "start_time": "10:00",
+            "end_time": "17:00",
+        }
+
+        response = self.client.post("/plan", json=request_body)
+
+        self.assertEqual(response.status_code, 200)
+        items = response.json()["plan"]["days"][0]["items"]
+        self.assertEqual(items[-1]["end_time"], "12:00")
+        self.plan_trip.assert_called_once()
+
+    def test_empty_day_with_explanation_is_allowed(self):
+        agent_result = build_agent_result("P044")
+        agent_result["trip_plan"].days[0].items = []
+        explanation = "조건을 충족하는 장소를 찾지 못했습니다."
+        agent_result["trip_plan"].assumptions = [explanation]
+        self.plan_trip.return_value = agent_result
+
+        request_body = {
+            **VALID_REQUEST,
+            "start_time": "10:00",
+            "end_time": "17:00",
+        }
+
+        response = self.client.post("/plan", json=request_body)
+
+        self.assertEqual(response.status_code, 200)
+        plan = response.json()["plan"]
+        self.assertEqual(plan["days"][0]["items"], [])
+        self.assertEqual(plan["assumptions"], [explanation])
+        self.plan_trip.assert_called_once()
 
 if __name__ == "__main__":
     unittest.main()

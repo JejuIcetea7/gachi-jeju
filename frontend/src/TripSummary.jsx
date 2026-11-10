@@ -17,6 +17,7 @@ const FIELD_LABELS = {
   return_to_origin: '귀환 여부',
   message: '추가 요청',
   body: '여행 조건',
+  plan: '생성된 일정',
 }
 
 function formatErrorDetail(detail) {
