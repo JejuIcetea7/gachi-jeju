@@ -67,3 +67,4 @@
 | 37 | `langchain-google-genai` 삭제, `langchain-openai` 1.7.4 추가 (`openai` 3.46.0이 함께 설치됨). `google-genai`는 `jeju` 환경에 남아 있음(코드에서는 안 씀) | 사용자 결정 | 확인 |
 | 38 | `.env.example`의 `GEMINI_API_KEY`를 `OPENAI_API_KEY`로 바꿈 | 키 이름은 `langchain-openai` 관례 | 미확인 |
 | 39 | 안내 문구와 API 문서의 "Gemini"를 "AI" 또는 "LLM"으로 바꿈 | 모델이 바뀌어도 문구를 고치지 않게 | 미확인 |
+| 40 | 루트 `package.json`에 `npm run dev`(백엔드+프론트 동시 실행) 추가. `concurrently` 10.0.7 고정, 루트 `/node_modules/`는 `.gitignore`에 추가 | 명령 하나로 개발 서버 실행(사용자 결정). Python 경로는 PC마다 달라 적지 않고, 실행 전 Python 환경을 켜 두는 방식 | 확인 (Mac) |
