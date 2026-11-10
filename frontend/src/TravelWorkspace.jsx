@@ -14,6 +14,7 @@ import {
   DEFAULT_ORIGIN,
   formatTripDuration,
 } from './services/travelOptions.js'
+import logoImage from './assets/gachi-jeju-logo.png'
 
 function getRetryMessage(messages) {
   const last = messages.at(-1)
@@ -261,8 +262,9 @@ function TravelWorkspace() {
     <div className="travel-workspace">
       <header className="workspace-header">
         <div>
-          <h1>같이 가는 제주</h1>
-          <p>당신의 속도로 만나는 제주</p>
+          <h1>
+            <img className="brand-logo" src={logoImage} alt="같이 가는 제주" />
+          </h1>
         </div>
 
         <button
