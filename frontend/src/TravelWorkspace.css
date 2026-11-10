@@ -19,7 +19,12 @@
   font-size: 24px;
 }
 
-.workspace-header p,
+.brand-logo {
+  display: block;
+  height: 64px;
+  width: auto;
+}
+
 .workspace-panel-heading p,
 .options-note {
   color: #52695d;
@@ -420,6 +425,10 @@ fieldset.option-group legend {
 
   .workspace-header h1 {
     font-size: 21px;
+  }
+
+  .brand-logo {
+    height: 48px;
   }
 
   .workspace-header .secondary-button {
