@@ -40,7 +40,8 @@ def get_driving_route(
     destination_latitude: float,
     destination_longitude: float,
     api_key: str,
-) -> dict[str, str | int]:
+    include_geometry: bool = False,
+) -> dict:
     api_key = api_key.strip()
     if not api_key:
         return {"status": "auth_error"}
@@ -48,7 +49,7 @@ def get_driving_route(
     params = urlencode({
         "origin": f"{origin_longitude},{origin_latitude}",
         "destination": f"{destination_longitude},{destination_latitude}",
-        "summary": "true",
+        "summary": "false" if include_geometry else "true",
     })
     request = Request(
         f"https://apis-navi.kakaomobility.com/v1/directions?{params}",
@@ -77,4 +78,73 @@ def get_driving_route(
 
     if not isinstance(data, dict):
         return {"status": "api_error"}
+
+    if include_geometry:
+        return parse_driving_geometry(data)
+
     return parse_driving_response(data)
+
+def parse_driving_geometry(data: dict) -> dict:
+    """자동차 상세 응답을 거리·시간과 도로별 지도 좌표로 변환합니다."""
+    if not isinstance(data, dict):
+        return {"status": "api_error"}
+
+    result = parse_driving_response(data)
+    if result["status"] != "ok":
+        return result
+
+    sections = data["routes"][0].get("sections")
+    paths = []
+    incomplete = False
+
+    if not isinstance(sections, list) or not sections:
+        sections = []
+        incomplete = True
+
+    for section in sections:
+        roads = section.get("roads") if isinstance(section, dict) else None
+        if not isinstance(roads, list) or not roads:
+            incomplete = True
+            continue
+
+        for road in roads:
+            vertices = road.get("vertexes") if isinstance(road, dict) else None
+            if (
+                not isinstance(vertices, list)
+                or len(vertices) < 4
+                or len(vertices) % 2 != 0
+            ):
+                incomplete = True
+                continue
+
+            points = []
+            for index in range(0, len(vertices), 2):
+                longitude = vertices[index]
+                latitude = vertices[index + 1]
+
+                if not (
+                    type(longitude) in (int, float)
+                    and type(latitude) in (int, float)
+                    and -180 <= longitude <= 180
+                    and -90 <= latitude <= 90
+                ):
+                    incomplete = True
+                    points = []
+                    break
+
+                points.append([longitude, latitude])
+
+            if points:
+                paths.append(points)
+
+    geometry_status = (
+        "missing" if not paths
+        else "partial" if incomplete
+        else "ok"
+    )
+
+    return {
+        **result,
+        "geometry_status": geometry_status,
+        "paths": paths,
+    }
