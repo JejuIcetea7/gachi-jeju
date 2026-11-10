@@ -11,6 +11,7 @@ from langchain.agents.structured_output import StructuredOutputError
 from pydantic import BaseModel, Field, StringConstraints, model_validator
 
 from ..agent.planner import TripPlan, plan_trip
+from ..services.plan_validation import validate_plan_times
 from ..tools.places import read_rows
 
 router = APIRouter()
@@ -305,7 +306,7 @@ def build_llm_error_response(status_code: int | None, provider_error_code: str |
         400: {"model": ErrorResponse, "description": "입력 오류"},
         429: {"model": ErrorResponse, "description": "AI 호출 한도 초과"},
         500: {"model": ErrorResponse, "description": "그 밖의 오류"},
-        502: {"model": ErrorResponse, "description": "AI 답이 일정 형식에 맞지 않음"},
+        502: {"model": ErrorResponse, "description": "AI 응답 형식 또는 생성 일정 시간 오류"},
         503: {"model": ErrorResponse, "description": "AI 서버 오류 또는 사용 잔액 부족"},
         504: {"model": ErrorResponse, "description": "AI 시간 초과"},
     },
@@ -327,6 +328,23 @@ def create_plan(plan_request: PlanRequest):
     trip_plan = agent_result["trip_plan"]
     if trip_plan is None:
         return build_error_response(502, "llm_invalid_response", "AI 답이 일정 형식에 맞지 않습니다.")
+
+    time_errors = validate_plan_times(
+        trip_plan.model_dump(),
+        start_time=plan_request.start_time,
+        end_time=plan_request.end_time,
+    )
+
+    if time_errors:
+        return build_error_response(
+            502,
+            "plan_validation_failed",
+            "생성된 일정에 시간 오류가 있습니다. 다시 시도해 주세요.",
+            details=[
+                {"field": "plan", "reason": reason}
+                for reason in time_errors
+            ],
+        )
 
     try:
         plan, warnings = verify_places(trip_plan)

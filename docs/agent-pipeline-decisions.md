@@ -21,7 +21,7 @@
 | 13 | 일정 수정용 대화 ID | 1차는 요청 1개 → 일정 1개 | 미정 |
 | 14 | 하루 한도(429 일일)와 1분 한도 구분해 안내 | 1차는 같은 문구로 안내 | 취소 (OpenAI로 변경) |
 | 15 | Gemini 무료 한도 늘리기(결제 등록) 검토 | `gemini-3.6-flash` 무료 하루 20번 → 일정 2~3개/일 (2026-11-09 서버 오류로 확인) | 취소 (OpenAI로 변경) |
-| 16 | 일정 시간 맞추기 검사: 항목 시간과 `duration_minutes` 차이, `assumptions`의 복귀 시각과 실제 마지막 시각 차이 | 2026-11-09 실제 응답에서 09:00-09:16 이동인데 18분, "17:00경 복귀"인데 14:32 끝남 | 미정 |
+| 16 | 일정 시간 검증: 항목의 시각·여행 가능 시간·겹침·duration_minutes 일치, assumptions의 시각 설명 대조 | 2026-11-10 시간표 검증과 API 오류 반환 구현·자동 테스트 통과. assumptions의 자연어 설명 대조는 남음 | 부분 완료 |
 | 17 | 이동시간이 tool 결과와 같은지 확인할 방법 | 다시 조회하면 카카오 값이 달라짐(예: 한라수목원→삼양 일정 38분·14.7km, 재조회 29분·19.3km). tool 결과 기록이 없어 비교 불가 (추후 구현 12번과 관련) | 미정 |
 
 ## 임의 결정
@@ -51,15 +51,15 @@
 | 21 | 실행 결과에 Gemini 호출 횟수와 tool별 호출 횟수를 함께 출력 | 무료 한도 확인용 | 미확인 |
 | 22 | LLM 재시도: `max_retries=2`(처음 1번 + 재시도 2번), 한 번에 최대 120초(`timeout=120`). OpenAI 도구 기본 규칙: 0.5초부터 2배(최대 8초) × 무작위 0.75~1, 408·409·429·5xx 재시도, 서버가 알려 준 대기 시간(120초 이하)은 따름 | Gemini 때와 시도 횟수를 같게 맞춤 | 미확인 |
 | 23 | 다른 모델로 넘어가기(503 시 `gemini-3.5-flash` 등)는 넣지 않음 | 모델 선택은 사용자 결정 (2026-11-09) | 취소 (OpenAI로 변경) |
-| 24 | API 구성: 주소 `POST /plan` 1개 + 서버 안 함수 3단계(`build_user_message` → `plan_trip` → `verify_places`), 서버 확인 `GET /health` | 프론트가 한 번만 부르게 | 확인 |
-| 25 | 파일: `backend/app/main.py`(앱, CORS, 오류 처리), `backend/app/routers/plan.py`(요청·응답 모델, 3단계 함수, API) | `CLAUDE.md` 디렉터리 구조의 `routers/` | 미확인 |
+| 24 | API 구성: `POST /plan` 처리 순서는 `build_user_message` → `plan_trip` → `validate_plan_times` → `verify_places`. 서버 확인은 `GET /health` | 프론트가 한 번 호출하고 서버가 생성 결과의 시간을 검사하도록 구성 | 확인 |
+| 25 | 파일: `backend/app/main.py`(앱, CORS, 오류 처리), `backend/app/routers/plan.py`(요청·응답 모델, 시간 검증과 출력 정리, API) | `CLAUDE.md` 디렉터리 구조의 `routers/` | 미확인 |
 | 26 | 요청 규격은 [API 명세](api.md) 기준. 좌표·walking/driving/transit·보조기구 미선택·시간·필수 시설·휴식·귀환을 지원하며 기존 이동수단 값도 유지 | 화면의 선택 조건을 전달하도록 확장(2026-11-10) | 확인 |
 | 27 | trip_days 1~3(현재 화면은 1일), departure 50자 이하, message 합산 1,000자 이하(기존 300자에서 변경) | 화면과 API의 요청 길이 제한 통일(2026-11-10) | 확인 |
 | 28 | 선택 항목을 "출발지: ... / 이동수단: 렌터카 / ..." 한국어 줄 글로 바꿔 Gemini에 넘김 | 사람이 읽는 글이 LLM에도 잘 읽힘 | 미확인 |
 | 29 | 일정 칸: `start_time`, `end_time`, `item_type`(`visit`/`move`), `title`, `place_id`, `transport`, `duration_minutes`, `distance_km`, `accessibility_notes` + 출력 정리에서 `verified`, `category`, `latitude`, `longitude` 추가 | 화면 표시와 지도 표시 대비 | 미확인 |
 | 30 | DB에 없는 장소는 항목을 남기고 `verified: false` + `warnings`에 이유 | 항목을 빼면 일정 시간이 빔 | 미확인 |
 | 31 | 응답에 `meta`(Gemini 호출 횟수, tool 호출 횟수, 걸린 시간) 포함 | 무료 한도 확인용 | 미확인 |
-| 32 | 오류 코드: 400 `invalid_request`, 429 `rate_limited`, 500 `internal_error`, 502 `llm_invalid_response`, 503 `llm_unavailable`(5xx·연결 실패), 503 `llm_quota_exhausted`(OpenAI `insufficient_quota`), 504 `llm_timeout`. FastAPI 기본 422는 400으로 바꿈. 입력 오류 이유는 한국어 | 화면이 오류를 구분해 안내하게. 잔액 부족은 기다려도 안 풀려 따로 구분 | 미확인 |
+| 32 | 오류 코드: 400 `invalid_request`, 429 `rate_limited`, 500 `internal_error`, 502 `llm_invalid_response`·`plan_validation_failed`, 503 `llm_unavailable`(5xx·연결 실패), 503 `llm_quota_exhausted`(OpenAI `insufficient_quota`), 504 `llm_timeout`. FastAPI 기본 422는 400으로 바꿈. 입력 오류 이유는 한국어 | 화면이 오류를 구분해 안내하게. 잔액 부족은 기다려도 안 풀려 따로 구분 | 미확인 |
 | 33 | LLM 오류는 예외의 원인(`__cause__`)을 따라가 `openai.APITimeoutError`(504), `openai.APIConnectionError`(503), `openai.APIStatusError`(`status_code`, `code`)로 구분 | LangChain이 오류를 감쌀 때도 찾기 위해 | 미확인 |
 | 34 | CORS 허용: `http://localhost:3000`, `http://localhost:5173` | React 개발 서버 기본 포트. 프론트와 확인 필요 | 미확인 |
 | 35 | 처리 못 한 오류는 서버 화면(콘솔)에 출력 (`logger.exception`) | 원인 찾기용. 파일 기록은 아님 | 미확인 |
