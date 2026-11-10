@@ -34,7 +34,7 @@ Python 패키지는 프로젝트의 `.venv`에서 관리합니다.
 프로젝트 루트에서 의존성을 설치합니다.
 
 ```cmd
-python -m pip install -r backend\requirements.txt
+.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 ────────────────────────────────────────
@@ -50,7 +50,7 @@ python -m pip install -r backend\requirements.txt
   `.env`와 실제 키를 커밋하거나 로그·문서·샘플 응답에 노출하지 않습니다.
   `.env.example`에는 변수 이름과 비밀값이 없는 예시만 기록합니다.
 - 새로운 Python 의존성을 추가하면 사용한 버전을
-  `backend/requirements.txt`에 기록합니다.
+  `requirements.txt`에 기록합니다.
   관계없는 패키지까지 포함하도록 파일을 일괄 덮어쓰지 않습니다.
 - 파일은 UTF-8로 처리하고, 경로는 `pathlib`과 프로젝트 기준 경로를 사용합니다.
   개인 PC의 절대 경로를 코드에 고정하지 않으며, HTTPS 인증서 검증을 유지합니다.

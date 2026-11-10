@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import TripSummary from './TripSummary.jsx'
 import './App.css'
 import { loadTravelSession, saveTravelSession } from './services/travelSession.js'
 import OriginPicker from './OriginPicker.jsx'
+import { buildPlanRequest } from './services/planRequest.js'
+import { requestTravelPlan } from './services/planApi.js'
 
 const DEFAULT_ORIGIN = '제주빅데이터센터'
 
@@ -112,6 +114,12 @@ function App() {
   const [chatMessages, setChatMessages] = useState(
     savedState?.chatMessages ?? [],
   )
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [planResult, setPlanResult] = useState(
+    savedState?.planResult ?? null,
+  )
+  const [planError, setPlanError] = useState(null)
+  const generatingRef = useRef(false)
 
   useEffect(() => {
     saveTravelSession({
@@ -128,6 +136,7 @@ function App() {
       returnToOrigin,
       summaryData,
       chatMessages,
+      planResult,
     })
   }, [
     currentStep,
@@ -143,6 +152,7 @@ function App() {
     returnToOrigin,
     summaryData,
     chatMessages,
+    planResult,
   ])
 
   const selectedTheme = TRAVEL_THEMES.find(
@@ -187,11 +197,16 @@ function App() {
     })
   }
 
+  function clearPlanFeedback() {
+    setPlanResult(null)
+    setPlanError(null)
+  }
+
   function handleChatSend(content) {
     const requestText = content.trim()
 
-    if (!requestText || !summaryData) {
-      return
+    if (generatingRef.current || !requestText || !summaryData) {
+      return false
     }
 
     const nextMessage = {
@@ -205,6 +220,52 @@ function App() {
       ...previousMessages,
       nextMessage,
     ])
+    clearPlanFeedback()
+    return true
+  }
+
+  function handleChatRemove(messageId) {
+    if (generatingRef.current) {
+      return
+    }
+    setChatMessages((previousMessages) => (
+      previousMessages.filter((message) => message.id !== messageId)
+    ))
+    clearPlanFeedback()
+  }
+
+  async function handleGeneratePlan() {
+    if (generatingRef.current) {
+      return
+    }
+
+    generatingRef.current = true
+    setIsGenerating(true)
+    clearPlanFeedback()
+
+    try {
+      const requestBody = buildPlanRequest({
+        summary: summaryData,
+        themeId: selectedThemeId,
+        transportMode: selectedTransportMode,
+        requirementIds: selectedRequirements,
+        messages: chatMessages,
+      })
+      const result = await requestTravelPlan(requestBody)
+      setPlanResult(result)
+    } catch (error) {
+      setPlanError({
+        message: typeof error?.message === 'string'
+          ? error.message
+          : '일정을 만들지 못했습니다. 다시 시도해 주세요.',
+        code: error?.code ?? 'request_error',
+        status: error?.status ?? null,
+        details: Array.isArray(error?.details) ? error.details : [],
+      })
+    } finally {
+      generatingRef.current = false
+      setIsGenerating(false)
+    }
   }
 
   const hasInvalidTime = Boolean(
@@ -575,12 +636,25 @@ function App() {
           <TripSummary
             summary={summaryData}
             onEditOrigin={() => {
+              if (generatingRef.current) {
+                return
+              }
+              clearPlanFeedback()
               setHasAttemptedReview(false)
               setCurrentStep('theme')
             }}
             chatMessages={chatMessages}
             onChatSend={handleChatSend}
+            onChatRemove={handleChatRemove}
+            isGenerating={isGenerating}
+            planResult={planResult}
+            planError={planError}
+            onGenerate={handleGeneratePlan}
             onEdit={() => {
+              if (generatingRef.current) {
+                return
+              }
+              clearPlanFeedback()
               setHasAttemptedReview(false)
               setCurrentStep('conditions')
             }}

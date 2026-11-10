@@ -10,7 +10,7 @@
 | 2 | 접근성 등급 칸(`wheelchair_level` 등)으로 장소 거르기 | 170곳 모두 `unknown`, 데이터 보완 후 가능 | 미정 |
 | 3 | 운영시간·휴무일·날씨 tool | 1차 파이프라인에 없어도 동작 | 미정 |
 | 4 | `get_bus_trip` 설명 글 추가, LLM에 넘기는 경로 수 줄이기 | `get_bus_route_summary`로 임시 해결 (공항→한림공원 18,343자 → 350자) | 완료 |
-| 5 | FastAPI, React 연결 | FastAPI(`POST /plan`)는 구현. React는 다른 사람이 작성 | 진행 중 |
+| 5 | FastAPI, React 연결 | 조건 전달, 생성 상태·오류 안내, 일정표와 결과 복원 연결. 2026-11-10 자동차 당일 일정 수동 확인 | 완료 |
 | 6 | 추자도 검색 | 제주도 범위 사각형에서 빠짐 | 미정 |
 | 7 | 버스 경로를 저상버스 여부로 고르기 | 1차는 환승·소요시간만 봄. 저상버스 데이터 확인 필요 | 미정 |
 | 8 | 대화로 일정 수정하기 | 1차는 요청 1개 → 일정 1개 | 미정 |
@@ -53,8 +53,8 @@
 | 23 | 다른 모델로 넘어가기(503 시 `gemini-3.5-flash` 등)는 넣지 않음 | 모델 선택은 사용자 결정 (2026-11-09) | 취소 (OpenAI로 변경) |
 | 24 | API 구성: 주소 `POST /plan` 1개 + 서버 안 함수 3단계(`build_user_message` → `plan_trip` → `verify_places`), 서버 확인 `GET /health` | 프론트가 한 번만 부르게 | 확인 |
 | 25 | 파일: `backend/app/main.py`(앱, CORS, 오류 처리), `backend/app/routers/plan.py`(요청·응답 모델, 3단계 함수, API) | `CLAUDE.md` 디렉터리 구조의 `routers/` | 미확인 |
-| 26 | 요청 칸 이름·값: `departure`, `transport`(`rental_car`/`taxi`/`bus`), `mobility_aid`(`wheelchair`/`stroller`/`none`), `start_date`, `trip_days`, `travel_styles`(DB 카테고리 6개, `기타` 제외), `message` | 선택 항목은 사용자 결정, 이름·값은 임의 | 미확인 |
-| 27 | `trip_days` 1~3, `departure` 50자 이하, `message` 300자 이하 | 무료 한도 고려. 300자는 사용자 결정 | 미확인 |
+| 26 | 요청 규격은 [API 명세](api.md) 기준. 좌표·walking/driving/transit·보조기구 미선택·시간·필수 시설·휴식·귀환을 지원하며 기존 이동수단 값도 유지 | 화면의 선택 조건을 전달하도록 확장(2026-11-10) | 확인 |
+| 27 | trip_days 1~3(현재 화면은 1일), departure 50자 이하, message 합산 1,000자 이하(기존 300자에서 변경) | 화면과 API의 요청 길이 제한 통일(2026-11-10) | 확인 |
 | 28 | 선택 항목을 "출발지: ... / 이동수단: 렌터카 / ..." 한국어 줄 글로 바꿔 Gemini에 넘김 | 사람이 읽는 글이 LLM에도 잘 읽힘 | 미확인 |
 | 29 | 일정 칸: `start_time`, `end_time`, `item_type`(`visit`/`move`), `title`, `place_id`, `transport`, `duration_minutes`, `distance_km`, `accessibility_notes` + 출력 정리에서 `verified`, `category`, `latitude`, `longitude` 추가 | 화면 표시와 지도 표시 대비 | 미확인 |
 | 30 | DB에 없는 장소는 항목을 남기고 `verified: false` + `warnings`에 이유 | 항목을 빼면 일정 시간이 빔 | 미확인 |

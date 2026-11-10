@@ -8,7 +8,7 @@ import openai
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from langchain.agents.structured_output import StructuredOutputError
-from pydantic import BaseModel, Field, StringConstraints
+from pydantic import BaseModel, Field, StringConstraints, model_validator
 
 from ..agent.planner import TripPlan, plan_trip
 from ..tools.places import read_rows
@@ -16,24 +16,97 @@ from ..tools.places import read_rows
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-TRANSPORT_LABELS = {"rental_car": "렌터카", "taxi": "택시", "bus": "버스"}
-MOBILITY_AID_LABELS = {"wheelchair": "휠체어", "stroller": "유모차", "none": "사용 안 함"}
+TRANSPORT_LABELS = {
+    "rental_car": "렌터카",
+    "taxi": "택시",
+    "bus": "버스",
+    "driving": "자동차",
+    "walking": "도보",
+    "transit": "대중교통(버스·도보)",
+}
+MOBILITY_AID_LABELS = {
+    "wheelchair": "휠체어",
+    "stroller": "유모차",
+    "none": "사용 안 함",
+    None: "미선택",
+}
 TravelStyle = Literal["자연", "해변", "박물관·전시", "산책로", "공원", "시장"]
+TimeText = Annotated[
+    str,
+    StringConstraints(
+        strip_whitespace=True,
+        min_length=5,
+        max_length=5,
+        pattern=r"^(?:[01][0-9]|2[0-3]):[0-5][0-9]$",
+    ),
+]
 
 # ---------- 요청 · 응답 모델 ----------
 
 class PlanRequest(BaseModel):
-    departure: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)] = Field(
-        description="출발지 이름, 예: 제주국제공항"
+    departure: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, min_length=1, max_length=50),
+    ] = Field(description="출발지 이름")
+
+    departure_latitude: float | None = Field(
+        default=None, ge=-90, le=90, allow_inf_nan=False,
+        description="확정한 출발지 위도",
     )
-    transport: Literal["rental_car", "taxi", "bus"] = Field(description="이동수단")
-    mobility_aid: Literal["wheelchair", "stroller", "none"] = Field(description="휠체어·유모차 사용 여부")
-    start_date: date = Field(description="출발 날짜, 예: 2026-11-20")
-    trip_days: int = Field(ge=1, le=3, description="여행 일수 (1~3)")
-    travel_styles: list[TravelStyle] = Field(min_length=1, description="원하는 여행 스타일 (1개 이상)")
-    message: Annotated[str, StringConstraints(strip_whitespace=True, max_length=300)] | None = Field(
-        default=None, description="추가 요청 (300자 이하)"
+    departure_longitude: float | None = Field(
+        default=None, ge=-180, le=180, allow_inf_nan=False,
+        description="확정한 출발지 경도",
     )
+
+    transport: Literal[
+        "rental_car", "taxi", "bus", "driving", "walking", "transit"
+    ] = Field(description="이동수단")
+
+    mobility_aid: Literal["wheelchair", "stroller", "none"] | None = Field(
+        default=None, description="이동 보조기구. 선택하지 않았다면 null",
+    )
+
+    start_date: date = Field(description="여행 날짜")
+    trip_days: int = Field(ge=1, le=3, description="여행 일수. 현재 화면은 1일")
+    start_time: TimeText | None = Field(default=None, description="시작 시각 HH:MM")
+    end_time: TimeText | None = Field(default=None, description="종료 시각 HH:MM")
+
+    travel_styles: list[TravelStyle] = Field(
+        min_length=1, description="원하는 여행 스타일",
+    )
+    requirements: list[
+        Literal["step_free", "accessible_toilet", "accessible_parking"]
+    ] = Field(default_factory=list, description="필수 이용 조건")
+    rest_minutes: int = Field(default=0, ge=0, description="중간 휴식 1회, 분")
+    return_to_origin: bool = Field(default=False, description="출발지로 돌아오기")
+
+    message: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, max_length=1000),
+    ] | None = Field(default=None, description="추가 요청을 합친 글, 최대 1,000자")
+
+    @model_validator(mode="after")
+    def validate_related_fields(self):
+        if (self.departure_latitude is None) != (self.departure_longitude is None):
+            raise ValueError("출발지 위도와 경도는 함께 보내 주세요.")
+
+        if (self.start_time is None) != (self.end_time is None):
+            raise ValueError("시작 시각과 종료 시각은 함께 보내 주세요.")
+
+        if self.start_time is not None and self.end_time is not None:
+            if self.end_time <= self.start_time:
+                raise ValueError("종료 시각은 시작 시각보다 늦어야 합니다.")
+
+            start_hour, start_minute = map(int, self.start_time.split(":"))
+            end_hour, end_minute = map(int, self.end_time.split(":"))
+            available_minutes = (
+                end_hour * 60 + end_minute
+                - start_hour * 60 - start_minute
+            )
+            if self.rest_minutes >= available_minutes:
+                raise ValueError("휴식 시간은 전체 여행 시간보다 짧아야 합니다.")
+
+        return self
 
 class PlanItemResponse(BaseModel):
     start_time: str
@@ -83,24 +156,63 @@ class ErrorResponse(BaseModel):
 # ---------- ① 입력 정리 ----------
 
 def build_user_message(plan_request: PlanRequest) -> str:
-    """선택 항목과 추가 요청을 LLM에 넘길 글로 바꿉니다."""
-    transport_label = TRANSPORT_LABELS[plan_request.transport]
-    mobility_aid_label = MOBILITY_AID_LABELS[plan_request.mobility_aid]
-    travel_styles_text = ", ".join(plan_request.travel_styles)
+    """화면의 선택 조건과 추가 요청을 Agent에 전달할 문장으로 바꿉니다."""
+    requirement_labels = {
+        "step_free": "계단 피하기",
+        "accessible_toilet": "장애인 화장실",
+        "accessible_parking": "장애인 주차구역",
+    }
 
     lines = [
         f"출발지: {plan_request.departure}",
-        f"이동수단: {transport_label}",
-        f"이동 보조기구: {mobility_aid_label}",
+        f"이동수단: {TRANSPORT_LABELS[plan_request.transport]}",
+        f"이동 보조기구: {MOBILITY_AID_LABELS[plan_request.mobility_aid]}",
         f"출발 날짜: {plan_request.start_date.isoformat()}",
         f"여행 일수: {plan_request.trip_days}일",
-        f"여행 스타일: {travel_styles_text}",
+        f"여행 스타일: {', '.join(plan_request.travel_styles)}",
     ]
+
+    if (
+        plan_request.departure_latitude is not None
+        and plan_request.departure_longitude is not None
+    ):
+        lines.append(
+            "확정한 출발지 좌표: "
+            f"위도 {plan_request.departure_latitude}, "
+            f"경도 {plan_request.departure_longitude}"
+        )
+
+    if plan_request.start_time is not None and plan_request.end_time is not None:
+        lines.append(
+            f"여행 가능 시간: {plan_request.start_time} ~ {plan_request.end_time}"
+        )
+
+    requirements = [
+        requirement_labels[item] for item in plan_request.requirements
+    ]
+    lines.append(
+        "필수 이용 조건: "
+        + (", ".join(requirements) if requirements else "별도 지정 없음")
+    )
+
+    if plan_request.rest_minutes > 0:
+        lines.append(f"중간 휴식: {plan_request.rest_minutes}분, 1회")
+    else:
+        lines.append("중간 휴식: 없음")
+
+    lines.append(
+        "여행 종료: "
+        + (
+            "출발지로 돌아오기"
+            if plan_request.return_to_origin
+            else "마지막 여행지에서 마치기"
+        )
+    )
+
     if plan_request.message:
         lines.append(f"추가 요청: {plan_request.message}")
 
-    user_message = "\n".join(lines)
-    return user_message
+    return "\n".join(lines)
 
 # ---------- ③ 출력 정리 ----------
 

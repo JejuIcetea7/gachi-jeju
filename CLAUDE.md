@@ -33,15 +33,15 @@
 | 버전 관리 | git, github | 소스코드 버전 관리 및 협업 |
 | LLM | OpenAI GPT-6 Luna (`gpt-6-luna`, Responses API, 생각 강도 low) | 사용자 의도 파악, 여행 일정 생성 및 수정 |
 | Agent 프레임워크 | LangGraph | Agent 작업 흐름 및 상태 관리 |
-| LLM 연동 | LangChain (선택) | LLM 및 외부 도구 연동 |
+| LLM 연동 | LangChain | LLM 및 외부 도구 연동 |
 | 데이터베이스 | SQLite | 무장애 관광지 데이터 저장 및 검색 |
 | 외부 API | 카카오모빌리티, 기상청 등 | 이동시간, 경로, 날씨 정보 조회 |
-| API 서버 / 백엔드 | FastAPI (검토) | Agent 기능을 API로 제공 |
+| API 서버 / 백엔드 | FastAPI | Agent 기능을 API로 제공 |
 | 가상환경 | venv | Python 의존성 관리 |
 | 프론트엔드 | React | 웹 개발 |
 
-- 환경: 추후 작성
-- UI 구성: 추후 작성
+- 개발 실행·환경: [API 명세](docs/api.md)
+- UI 구성·검증: [프론트 문서](docs/frontend-ui.md)
 - 외부 서비스 의존성: 실시간 API, LLM API
 
 
