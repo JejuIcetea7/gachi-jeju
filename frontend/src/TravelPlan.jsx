@@ -10,14 +10,14 @@ function formatDistance(value) {
   return `${value.toLocaleString('ko-KR', { maximumFractionDigits: 2 })}km`
 }
 
-function TravelPlan({ plan }) {
+function TravelPlan({ plan, autoFocus = true }) {
   const headingRef = useRef(null)
 
   useEffect(() => {
-    if (plan) {
+    if (plan && autoFocus) {
       headingRef.current?.focus()
     }
-  }, [plan])
+  }, [plan, autoFocus])
 
   if (!plan) {
     return null

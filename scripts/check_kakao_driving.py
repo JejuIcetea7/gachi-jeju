@@ -22,7 +22,7 @@ if not api_key:
 params = urlencode({
     "origin": "126.488483,33.45211112",
     "destination": "126.2396912,33.39022486",
-    "summary": "true",
+    "summary": "false",
 })
 request = Request(
     f"https://apis-navi.kakaomobility.com/v1/directions?{params}",
@@ -49,3 +49,34 @@ if route["result_code"] != 0:
 summary = route["summary"]
 print("이동 거리(m) : ", summary["distance"])
 print("예상 소요 시간(초) : ", summary["duration"])
+
+sections = route.get("sections") or []
+roads = [
+    road
+    for section in sections
+    for road in (section.get("roads") or [])
+]
+point_count = sum(
+    len(road.get("vertexes") or []) // 2
+    for road in roads
+)
+
+print("상세 구간 수:", len(sections))
+print("도로 정보 수:", len(roads))
+print("경로 좌표쌍 수:", point_count)
+
+if point_count < 2:
+    raise SystemExit("선을 그릴 경로 좌표가 충분하지 않습니다.")
+
+sample_path = (
+    Path(__file__).resolve().parents[1]
+    / "tests"
+    / "sample_responses"
+    / "kakao_driving_geometry_success.json"
+)
+sample_path.parent.mkdir(parents=True, exist_ok=True)
+sample_path.write_text(
+    json.dumps(data, ensure_ascii=False, indent=2),
+    encoding="utf-8",
+)
+print("상세 응답 저장:", sample_path)
