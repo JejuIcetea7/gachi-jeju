@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import PlaceImageDialog from './PlaceImageDialog.jsx'
 
 function formatDistance(value) {
   if (!Number.isFinite(value) || value < 0) {
@@ -12,6 +13,7 @@ function formatDistance(value) {
 
 function TravelPlan({ plan, autoFocus = true }) {
   const headingRef = useRef(null)
+  const [photoPlace, setPhotoPlace] = useState(null)
 
   useEffect(() => {
     if (plan && autoFocus) {
@@ -33,17 +35,6 @@ function TravelPlan({ plan, autoFocus = true }) {
         이용 가능한 동선과 편의시설은 각 항목의 안내를 확인해 주세요.
       </p>
 
-      {plan.assumptions.length > 0 && (
-        <div className="plan-notice">
-          <h3>계획 전제와 확인사항</h3>
-          <ul>
-            {plan.assumptions.map((text, index) => (
-              <li key={index}>{text}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       {plan.days.length === 0 && (
         <p className="plan-empty" role="status">
           조건에 맞는 일정을 찾지 못했습니다. 여행 조건을 조정해 주세요.
@@ -56,7 +47,8 @@ function TravelPlan({ plan, autoFocus = true }) {
           {day.items.length === 0 ? (
             <p className="plan-empty" role="status">
               이 날짜에 조건을 충족하는 일정을 찾지 못했습니다.
-              위의 확인사항을 참고해 주세요.
+              {plan.assumptions.length > 0
+                && ' 아래의 확인사항을 참고해 주세요.'}
             </p>
           ) : (
             <div
@@ -85,7 +77,19 @@ function TravelPlan({ plan, autoFocus = true }) {
                         <span className="plan-type">
                           {item.item_type === 'visit' ? '방문' : '이동'}
                         </span>
-                        <strong className="plan-item-title">{item.title}</strong>
+                        {item.item_type === 'visit' ? (
+                          <button
+                            type="button"
+                            className="plan-item-title plan-place-button"
+                            aria-haspopup="dialog"
+                            aria-label={`${item.title} 사진 보기`}
+                            onClick={() => setPhotoPlace(item)}
+                          >
+                            {item.title}
+                          </button>
+                        ) : (
+                          <strong className="plan-item-title">{item.title}</strong>
+                        )}
                         {item.item_type === 'visit' && (
                           <span className="plan-source">
                             {item.verified === true
@@ -128,6 +132,24 @@ function TravelPlan({ plan, autoFocus = true }) {
           )}
         </div>
       ))}
+
+      {plan.assumptions.length > 0 && (
+        <div className="plan-notice">
+          <h3>계획 전제와 확인사항</h3>
+          <ul>
+            {plan.assumptions.map((text, index) => (
+              <li key={index}>{text}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {photoPlace && (
+        <PlaceImageDialog
+          key={`${photoPlace.place_id ?? ''}:${photoPlace.title}:${photoPlace.verified}`}
+          place={photoPlace}
+          onClose={() => setPhotoPlace(null)}
+        />
+      )}
     </section>
   )
 }

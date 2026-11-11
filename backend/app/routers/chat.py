@@ -90,7 +90,6 @@ class ChatOptions(BaseModel):
     trip_days: int | None = Field(
         default=None,
         ge=1,
-        le=3,
         strict=True,
     )
 
@@ -114,6 +113,17 @@ class ChatOptions(BaseModel):
             raise ValueError("출발지 위도와 경도는 함께 보내 주세요.")
         return self
 
+    @model_validator(mode="after")
+    def validate_trip_date_range(self):
+        if self.start_date is not None and self.trip_days is not None:
+            available_days = (date.max - self.start_date).days + 1
+
+            if self.trip_days > available_days:
+                raise ValueError(
+                    "여행 마지막 날이 지원하는 날짜 범위를 벗어났습니다."
+                )
+
+        return self
 
 class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -268,10 +278,15 @@ def create_chat(chat_request: ChatRequest):
             )
         else:
             errors = validate_plan_times(chat_reply.plan.model_dump())
-            expected_days = list(range(1, chat_reply.options.trip_days + 1))
             actual_days = [day.day for day in chat_reply.plan.days]
 
-            if actual_days != expected_days:
+            if (
+                len(actual_days) != chat_reply.options.trip_days
+                or any(
+                    day_number != expected
+                    for expected, day_number in enumerate(actual_days, start=1)
+                )
+            ):
                 errors.insert(
                     0,
                     f"요청한 {chat_reply.options.trip_days}일에 맞춰 "

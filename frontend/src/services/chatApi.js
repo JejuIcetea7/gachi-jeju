@@ -1,4 +1,5 @@
 import { isPlanResponse } from './planApi.js'
+import { getTripEndDate } from './travelOptions.js'
 
 const REQUEST_TIMEOUT_MS = 180_000
 
@@ -32,6 +33,12 @@ function isDateString(value) {
 export function isChatOptions(options) {
   if (!isRecord(options)) return false
 
+  try {
+    getTripEndDate(options.start_date, options.trip_days)
+  } catch {
+    return false
+  }
+
   const latitude = options.departure_latitude
   const longitude = options.departure_longitude
   const hasValidCoordinates = (latitude === null && longitude === null)
@@ -49,9 +56,8 @@ export function isChatOptions(options) {
     && [null, 'wheelchair', 'stroller', 'none'].includes(options.mobility_aid)
     && (options.start_date === null || isDateString(options.start_date))
     && (options.trip_days === null || (
-      Number.isInteger(options.trip_days)
+      Number.isSafeInteger(options.trip_days)
       && options.trip_days >= 1
-      && options.trip_days <= 3
     ))
     && Array.isArray(options.travel_styles)
     && options.travel_styles.every((value) => typeof value === 'string')
