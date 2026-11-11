@@ -24,3 +24,6 @@ __pycache__/
 
 # Node (루트 실행 스크립트용)
 /node_modules/
+
+# 평가 실행 결과 (실험 문서에 쓴 폴더만 git add -f 로 올림)
+outputs/chat_eval/
