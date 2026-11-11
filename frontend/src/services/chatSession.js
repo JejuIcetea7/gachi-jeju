@@ -60,9 +60,8 @@ function isSessionState(value) {
       isPlanResponse(value.planResult)
       && isChatOptions(value.planResult.options)
     ))
-    && Number.isInteger(value.selectedDay)
+    && Number.isSafeInteger(value.selectedDay)
     && value.selectedDay >= 1
-    && value.selectedDay <= 3
 }
 
 function normalizeRestoredState(state) {

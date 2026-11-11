@@ -15,6 +15,7 @@ import {
   formatTripDuration,
 } from './services/travelOptions.js'
 import logoImage from './assets/gachi-jeju-logo.png'
+import ResizableWorkspace from './ResizableWorkspace.jsx'
 
 function getRetryMessage(messages) {
   const last = messages.at(-1)
@@ -277,7 +278,7 @@ function TravelWorkspace() {
         </button>
       </header>
 
-      <main className="workspace-layout" key={viewKey}>
+      <ResizableWorkspace key={viewKey}>
         <TravelOptions
           options={options}
           originPlace={originPlace}
@@ -379,7 +380,7 @@ function TravelWorkspace() {
             )}
           </div>
         </section>
-      </main>
+      </ResizableWorkspace>
     </div>
   )
 }
