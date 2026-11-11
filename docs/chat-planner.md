@@ -334,11 +334,12 @@ npm --prefix frontend run lint && npm --prefix frontend run build
 git diff --check
 ```
 
-2026-11-11 검증 결과입니다.
+2026-11-11, 최신 dev 병합 후 검증 결과입니다.
+평가 코드의 단위 테스트 21개가 포함돼 있습니다.
 
 | 검증 | 결과 |
 |---|---|
-| Python 전체 테스트 | 179개 통과 |
+| Python 전체 테스트 | 200개 통과 |
 | 프론트 JavaScript 테스트 | 30개 통과, 실패 0개 |
 | 프론트 lint | 오류 없음 |
 | 프론트 build | 통과 |
