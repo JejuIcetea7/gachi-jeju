@@ -3,11 +3,13 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
 from ..config import LLM_MODEL, LLM_REASONING_EFFORT, get_openai_api_key
-from ..tools.bus import get_bus_route_summary
-from ..tools.map_transport import create_driving_map_tool
+from ..tools.map_transport import (
+    create_driving_map_tool,
+    create_walking_map_tool,
+    create_bus_map_tool,
+)
 from ..tools.location import find_location
 from ..tools.places import get_place_details, search_places
-from ..tools.walking import get_walking_route
 from .planner import SYSTEM_PROMPT, count_model_calls, count_tool_calls
 
 
@@ -45,7 +47,10 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
 - 이동 도구가 route_id를 반환하면 해당 값을 대응하는 move의 route_id에 그대로 넣는다.
 - route_id를 받지 못한 이동과 visit의 route_id는 null로 둔다.
 - route_id는 이번 실행의 도구 응답에서만 가져온다. 이전 일정의 값을 재사용하거나 새로 만들지 않는다.
-- 자동차 일정을 생성하거나 수정할 때는 유지하는 이동 구간도 이번 실행에서 다시 조회한다.
+- 자동차·도보·대중교통 일정을 생성하거나 수정할 때는 유지하는 이동 구간도 이번 실행에서 다시 조회한다.
+- 하나의 route_id는 하나의 move 항목에만 사용한다.
+- get_bus_route_summary의 route_id는 환승과 도보를 포함한 출발지부터 도착지까지의 전체 경로다.
+  이 조회 결과는 move 하나로 작성하고, 구간별 move로 나누거나 같은 route_id를 재사용하지 않는다.
 
 대화 응답 형식:
 - reply에는 사용자에게 보여 줄 간단한 답변, 질문 또는 변경 요약을 쓴다.
@@ -58,7 +63,6 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
 - 조회하지 않은 사실이나 지도를 그릴 경로 좌표를 만들어내지 않는다.
 """
 
-
 def build_chat_agent(
     response_format: type[BaseModel],
     *,
@@ -68,6 +72,8 @@ def build_chat_agent(
         route_calls = []
 
     driving_tool = create_driving_map_tool(route_calls)
+    walking_tool = create_walking_map_tool(route_calls)
+    bus_tool = create_bus_map_tool(route_calls)
 
     model = ChatOpenAI(
         model=LLM_MODEL,
@@ -84,13 +90,12 @@ def build_chat_agent(
             search_places,
             get_place_details,
             driving_tool,
-            get_bus_route_summary,
-            get_walking_route,
+            bus_tool,
+            walking_tool,
         ],
         system_prompt=CHAT_SYSTEM_PROMPT,
         response_format=response_format,
     )
-
 
 def run_chat_agent(
     messages: list[dict[str, str]],
