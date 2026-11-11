@@ -98,7 +98,11 @@ function ConversationPanel({
   }
 
   return (
-    <section className="workspace-chat" aria-labelledby="conversation-title">
+    <section
+      id="workspace-chat-pane"
+      className="workspace-chat"
+      aria-labelledby="conversation-title"
+    >
       <div className="workspace-panel-heading">
         <h2 id="conversation-title">함께 여행을 계획해요</h2>
         <p>가고 싶은 곳과 필요한 조건을 편하게 알려주세요.</p>
