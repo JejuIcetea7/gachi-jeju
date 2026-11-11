@@ -1,5 +1,39 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { loadKakaoMaps } from './services/kakaoMaps.js'
+import { getDayMapRoutes } from './services/itineraryRoutes.js'
+
+const ROUTE_STYLES = {
+  driving: {
+    label: '자동차: 파란 실선',
+    color: '#2458ad',
+    line: 'solid',
+  },
+  walking: {
+    label: '도보: 초록 점선',
+    color: '#18735d',
+    line: 'shortdash',
+  },
+  transit: {
+    label: '대중교통: 주황 실선',
+    color: '#a64f14',
+    line: 'solid',
+  },
+}
+
+function getQueryTimeLabel(routes) {
+  if (routes.length === 0) return ''
+
+  const times = routes.map((route) => Date.parse(route.requested_at))
+  const formatter = new Intl.DateTimeFormat('ko-KR', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+    timeZone: 'Asia/Seoul',
+  })
+  const first = formatter.format(Math.min(...times))
+  const last = formatter.format(Math.max(...times))
+
+  return first === last ? first : `${first} ~ ${last}`
+}
 
 function hasCoordinates(value) {
   return Number.isFinite(value?.latitude)
@@ -73,7 +107,7 @@ function fitMapToPlaces(maps, map, points) {
   map.setBounds(bounds, 48, 48, 48, 48)
 }
 
-function ItineraryMap({ day = null, options }) {
+function ItineraryMap({ day = null, options, mapRoutes }) {
   const headingId = useId()
   const containerRef = useRef(null)
   const contextRef = useRef(null)
@@ -85,22 +119,45 @@ function ItineraryMap({ day = null, options }) {
     [day, options],
   )
 
-  const requestKey = JSON.stringify([points, retryCount])
-  const status = points.length === 0
+  const { routes, missingCount } = useMemo(
+    () => getDayMapRoutes(day, mapRoutes),
+    [day, mapRoutes],
+  )
+
+  const mapPoints = useMemo(() => [
+    ...points,
+    ...routes.flatMap((route) => route.paths.flatMap((path) => (
+      path.map(([longitude, latitude]) => ({ longitude, latitude }))
+    ))),
+  ], [points, routes])
+
+  const routeLegend = [...new Set(routes.map((route) => route.transport))]
+    .map((mode) => ROUTE_STYLES[mode].label)
+    .join(' · ')
+
+  const queryTime = getQueryTimeLabel(routes)
+  const hasPartialRoute = routes.some(
+    (route) => route.geometry_status === 'partial',
+  )
+
+  const requestKey = JSON.stringify([points, routes, retryCount])
+  const status = mapPoints.length === 0
     ? 'empty'
     : mapState?.key === requestKey ? mapState.status : 'loading'
 
   useEffect(() => {
     const container = containerRef.current
-    if (!container || points.length === 0) return
+    if (!container || mapPoints.length === 0) return
 
     let active = true
     let map = null
     let observer = null
     const overlays = []
+    const polylines = []
 
     function releaseMap() {
       observer?.disconnect()
+      polylines.forEach((line) => line.setMap(null))
       overlays.forEach((overlay) => overlay.setMap(null))
       map?.setKeyboardShortcuts(false)
 
@@ -118,8 +175,8 @@ function ItineraryMap({ day = null, options }) {
 
         map = new maps.Map(container, {
           center: new maps.LatLng(
-            points[0].latitude,
-            points[0].longitude,
+            mapPoints[0].latitude,
+            mapPoints[0].longitude,
           ),
           level: 5,
           scrollwheel: false,
@@ -132,6 +189,24 @@ function ItineraryMap({ day = null, options }) {
         )
 
         contextRef.current = { maps, map }
+
+        for (const route of routes) {
+          const style = ROUTE_STYLES[route.transport]
+
+          for (const path of route.paths) {
+            polylines.push(new maps.Polyline({
+              map,
+              path: path.map(([longitude, latitude]) => (
+                new maps.LatLng(latitude, longitude)
+              )),
+              strokeWeight: 5,
+              strokeColor: style.color,
+              strokeOpacity: 0.9,
+              strokeStyle: style.line,
+              zIndex: 1,
+            }))
+          }
+        }
 
         const groups = new Map()
 
@@ -163,10 +238,11 @@ function ItineraryMap({ day = null, options }) {
             content: label,
             xAnchor: 0.5,
             yAnchor: 0.5,
+            zIndex: 3,
           }))
         }
 
-        fitMapToPlaces(maps, map, points)
+        fitMapToPlaces(maps, map, mapPoints)
 
         observer = new ResizeObserver(() => {
           if (!active) return
@@ -198,13 +274,13 @@ function ItineraryMap({ day = null, options }) {
       active = false
       releaseMap()
     }
-  }, [points, requestKey])
+  }, [points, routes, mapPoints, requestKey])
 
   function handleShowAll() {
     const context = contextRef.current
 
     if (context) {
-      fitMapToPlaces(context.maps, context.map, points)
+      fitMapToPlaces(context.maps, context.map, mapPoints)
     }
   }
 
@@ -224,7 +300,7 @@ function ItineraryMap({ day = null, options }) {
   return (
     <section className="itinerary-map" aria-labelledby={headingId}>
       <div className="itinerary-map-heading">
-        <h3 id={headingId}>여행 장소 지도</h3>
+        <h3 id={headingId}>여행 경로 지도</h3>
 
         <button
           type="button"
@@ -232,7 +308,7 @@ function ItineraryMap({ day = null, options }) {
           disabled={status !== 'ready'}
           onClick={handleShowAll}
         >
-          전체 위치 보기
+          {routes.length > 0 ? '전체 경로 보기' : '전체 위치 보기'}
         </button>
       </div>
 
@@ -248,7 +324,7 @@ function ItineraryMap({ day = null, options }) {
 
       {status === 'empty' && (
         <p className="map-status" role="status">
-          지도에 표시할 장소의 좌표가 아직 없습니다.
+          지도에 표시할 장소나 경로의 좌표가 아직 없습니다.
         </p>
       )}
 
@@ -270,7 +346,7 @@ function ItineraryMap({ day = null, options }) {
         ref={containerRef}
         className="itinerary-map-canvas"
         role="region"
-        aria-label="여행 출발지와 방문 장소 위치 지도"
+        aria-label="여행 출발지, 방문 장소와 이동 경로 지도"
         aria-busy={status === 'loading'}
         tabIndex={0}
       />
@@ -295,6 +371,29 @@ function ItineraryMap({ day = null, options }) {
             </li>
           ))}
         </ul>
+      )}
+
+      {routes.length > 0 && (
+        <>
+          <p className="itinerary-map-description">
+            {routeLegend}
+            <br />
+            경로 조회 시각(한국): {queryTime}
+          </p>
+          <p className="itinerary-map-description">
+            선은 조회 시점의 이동 경로입니다.
+            휠체어 통행 가능 여부는 일정의 접근성 안내를 확인해 주세요.
+          </p>
+        </>
+      )}
+
+      {(missingCount > 0 || hasPartialRoute) && (
+        <p className="itinerary-map-description">
+          {missingCount > 0 && (
+            <>이동 {missingCount}개 구간은 표시할 경로를 확인하지 못했습니다. </>
+          )}
+          {hasPartialRoute && '일부 구간은 확인된 경로만 표시합니다.'}
+        </p>
       )}
 
       {missing.length > 0 && (

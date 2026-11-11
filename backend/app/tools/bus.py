@@ -206,6 +206,28 @@ def _summarize_segment(segment: dict) -> dict:
     summary["arriving_buses"] = arriving_buses
     return summary
 
+def _build_bus_route_summary(result: dict) -> tuple[dict, dict]:
+    """조회한 후보에서 경로 하나를 선택하고 요약과 선택 경로를 함께 반환합니다."""
+    best_route = _select_best_route(result["routes"])
+    selected_result = {**result, "routes": [best_route]}
+    trip = _build_bus_trip(selected_result)
+    route = trip["routes"][0]
+
+    segments = [
+        _summarize_segment(segment)
+        for segment in route["segments"]
+    ]
+    summary = {
+        "status": trip["status"],
+        "duration_seconds": route["duration_seconds"],
+        "distance_m": route["distance_m"],
+        "transfers": route["transfers"],
+        "fare_krw": route["fare_krw"],
+        "segments": segments,
+    }
+    return summary, route
+
+
 def get_bus_route_summary(
     *,
     origin_latitude: float,
@@ -225,21 +247,5 @@ def get_bus_route_summary(
     if result["status"] != "ok":
         return result
 
-    best_route = _select_best_route(result["routes"])
-    result["routes"] = [best_route]
-    trip = _build_bus_trip(result)
-    route = trip["routes"][0]
-
-    segments = []
-    for segment in route["segments"]:
-        segment_summary = _summarize_segment(segment)
-        segments.append(segment_summary)
-
-    return {
-        "status": trip["status"],
-        "duration_seconds": route["duration_seconds"],
-        "distance_m": route["distance_m"],
-        "transfers": route["transfers"],
-        "fare_krw": route["fare_krw"],
-        "segments": segments,
-    }
+    summary, _ = _build_bus_route_summary(result)
+    return summary
