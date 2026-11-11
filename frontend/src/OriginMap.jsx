@@ -56,14 +56,27 @@ function OriginMap({
 
   useEffect(() => {
     const container = containerRef.current
+    if (!container) return
+
+    const observer = new ResizeObserver(() => {
+      const map = mapRef.current
+      if (!map) return
+
+      const center = map.getCenter()
+      map.relayout()
+      map.setCenter(center)
+    })
+
+    observer.observe(container)
 
     return () => {
+      observer.disconnect()
       requestIdRef.current += 1
       markerRef.current?.setMap(null)
       mapRef.current?.setKeyboardShortcuts(false)
       markerRef.current = null
       mapRef.current = null
-      container?.replaceChildren()
+      container.replaceChildren()
     }
   }, [])
 
@@ -90,7 +103,7 @@ function OriginMap({
           mapRef.current = new maps.Map(containerRef.current, {
             center: position,
             level: 3,
-            scrollwheel: false,
+            scrollwheel: true,
             keyboardShortcuts: true,
           })
           mapRef.current.addControl(
@@ -171,7 +184,7 @@ function OriginMap({
           // 제주 지역을 보여주는 초기 화면이며 센터의 좌표가 아닙니다.
           center: new maps.LatLng(33.38, 126.55),
           level: 10,
-          scrollwheel: false,
+          scrollwheel: true,
           keyboardShortcuts: true,
         })
 

@@ -19,8 +19,8 @@ class ChatRequestTests(unittest.TestCase):
         self.assertEqual(item.history, [])
         self.assertIsNone(item.current_plan)
 
-    def test_options_allow_one_to_three_days(self):
-        for days in [1, 2, 3]:
+    def test_options_allow_positive_trip_days(self):
+        for days in [1, 2, 3, 4, 7, 30]:
             with self.subTest(days=days):
                 item = ChatRequest(
                     message="바다도 넣어 주세요.",
@@ -119,7 +119,7 @@ class ChatRequestTests(unittest.TestCase):
     def test_invalid_options_are_rejected(self):
         cases = [
             {"trip_days": 0},
-            {"trip_days": 4},
+            {"trip_days": -1},
             {"trip_days": True},
             {"transport": "airplane"},
             {"start_date": "11월 20일"},

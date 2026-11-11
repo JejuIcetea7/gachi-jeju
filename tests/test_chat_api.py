@@ -112,8 +112,8 @@ class ChatApiTests(unittest.TestCase):
         )
         self.assertIs(schema, chat_router.ChatAgentReply)
 
-    def test_one_to_three_day_plans_use_database_values(self):
-        for days in [1, 2, 3]:
+    def test_multiple_day_plans_use_database_values(self):
+        for days in [1, 2, 3, 5]:
             with self.subTest(days=days):
                 self.agent.reset_mock()
                 options = {**OPTIONS, "trip_days": days}
@@ -225,7 +225,7 @@ class ChatApiTests(unittest.TestCase):
     def test_invalid_input_skips_agent(self):
         for body in [
             {"message": " "},
-            {"message": "추천해 주세요.", "options": {"trip_days": 4}},
+            {"message": "추천해 주세요.", "options": {"trip_days": 0}},
             {"message": "추천해 주세요.", "options": {"rest_minutes": 20}},
         ]:
             with self.subTest(body=body):

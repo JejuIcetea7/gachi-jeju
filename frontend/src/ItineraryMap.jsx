@@ -179,7 +179,7 @@ function ItineraryMap({ day = null, options, mapRoutes }) {
             mapPoints[0].longitude,
           ),
           level: 5,
-          scrollwheel: false,
+          scrollwheel: true,
           keyboardShortcuts: true,
         })
 

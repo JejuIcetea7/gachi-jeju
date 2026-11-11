@@ -57,8 +57,8 @@ function parseDate(value) {
 }
 
 function validateTripDays(days) {
-  if (!Number.isInteger(days) || days < 1 || days > 3) {
-    throw new Error('현재는 당일부터 2박 3일까지 선택할 수 있습니다.')
+  if (!Number.isSafeInteger(days) || days < 1) {
+    throw new Error('여행 일수는 1일 이상의 정수여야 합니다.')
   }
 }
 
@@ -101,15 +101,13 @@ export function getTripEndDate(startDate, tripDays) {
     throw new Error('여행 날짜를 다시 확인해 주세요.')
   }
 
-  const endDate = new Date(
-    start + (tripDays - 1) * DAY_MS,
-  ).toISOString().slice(0, 10)
+  const end = start + (tripDays - 1) * DAY_MS
 
-  if (!isTravelDate(endDate)) {
+  if (end > parseDate('9999-12-31')) {
     throw new Error('선택할 수 있는 날짜 범위를 벗어났습니다.')
   }
 
-  return endDate
+  return new Date(end).toISOString().slice(0, 10)
 }
 
 export function formatTripDuration(tripDays) {
@@ -117,4 +115,23 @@ export function formatTripDuration(tripDays) {
 
   validateTripDays(tripDays)
   return tripDays === 1 ? '당일' : `${tripDays - 1}박 ${tripDays}일`
+}
+
+export function getKoreaToday(now = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(now)
+
+  const values = Object.fromEntries(
+    parts.map(({ type, value }) => [type, value]),
+  )
+
+  return `${values.year}-${values.month}-${values.day}`
+}
+
+export function isPastTravelDate(value, now = new Date()) {
+  return isTravelDate(value) && value < getKoreaToday(now)
 }
