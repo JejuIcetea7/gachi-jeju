@@ -40,8 +40,9 @@
 | 가상환경 | venv | Python 의존성 관리 |
 | 프론트엔드 | React | 웹 개발 |
 
-- 개발 실행·환경: [API 명세](docs/api.md)
-- UI 구성·검증: [프론트 문서](docs/frontend-ui.md)
+- 현재 대화형 UI·`POST /chat`·지도·검증: [대화형 여행 플래너와 이동 경로 지도](docs/chat-planner.md)
+- 기존 `POST /plan` API: [기존 API 명세](docs/api.md)
+- 이전 단계형 UI: [이전 프론트 문서](docs/frontend-ui.md)
 - 외부 서비스 의존성: 실시간 API, LLM API
 
 
