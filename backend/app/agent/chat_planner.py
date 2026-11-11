@@ -115,4 +115,5 @@ def run_chat_agent(
         "model_call_count": count_model_calls(new_messages),
         "tool_call_counts": count_tool_calls(new_messages),
         "route_calls": route_calls,
+        "messages": new_messages,
     }

@@ -1,0 +1,167 @@
+[
+  {
+    "case_id": "C01",
+    "description": "휠체어·자동차·당일·자연, 출발 제주국제공항",
+    "expect_plan": true,
+    "time_window": null,
+    "request": {
+      "message": "휠체어를 타고 자연을 즐길 수 있는 당일 여행 일정을 짜 주세요.",
+      "options": {
+        "departure": "제주국제공항",
+        "departure_latitude": 33.50683984835887,
+        "departure_longitude": 126.49272304493574,
+        "transport": "driving",
+        "mobility_aid": "wheelchair",
+        "start_date": "2026-11-20",
+        "trip_days": 1,
+        "travel_styles": ["자연"],
+        "requirements": [],
+        "return_to_origin": false
+      }
+    }
+  },
+  {
+    "case_id": "C02",
+    "description": "유모차·도보·당일·공원+산책로, 출발 제주시청",
+    "expect_plan": true,
+    "time_window": null,
+    "request": {
+      "message": "유모차를 끌고 걸어서 다닐 수 있는 공원이나 산책로로 당일 일정을 짜 주세요.",
+      "options": {
+        "departure": "제주시청",
+        "departure_latitude": 33.4995342412698,
+        "departure_longitude": 126.531171087129,
+        "transport": "walking",
+        "mobility_aid": "stroller",
+        "start_date": "2026-11-20",
+        "trip_days": 1,
+        "travel_styles": ["공원", "산책로"],
+        "requirements": [],
+        "return_to_origin": false
+      }
+    }
+  },
+  {
+    "case_id": "C03",
+    "description": "휠체어·대중교통·당일·박물관·전시, 계단 피하기, 출발 제주국제공항",
+    "expect_plan": true,
+    "time_window": null,
+    "request": {
+      "message": "휠체어로 버스를 타고 박물관이나 전시를 보는 당일 일정을 짜 주세요. 계단은 피하고 싶어요.",
+      "options": {
+        "departure": "제주국제공항",
+        "departure_latitude": 33.50683984835887,
+        "departure_longitude": 126.49272304493574,
+        "transport": "transit",
+        "mobility_aid": "wheelchair",
+        "start_date": "2026-11-20",
+        "trip_days": 1,
+        "travel_styles": ["박물관·전시"],
+        "requirements": ["step_free"],
+        "return_to_origin": false
+      }
+    }
+  },
+  {
+    "case_id": "C04",
+    "description": "휠체어·자동차·당일·해변, 장애인 화장실+주차, 출발지 귀환, 출발 제주국제공항",
+    "expect_plan": true,
+    "time_window": null,
+    "request": {
+      "message": "휠체어로 해변을 둘러보는 당일 일정을 짜 주세요. 장애인 화장실과 장애인 주차가 꼭 필요해요.",
+      "options": {
+        "departure": "제주국제공항",
+        "departure_latitude": 33.50683984835887,
+        "departure_longitude": 126.49272304493574,
+        "transport": "driving",
+        "mobility_aid": "wheelchair",
+        "start_date": "2026-11-20",
+        "trip_days": 1,
+        "travel_styles": ["해변"],
+        "requirements": ["accessible_toilet", "accessible_parking"],
+        "return_to_origin": true
+      }
+    }
+  },
+  {
+    "case_id": "C05",
+    "description": "보조기구 미선택·자동차·1박 2일·자연+해변, 숙소 주소 지정(제주시)",
+    "expect_plan": true,
+    "time_window": null,
+    "request": {
+      "message": "자연과 해변 위주로 1박 2일 일정을 짜 주세요. 숙소 주소는 제주특별자치도 제주시 광양9길 10이에요.",
+      "options": {
+        "transport": "driving",
+        "start_date": "2026-11-20",
+        "trip_days": 2,
+        "travel_styles": ["자연", "해변"],
+        "requirements": []
+      }
+    }
+  },
+  {
+    "case_id": "C06",
+    "description": "유모차·자동차·2박 3일·전체, 계단 피하기, 숙소 주소 지정(서귀포시)",
+    "expect_plan": true,
+    "time_window": null,
+    "request": {
+      "message": "유모차를 쓰는 가족이에요. 계단 없는 곳으로 2박 3일 일정을 짜 주세요. 숙소 주소는 제주특별자치도 서귀포시 중앙로 105예요.",
+      "options": {
+        "transport": "driving",
+        "mobility_aid": "stroller",
+        "start_date": "2026-11-20",
+        "trip_days": 3,
+        "travel_styles": ["자연", "해변", "박물관·전시", "산책로", "공원", "시장"],
+        "requirements": ["step_free"]
+      }
+    }
+  },
+  {
+    "case_id": "C07",
+    "description": "옵션 없음, 정보가 부족해 되묻기를 기대",
+    "expect_plan": false,
+    "time_window": null,
+    "request": {
+      "message": "부모님 모시고 제주 가고 싶어요.",
+      "options": {}
+    }
+  },
+  {
+    "case_id": "C08",
+    "description": "휠체어·자동차·당일·시장+박물관, 10시~15시와 휴식 30분, 출발 제주국제공항",
+    "expect_plan": true,
+    "time_window": {"start": "10:00", "end": "15:00"},
+    "request": {
+      "message": "휠체어로 시장과 박물관을 보는 당일 일정을 짜 주세요. 10시부터 15시까지, 중간에 30분 쉬고 싶어요.",
+      "options": {
+        "departure": "제주국제공항",
+        "departure_latitude": 33.50683984835887,
+        "departure_longitude": 126.49272304493574,
+        "transport": "driving",
+        "mobility_aid": "wheelchair",
+        "start_date": "2026-11-20",
+        "trip_days": 1,
+        "travel_styles": ["시장", "박물관·전시"],
+        "requirements": [],
+        "return_to_origin": false
+      }
+    }
+  },
+  {
+    "case_id": "C09",
+    "description": "유모차·자동차·2박 3일·전체, 계단 피하기, 숙소 위치가 흐릿해 되묻기를 기대",
+    "expect_plan": false,
+    "time_window": null,
+    "request": {
+      "message": "유모차를 쓰는 가족이에요. 계단 없는 곳으로 2박 3일 일정을 짜 주세요. 숙소는 서귀포 시내예요.",
+      "options": {
+        "transport": "driving",
+        "mobility_aid": "stroller",
+        "start_date": "2026-11-20",
+        "trip_days": 3,
+        "travel_styles": ["자연", "해변", "박물관·전시", "산책로", "공원", "시장"],
+        "requirements": ["step_free"]
+      }
+    }
+  }
+]
