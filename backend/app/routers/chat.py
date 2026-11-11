@@ -30,6 +30,8 @@ from .plan import (
     verify_places,
 )
 
+from ..services.plan_routes import MapRoute, select_plan_routes
+
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
@@ -158,6 +160,11 @@ def build_chat_messages(
         "message": chat_request.message,
     }
 
+    if payload["current_plan"] is not None:
+        for day in payload["current_plan"]["days"]:
+            for item in day["items"]:
+                item["route_id"] = None
+
     messages = [
         message.model_dump()
         for message in chat_request.history
@@ -193,9 +200,9 @@ class ChatResponse(BaseModel):
     reply: str
     options: ChatOptions
     plan: PlanBodyResponse | None
+    map_routes: list[MapRoute] = Field(default_factory=list)
     warnings: list[str]
     meta: PlanMetaResponse
-
 
 @router.post(
     "/chat",
@@ -209,6 +216,7 @@ class ChatResponse(BaseModel):
         504: {"model": ErrorResponse, "description": "AI 시간 초과"},
     },
 )
+
 def create_chat(chat_request: ChatRequest):
     """대화와 선택 옵션을 받아 질문 또는 검증한 일정을 반환합니다."""
     started_at = time.perf_counter()
@@ -238,6 +246,7 @@ def create_chat(chat_request: ChatRequest):
 
     reply_text = chat_reply.reply
     plan = None
+    map_routes = []
     warnings = []
 
     if chat_reply.plan is not None:
@@ -287,10 +296,18 @@ def create_chat(chat_request: ChatRequest):
                     500, "internal_error", "장소 DB를 읽지 못했습니다."
                 )
 
+    if plan is not None:
+        map_routes, route_warnings = select_plan_routes(
+            plan,
+            agent_result.get("route_calls") or [],
+        )
+        warnings.extend(route_warnings)
+
     return {
         "reply": reply_text,
         "options": chat_reply.options,
         "plan": plan,
+        "map_routes": map_routes,
         "warnings": warnings,
         "meta": {
             "model_call_count": agent_result["model_call_count"],

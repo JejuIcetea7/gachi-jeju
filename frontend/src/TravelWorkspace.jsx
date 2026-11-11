@@ -342,6 +342,7 @@ function TravelWorkspace() {
                 <ItineraryMap
                   day={visiblePlan?.days[0] ?? null}
                   options={planOptions}
+                  mapRoutes={planResult.map_routes}
                 />
 
                 <div
