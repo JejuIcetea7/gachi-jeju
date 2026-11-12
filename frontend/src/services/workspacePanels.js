@@ -1,5 +1,5 @@
 export const PANEL_MIN_WIDTHS = Object.freeze([220, 280, 320])
-export const DEFAULT_PANEL_WEIGHTS = Object.freeze([0.07, 0.13, 0.80])
+export const DEFAULT_PANEL_WEIGHTS = Object.freeze([0.07, 0.24, 0.69])
 export const PANEL_GUTTER_WIDTH = 16
 
 const MIN_TOTAL_WIDTH = PANEL_MIN_WIDTHS.reduce(

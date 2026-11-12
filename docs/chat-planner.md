@@ -354,7 +354,7 @@ data/raw/jeju_datahub/hub_1/001_DSC00236.jpg
 기본 배치는 옵션 영역을 소폭 넓히고 대화창을 줄여,
 지도·일정표에 더 넓은 공간을 배정합니다.
 
-너비 비율은 `localStorage`의 `gachi-jeju.workspace-panels.v2`에 저장합니다.
+너비 비율은 `localStorage`의 `gachi-jeju.workspace-panels.v3`에 저장합니다.
 이전 저장 키의 너비는 불러오지 않아 새 기본 배치를 적용합니다.
 이후 사용자가 조절한 너비는 새로고침해도 복원합니다.
 
