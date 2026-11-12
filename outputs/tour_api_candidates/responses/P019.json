@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "4026828",
+            "contenttypeid": "38",
+            "saleitem": "의류 , 신발류 , 가방류",
+            "saleitemcost": "",
+            "fairday": "월-일요일",
+            "opendateshopping": "",
+            "shopguide": "",
+            "culturecenter": "",
+            "restroom": "없음",
+            "infocentershopping": "064-805-5004",
+            "scaleshopping": "",
+            "restdateshopping": "",
+            "parkingshopping": "불가능",
+            "chkbabycarriageshopping": "",
+            "chkpetshopping": "",
+            "chkcreditcardshopping": "가능",
+            "opentime": "12:00~23:00"
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

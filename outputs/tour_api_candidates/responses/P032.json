@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "1146121",
+            "contenttypeid": "12",
+            "heritage1": "0",
+            "heritage2": "0",
+            "heritage3": "0",
+            "infocenter": "064-802-8000",
+            "opendate": "",
+            "restdate": "연중무휴",
+            "expguide": "",
+            "expagerange": "",
+            "accomcount": "",
+            "useseason": "",
+            "usetime": "- 파크 운영시간 08:30~19:30- 스카이파크 09:30~17:20- 백조보트 10:00~17:00- 풋티풋티 족욕카페 09:30~17:00",
+            "parking": "가능",
+            "chkbabycarriage": "없음",
+            "chkpet": "",
+            "chkcreditcard": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

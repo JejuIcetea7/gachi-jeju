@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "745449",
+            "contenttypeid": "12",
+            "heritage1": "0",
+            "heritage2": "0",
+            "heritage3": "0",
+            "infocenter": "064-783-0882",
+            "opendate": "",
+            "restdate": "연중무휴",
+            "expguide": "숲속 바이크 / 캐릭 파크 / 녹차족욕 (사전예약필수) 등",
+            "expagerange": "",
+            "accomcount": "",
+            "useseason": "",
+            "usetime": "09:00~18:00※ 방문 전 입장시간 문의 요망",
+            "parking": "가능",
+            "chkbabycarriage": "",
+            "chkpet": "",
+            "chkcreditcard": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

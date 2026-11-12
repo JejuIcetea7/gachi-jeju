@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "126451",
+            "contenttypeid": "12",
+            "heritage1": "0",
+            "heritage2": "0",
+            "heritage3": "0",
+            "infocenter": "064-728-3989",
+            "opendate": "",
+            "restdate": "연중무휴",
+            "expguide": "",
+            "expagerange": "",
+            "accomcount": "",
+            "useseason": "",
+            "usetime": "상시 개방\n※ 해수욕장 개장기간에는 변동 가능성 있음",
+            "parking": "가능",
+            "chkbabycarriage": "",
+            "chkpet": "",
+            "chkcreditcard": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

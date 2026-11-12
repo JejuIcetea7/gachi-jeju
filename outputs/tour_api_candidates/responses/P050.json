@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "2800664",
+            "contenttypeid": "12",
+            "heritage1": "0",
+            "heritage2": "0",
+            "heritage3": "0",
+            "infocenter": "성산포항종합여객터미널 064-782-5671",
+            "opendate": "",
+            "restdate": "연중무휴",
+            "expguide": "",
+            "expagerange": "",
+            "accomcount": "",
+            "useseason": "",
+            "usetime": "12:00~22:00※ 여객선 이용 시 배 운항시간 확인 요망",
+            "parking": "가능요금 (최초 30분 무료 / 60분 1,500원 / 120분 3,500원 / 240분 7,500원)",
+            "chkbabycarriage": "",
+            "chkpet": "",
+            "chkcreditcard": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

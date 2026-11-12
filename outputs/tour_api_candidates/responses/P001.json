@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "126455",
+            "contenttypeid": "12",
+            "heritage1": "0",
+            "heritage2": "0",
+            "heritage3": "0",
+            "infocenter": "064-796-0001",
+            "opendate": "",
+            "restdate": "연중무휴",
+            "expguide": "",
+            "expagerange": "",
+            "accomcount": "",
+            "useseason": "",
+            "usetime": "- 2월~5월 09:00~17:00- 6월~8월 09:00~17:30- 9월~10월 09:00~17:00- 11월~1월 09:00~16:30",
+            "parking": "가능요금 (무료)",
+            "chkbabycarriage": "",
+            "chkpet": "",
+            "chkcreditcard": "가능"
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

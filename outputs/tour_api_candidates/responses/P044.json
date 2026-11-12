@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "127514",
+            "contenttypeid": "12",
+            "heritage1": "0",
+            "heritage2": "0",
+            "heritage3": "0",
+            "infocenter": "064-710-7575",
+            "opendate": "1993년 12월 20일",
+            "restdate": "[야외전시원 및 산책로]연중무휴[실내시설]설·추석 당일",
+            "expguide": "봄을 여는 벚꽃이야기 / 세상의 많고 많은 초록들 / 한라수목원 물속 친구들과의 만남 등",
+            "expagerange": "",
+            "accomcount": "",
+            "useseason": "",
+            "usetime": "[야외전시원 및 산책로]- 상시 개방[야외 산책로]- 09:00~23:00[실내시설]- 3월~11월 09:00~18:00- 12월~2월 09:00~17:00",
+            "parking": "가능",
+            "chkbabycarriage": "",
+            "chkpet": "",
+            "chkcreditcard": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

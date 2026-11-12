@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "126471",
+            "contenttypeid": "12",
+            "heritage1": "0",
+            "heritage2": "0",
+            "heritage3": "0",
+            "infocenter": "064-710-6797",
+            "opendate": "",
+            "restdate": "연중무휴",
+            "expguide": "제주민요체험 / 오메기술체험 / 고소리술체험 / 천연염색 등",
+            "expagerange": "전 연령",
+            "accomcount": "",
+            "useseason": "",
+            "usetime": "상시 개방",
+            "parking": "가능",
+            "chkbabycarriage": "",
+            "chkpet": "",
+            "chkcreditcard": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

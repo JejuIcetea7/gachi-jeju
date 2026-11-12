@@ -22,7 +22,12 @@
 | `B주변정보` | `dgk_*` (group `B주변정보`) | 50 | 주변시설 |
 | `그 외` 주변시설 | `dgk_*` (group `그 외`, `휠체어 진입` 컬럼) | 42 | 주변시설 |
 
-- 허브 `-1.csv`(이동 경로 좌표)와 HWP는 이번에 읽지 않는다.
+- 허브 `-1.csv`(이동 경로 좌표)는 읽지 않는다.
+- 일반정보 HWP(`D관광정보` 49개)는 `scripts/convert_hwp_general_info.py`로 변환한 `data/processed/hwp_general_info/<데이터ID>.json`을 읽어 `closed_days`에만 쓴다.
+- 허브 HWP(`hub_102`~`hub_121` 20개)는 같은 스크립트로 `data/processed/hwp_hub_info/hub_<번호>.md·json`에 변환하고, 사람이 원문을 보고 정리한 `data/processed/closed_days_map.csv`(`place_id`, `name`, `source_file`, `raw_text`, `closed_days`, `status`)를 읽는다.
+- 나머지 장소는 한국관광공사 국문 관광정보 API로 후보를 찾고(`scripts/match_tour_api_places.py`), 사람이 확인한 결과(`data/processed/tour_api_review.csv`)를 `scripts/apply_tour_api_closed_days.py`가 같은 대응표에 넣는다 (`source_file` = `tour_api:<콘텐츠ID>`).
+  - 후보 단계: 1 이름 같음 3km 이내 또는 포함 관계 500m 이내, 2 이름 유사도 0.6 이상 1km 이내, 3 그 외. 1단계와 `통과`만 사용
+  - `status`: `확정` / `확인필요`(빈칸). 실행 순서: `apply_tour_api_closed_days.py` → `build_places.py`
 
 ## 출력
 
@@ -94,7 +99,12 @@
 - `wheelchair_level`, `stroller_level`: `unknown`
 - `category`: 기본 목록(자연, 박물관, 시장, 해변, 산책로 등)으로 분류
 - `visit_minutes`: 60
-- `region`, `address`, `opening_hours`, `closed_days`, `admission_fee`: 빈칸
+- `region`, `address`, `opening_hours`, `admission_fee`: 빈칸
+- `closed_days`: 일반정보 HWP 첫 표의 `휴무일` 원문을 정리 값으로 바꿔 넣고, 없으면 빈칸
+  - 정리 값 형식 6가지를 `;`로 잇는다: `연중무휴`(단독), `매주 월요일`, `매월 첫째 화요일`, `1월 1일`, `설날`·`추석`(당일)·`설날연휴`·`추석연휴`(전날~다음날 3일), `법정공휴일`
+  - 일반정보 HWP: 원문 → 정리 값 대응표와 장소별 예외표(P128, P156, P131)로 처리, 표에 없는 원문은 빈칸 + 실패 로그
+  - 허브 HWP: `closed_days_map.csv` 값이 일반정보 값보다 우선. 형식에 안 맞는 정리 값은 넣지 않고 실패 로그
+  - HWP ↔ `place_id`: 파일 이름 속 장소명(공백 제거)을 대응표의 원본 파일 이름과 맞추고, 오타 2건은 데이터ID로 직접 연결
 
 ### 6. 출처 간 충돌
 - 지점·주변시설: 출처별로 모두 넣고 `source_file`로 구분한다.
@@ -122,6 +132,8 @@
 - `choose_representative_spot`: 대표 좌표 고르기
 - `find_duplicate_candidates`: 중복 후보 목록 출력
 - `create_draft_place_id_map`, `load_place_id_map`: 대응표 초안 만들기·읽기
+- `load_hwp_closed_days_by_place_id`: 일반정보 HWP 변환 결과에서 `closed_days` 정리 값 만들기 (`load_place_id_by_name_token`, `extract_place_name_token`, `read_closed_days_raw_text`)
+- `load_closed_days_map`, `is_valid_closed_days`: 휴무일 대응표 읽기, 정리 값 형식 검사
 - `build_places_rows`, `record_place_conflicts`: places 집계, 충돌 기록
 - `verify_outputs`: 행 수 대조, `place_id` 참조 확인
 - `find_anomalies`: 이상값 기록 (값은 고치지 않음)
@@ -136,7 +148,10 @@
 - 확인함: 사려니숲길 3쌍 - `hub_37`·`hub_51` 좌표 전부 같음(지점 35/35, 경로 111/111) → `hub_37` 제외. `hub_72`와는 입구 6~8지점만 겹침 → 별개
 - 확인함: 중복 후보 19쌍 사용자 확정 (2026-11-05) - 중복 1쌍(`hub_37`·`hub_51`), 나머지 18쌍은 별개 장소 (싱계물해양공원/싱게물공원과용당포구 포함)
 - 확인 안 함: 합친 262행 전수 대조, 카테고리 분류 정확도
-- 확인 안 함: HWP 내용 (로컬 파일은 Git LFS 포인터)
+- 확인함: 일반정보 HWP 49개 모두 `place_id`와 연결, `closed_days` 48곳 `연중무휴`, P131 빈칸, 나머지 칸 변화 없음 (2026-11-12)
+- 확인함: 허브 HWP 20개 `git lfs fetch`로 받음(크기·해시 일치), 20개 모두 `이용안내`에 관람시간·휴무 정보. `closed_days` 19곳 채움, P108 빈칸(휴무 언급 없음). 합계 67곳 채움, 103곳 빈칸 (2026-11-12)
+- 확인함: 한국관광공사 API로 103곳 중 74곳 채움(P108 포함). 합계 141곳 채움, 29곳 `확인필요` 빈칸. 대응표 정리 값 형식 위반 0건, `places.csv`에서 바뀐 칸은 `closed_days`뿐 (2026-11-12)
+- 확인 안 함: 1단계 59곳 후보 전수 대조 (규칙만으로 통과), 형식에서 뺀 조건("월요일이 공휴일이면 다음 비공휴일 휴무" 등)의 일정 영향
 
 ## 이후 개선
 

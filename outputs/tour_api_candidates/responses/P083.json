@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "1013258",
+            "contenttypeid": "38",
+            "saleitem": "농산물 / 수산물 / 과일 등",
+            "saleitemcost": "",
+            "fairday": "",
+            "opendateshopping": "",
+            "shopguide": "",
+            "culturecenter": "",
+            "restroom": "있음",
+            "infocentershopping": "0507-1353-1949",
+            "scaleshopping": "",
+            "restdateshopping": "연중무휴※ 점포 별로 상이함",
+            "parkingshopping": "가능요금 (30분 무료 / 1시간 1,500원)",
+            "chkbabycarriageshopping": "",
+            "chkpetshopping": "",
+            "chkcreditcardshopping": "",
+            "opentime": "- 하절기 07:00~21:00- 동절기 07:00~20:00※ 점포 별로 상이함"
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

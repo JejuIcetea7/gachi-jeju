@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "228854",
+            "contenttypeid": "12",
+            "heritage1": "0",
+            "heritage2": "0",
+            "heritage3": "0",
+            "infocenter": "064-794-2940\n064-760-6322",
+            "opendate": "",
+            "restdate": "연중무휴※ 기상상황에 따라 통제되므로 자세한 사항은 방문 전 전화 문의 요망",
+            "expguide": "",
+            "expagerange": "",
+            "accomcount": "",
+            "useseason": "",
+            "usetime": "09:00~17:00※ 기상상황에 따라 통제되므로 자세한 사항은 방문 전 전화 문의 요망",
+            "parking": "가능",
+            "chkbabycarriage": "",
+            "chkpet": "",
+            "chkcreditcard": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

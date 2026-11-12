@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "130857",
+            "contenttypeid": "14",
+            "scale": "",
+            "usefee": "[개인]- 어른 1,100원- 청소년 500원[단체 (10인 이상)]- 어른 800원- 청소년 300원※ 자세한 할인정보 및 이용요금은 홈페이지 참조",
+            "discountinfo": "",
+            "spendtime": "",
+            "parkingfee": "무료",
+            "infocenterculture": "064-782-9898",
+            "accomcountculture": "",
+            "usetimeculture": "- 09:00~18:00- 매표 마감 17:00",
+            "restdateculture": "매주 월요일 (단, 월요일이 공휴일인 경우 그 다음 첫 번째 비공휴일) / 1월 1일 / 설·추석 연휴",
+            "parkingculture": "",
+            "chkbabycarriageculture": "",
+            "chkpetculture": "",
+            "chkcreditcardculture": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

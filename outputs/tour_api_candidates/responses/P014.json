@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "2901520",
+            "contenttypeid": "38",
+            "saleitem": "식료품 , 기타 서비스",
+            "saleitemcost": "",
+            "fairday": "월-일요일",
+            "opendateshopping": "",
+            "shopguide": "",
+            "culturecenter": "",
+            "restroom": "있음",
+            "infocentershopping": "0507-1418-5312",
+            "scaleshopping": "",
+            "restdateshopping": "",
+            "parkingshopping": "가능",
+            "chkbabycarriageshopping": "",
+            "chkpetshopping": "",
+            "chkcreditcardshopping": "가능",
+            "opentime": "09:00-18:00"
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

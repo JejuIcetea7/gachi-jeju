@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "2738734",
+            "contenttypeid": "12",
+            "heritage1": "0",
+            "heritage2": "0",
+            "heritage3": "0",
+            "infocenter": "064-733-2200",
+            "opendate": "",
+            "restdate": "연중무휴",
+            "expguide": "",
+            "expagerange": "",
+            "accomcount": "",
+            "useseason": "",
+            "usetime": "[3월~9월]- 09:00~19:00- 매표마감 18:00- 카페뉴기니 09:30~19:00- 한식당 11:00~18:00[10월~2월]- 09:00~18:00- 매표마감 17:00- 카페뉴기니 09:00~18:00- 한식당 11:00~18:00",
+            "parking": "가능 (소형 82대 / 대형 18대)",
+            "chkbabycarriage": "",
+            "chkpet": "",
+            "chkcreditcard": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

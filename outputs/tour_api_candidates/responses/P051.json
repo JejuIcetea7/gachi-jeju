@@ -1,0 +1,35 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "2414827",
+            "contenttypeid": "28",
+            "openperiod": "",
+            "reservation": "",
+            "infocenterleports": "064-900-8800",
+            "scaleleports": "",
+            "accomcountleports": "",
+            "restdateleports": "연중무휴 (단, 우천 및 폭설 시 통행 제한 있을 수 있으므로 방문 전 유선 확인 필요)",
+            "usetimeleports": "09:00~17:00 ※ 안전한 산행을 위하여 아래 시간 이후 입산 통제- 하절기(4월~9월) 14:00- 동절기(10월~3월) 12:00",
+            "usefeeleports": "",
+            "expagerangeleports": "",
+            "parkingleports": "",
+            "parkingfeeleports": "무료",
+            "chkbabycarriageleports": "",
+            "chkpetleports": "",
+            "chkcreditcardleports": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}
