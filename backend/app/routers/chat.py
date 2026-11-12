@@ -33,6 +33,7 @@ from .plan import (
 
 from ..services.plan_routes import MapRoute, select_plan_routes
 from ..services.plan_consistency import validate_plan_moves
+from ..services.route_endpoints import validate_route_endpoints
 from ..services.plan_evaluation import extract_tool_trace
 from ..services.place_verification import restore_missing_place_ids
 
@@ -357,6 +358,26 @@ def create_chat(chat_request: ChatRequest):
                 )
 
     if plan is not None:
+        endpoint_errors = validate_route_endpoints(
+            plan,
+            agent_result.get("route_calls") or [],
+            departure={
+                "latitude": chat_reply.options.departure_latitude,
+                "longitude": chat_reply.options.departure_longitude,
+            },
+            return_to_origin=chat_reply.options.return_to_origin is True,
+        )
+        if endpoint_errors:
+            return build_error_response(
+                502,
+                "plan_validation_failed",
+                "생성된 일정과 이동 경로의 위치가 일치하지 않습니다. 다시 시도해 주세요.",
+                details=[
+                    {"field": "plan", "reason": reason}
+                    for reason in endpoint_errors
+                ],
+            )
+
         map_routes, route_warnings = select_plan_routes(
             plan,
             agent_result.get("route_calls") or [],
