@@ -12,6 +12,7 @@ function OriginPicker({ initialKeyword, confirmedPlace, onConfirm }) {
     (!initialName || initialName === CENTER_ORIGIN_NAME)
 
   const [searchKeyword, setSearchKeyword] = useState(initialKeyword)
+  const [searchVersion, setSearchVersion] = useState(0)
   const [isBusy, setIsBusy] = useState(shouldLoadCenter)
   const [message, setMessage] = useState(
     shouldLoadCenter
@@ -36,6 +37,7 @@ function OriginPicker({ initialKeyword, confirmedPlace, onConfirm }) {
         if (requestId !== requestIdRef.current) return
         onConfirmRef.current({ ...place })
         setSearchKeyword(place.name)
+        setSearchVersion((version) => version + 1)
         setMessage('센터를 기본 출발지로 선택했습니다.')
       } catch (error) {
         if (requestId === requestIdRef.current) setMessage(error.message)
@@ -64,6 +66,7 @@ function OriginPicker({ initialKeyword, confirmedPlace, onConfirm }) {
       if (requestId !== requestIdRef.current) return
       onConfirmRef.current({ ...place })
       setSearchKeyword(place.name)
+      setSearchVersion((version) => version + 1)
       setMessage('출발지를 선택했습니다.')
     } catch (error) {
       if (requestId === requestIdRef.current) setMessage(error.message)
@@ -77,6 +80,7 @@ function OriginPicker({ initialKeyword, confirmedPlace, onConfirm }) {
     requestIdRef.current += 1
     onConfirmRef.current({ ...place })
     setSearchKeyword(place.name)
+    setSearchVersion((version) => version + 1)
     setMessage('선택한 장소를 출발지로 설정했습니다.')
   }
 
@@ -110,6 +114,7 @@ function OriginPicker({ initialKeyword, confirmedPlace, onConfirm }) {
       <p className="map-status" role="status">{message}</p>
 
       <OriginSearch
+        key={searchVersion}
         keyword={searchKeyword}
         onKeywordChange={setSearchKeyword}
         onConfirm={handleManualConfirm}
