@@ -342,30 +342,33 @@ function TravelWorkspace() {
                   </div>
                 )}
 
-                <ItineraryMap
-                  day={visiblePlan?.days[0] ?? null}
-                  options={planOptions}
-                  mapRoutes={planResult.map_routes}
-                />
+                <div className="workspace-day-overview">
+                  <ItineraryMap
+                    day={visiblePlan?.days[0] ?? null}
+                    options={planOptions}
+                    mapRoutes={planResult.map_routes}
+                  />
 
-                <div
-                  className="workspace-schedule-scroll"
-                  role="region"
-                  aria-label="추천 일정표와 확인사항"
-                  tabIndex={0}
-                >
-                  {planResult.warnings.length > 0 && (
-                    <div className="plan-notice">
-                      <h3>확인할 사항</h3>
-                      <ul>
-                        {planResult.warnings.map((warning, index) => (
-                          <li key={index}>{warning}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  <div
+                    key={visiblePlan?.days[0]?.day ?? 0}
+                    className="workspace-schedule-scroll"
+                    role="region"
+                    aria-label="추천 일정표와 확인사항"
+                    tabIndex={0}
+                  >
+                    {planResult.warnings.length > 0 && (
+                      <div className="plan-notice">
+                        <h3>확인할 사항</h3>
+                        <ul>
+                          {planResult.warnings.map((warning, index) => (
+                            <li key={index}>{warning}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
 
-                  <TravelPlan plan={visiblePlan} autoFocus={false} />
+                    <TravelPlan plan={visiblePlan} autoFocus={false} />
+                  </div>
                 </div>
               </>
             ) : (
