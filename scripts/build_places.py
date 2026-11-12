@@ -18,6 +18,8 @@ HUB_DIRECTORY = RAW_DIRECTORY / "jeju_datahub"
 PORTAL_DIRECTORY = RAW_DIRECTORY / "data_go_kr"
 LINKS_FILE = PORTAL_DIRECTORY / "links.csv"
 PROCESSED_DIRECTORY = PROJECT_ROOT / "data" / "processed"
+HWP_GENERAL_INFO_DIRECTORY = PROCESSED_DIRECTORY / "hwp_general_info"
+CLOSED_DAYS_MAP_FILE = PROCESSED_DIRECTORY / "closed_days_map.csv"
 OUTPUT_DIRECTORY = PROJECT_ROOT / "outputs" / "build_places"
 
 PLACES_FILE = PROCESSED_DIRECTORY / "places.csv"
@@ -98,6 +100,36 @@ CATEGORY_KEYWORDS = [
     ("산책로", ["길", "해안로", "산책", "올레", "코스", "탐방로", "거리", "골목", "포구", "항", "마을",
             "해안", "도로", "환해장성"]),
 ]
+
+# 일반정보 HWP(변환 결과: scripts/convert_hwp_general_info.py)의 '휴무일' 원문(공백 제거) -> closed_days 정리 값
+CLOSED_DAYS_BY_RAW_TEXT = {
+    "연중무휴": "연중무휴",
+    "없음": "연중무휴",  # 휴무일 없음
+}
+
+# 원문이 장소 자체의 휴무일이 아닌 곳 (place_id -> closed_days 정리 값)
+CLOSED_DAYS_OVERRIDES_BY_PLACE_ID = {
+    "P128": "연중무휴",  # 금악리골목식당투어: 원문은 식당별 휴무, 골목 자체는 상시 개방
+    "P156": "연중무휴",  # 이중섭거리: 원문은 이중섭미술관 휴무, 거리 자체는 상시 개방
+    "P131": "",  # 농업생태원: 원문이 입장마감·점심시간(운영시간)이라 휴무일 정보 없음
+}
+
+# closed_days 정리 값에 쓸 수 있는 형식 (여러 개는 ';'로 잇고, 연중무휴는 단독)
+# 설날·추석은 당일, 설날연휴·추석연휴는 전날·당일·다음날 3일
+CLOSED_DAY_PATTERNS = [
+    r"연중무휴",
+    r"매주 [월화수목금토일]요일",
+    r"매월 (첫째|둘째|셋째|넷째|다섯째|마지막) [월화수목금토일]요일",
+    r"(1[0-2]|[1-9])월 (3[01]|[12][0-9]|[1-9])일",
+    r"설날|추석|설날연휴|추석연휴",
+    r"법정공휴일",
+]
+
+# 원본 파일 이름의 장소명 오타로 이름 대조가 안 되는 일반정보 HWP (데이터ID -> place_id)
+HWP_PLACE_ID_BY_DATA_ID = {
+    "15097477": "P142",  # 삼양환해장성과벌랑포구 해안길 (장소: 벌낭포구)
+    "15097482": "P146",  # 수산저주지와물메둑길 (장소: 수산저수지)
+}
 
 
 # ---------------------------------------------------------------------------
@@ -762,7 +794,125 @@ def aggregate_flag_from_spots(spots, keyword):
     return flag
 
 
-def build_places_rows(place_ids, sources_by_place_id, spots_by_place_id, representative_spots, conflicts):
+def extract_place_name_token(file_name):
+    """'제주특별자치도_<장소명>_무장애여행...' 파일 이름에서 공백을 지운 장소명을 꺼낸다. 형식이 다르면 None"""
+    place_name_token = None
+    name_match = re.match(r"제주특별자치도_(.+?)_무장애여행", file_name)
+    if name_match is not None:
+        place_name_token = re.sub(r"\s+", "", name_match.group(1))
+    return place_name_token
+
+
+def load_place_id_by_name_token():
+    """대응표의 원본 파일 이름 속 장소명 -> place_id"""
+    _, map_rows = read_csv_file(PLACE_ID_MAP_FILE, "utf-8")
+    place_id_by_name_token = {}
+    for map_row in map_rows:
+        file_name = Path(map_row["source_file"]).name
+        place_name_token = extract_place_name_token(file_name)
+        if place_name_token is None:
+            continue
+        if place_name_token in place_id_by_name_token:
+            continue
+        place_id_by_name_token[place_name_token] = map_row["place_id"]
+    return place_id_by_name_token
+
+
+def read_closed_days_raw_text(json_file):
+    """kordoc 변환 json의 첫 표에서 '휴무일' 행의 값을 읽는다. 없으면 None"""
+    raw_text = None
+    with open(json_file, encoding="utf-8") as opened_file:
+        document = json.load(opened_file)
+
+    for block in document["blocks"]:
+        if block["type"] != "table":
+            continue
+        for row in block["table"]["cells"]:
+            label = re.sub(r"\s+", "", row[0]["text"])
+            if label == "휴무일":
+                raw_text = row[1]["text"]
+        break
+    return raw_text
+
+
+def load_hwp_closed_days_by_place_id(failures):
+    """일반정보 HWP 변환 결과에서 place_id별 closed_days 정리 값을 만든다"""
+    place_id_by_name_token = load_place_id_by_name_token()
+    closed_days_by_place_id = {}
+
+    for json_file in sorted(HWP_GENERAL_INFO_DIRECTORY.glob("*.json")):
+        source_file = relative_path(json_file)
+        data_id = json_file.stem
+        hwp_files = sorted((PORTAL_DIRECTORY / f"dgk_{data_id}").glob("*.hwp"))
+        if len(hwp_files) == 0:
+            failures.append({"source_file": source_file, "step": "closed_days", "reason": "원본 hwp 없음"})
+            continue
+
+        place_id = HWP_PLACE_ID_BY_DATA_ID.get(data_id)
+        if place_id is None:
+            place_name_token = extract_place_name_token(hwp_files[0].name)
+            place_id = place_id_by_name_token.get(place_name_token)
+        if place_id is None:
+            failures.append({"source_file": source_file, "step": "closed_days", "reason": "place_id 없음"})
+            continue
+
+        if place_id in CLOSED_DAYS_OVERRIDES_BY_PLACE_ID:
+            closed_days_by_place_id[place_id] = CLOSED_DAYS_OVERRIDES_BY_PLACE_ID[place_id]
+            continue
+
+        raw_text = read_closed_days_raw_text(json_file)
+        if raw_text is None:
+            failures.append({"source_file": source_file, "step": "closed_days", "reason": "휴무일 행 없음"})
+            continue
+
+        normalized_raw_text = re.sub(r"\s+", "", raw_text)
+        closed_days = CLOSED_DAYS_BY_RAW_TEXT.get(normalized_raw_text)
+        if closed_days is None:
+            failures.append({"source_file": source_file, "step": "closed_days", "reason": "정리 규칙에 없는 휴무일: " + raw_text})
+            continue
+
+        closed_days_by_place_id[place_id] = closed_days
+    return closed_days_by_place_id
+
+
+def is_valid_closed_days(closed_days):
+    """정리 값이 CLOSED_DAY_PATTERNS 형식만으로 이루어졌는지. 빈칸(정보 없음)도 허용"""
+    if closed_days == "":
+        return True
+
+    closed_day_items = closed_days.split(";")
+    if "연중무휴" in closed_day_items and len(closed_day_items) > 1:
+        return False
+
+    for closed_day_item in closed_day_items:
+        matched = False
+        for pattern in CLOSED_DAY_PATTERNS:
+            if re.fullmatch(pattern, closed_day_item):
+                matched = True
+                break
+        if not matched:
+            return False
+    return True
+
+
+def load_closed_days_map(failures):
+    """사람이 원문을 보고 정리한 휴무일 대응표 (place_id -> closed_days). HWP 일반정보 값보다 우선"""
+    closed_days_by_place_id = {}
+    if not CLOSED_DAYS_MAP_FILE.exists():
+        return closed_days_by_place_id
+
+    source_file = relative_path(CLOSED_DAYS_MAP_FILE)
+    _, map_rows = read_csv_file(CLOSED_DAYS_MAP_FILE, "utf-8")
+    for map_row in map_rows:
+        closed_days = map_row["closed_days"]
+        if not is_valid_closed_days(closed_days):
+            failures.append({"source_file": source_file, "step": "closed_days", "reason": map_row["place_id"] + " 형식에 없는 정리 값: " + closed_days})
+            continue
+        closed_days_by_place_id[map_row["place_id"]] = closed_days
+    return closed_days_by_place_id
+
+
+def build_places_rows(place_ids, sources_by_place_id, spots_by_place_id, representative_spots, closed_days_by_place_id, conflicts):
     places_rows = []
     for place_id in place_ids:
         place_sources = sources_by_place_id[place_id]
@@ -811,7 +961,7 @@ def build_places_rows(place_ids, sources_by_place_id, spots_by_place_id, represe
             "indoor_outdoor": UNKNOWN,
             "visit_minutes": DEFAULT_VISIT_MINUTES,
             "opening_hours": "",
-            "closed_days": "",
+            "closed_days": closed_days_by_place_id.get(place_id, ""),
             "admission_fee": "",
             "sources": ";".join(source_files),
             "data_date": data_date,
@@ -1075,8 +1225,15 @@ def main():
     # 장소는 지점 원본이 있는 place_id만 만든다 (주변시설은 기존 장소에 붙음)
     place_ids = sorted(spots_by_place_id.keys())
 
-    # 7. places 집계
-    places_rows = build_places_rows(place_ids, sources_by_place_id, spots_by_place_id, representative_spots, conflicts)
+    # 7. places 집계 (휴무일: 일반정보 HWP 변환 결과, 그 위에 사람이 정리한 대응표)
+    closed_days_by_place_id = load_hwp_closed_days_by_place_id(failures)
+    closed_days_map = load_closed_days_map(failures)
+    for place_id, closed_days in closed_days_map.items():
+        closed_days_by_place_id[place_id] = closed_days
+    print("[휴무일] 일반정보 HWP + 대응표 {}곳".format(len(closed_days_by_place_id)))
+    places_rows = build_places_rows(
+        place_ids, sources_by_place_id, spots_by_place_id, representative_spots, closed_days_by_place_id, conflicts
+    )
 
     save_csv_file(PLACES_FILE, PLACES_COLUMNS, places_rows)
     save_csv_file(SPOTS_FILE, SPOTS_COLUMNS, spot_rows)
