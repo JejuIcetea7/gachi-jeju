@@ -129,17 +129,69 @@ class ChatMapRouteTests(unittest.TestCase):
         )
         self.assertEqual(body["warnings"], [])
 
-    def test_unknown_route_id_preserves_itinerary(self):
+    def test_unknown_route_id_is_rejected_before_place_lookup(self):
         self._set_result(
             make_plan("previous-execution"),
             [make_route()],
         )
 
+        response = self.client.post(
+            "/chat",
+            json={
+                "message": "일정을 추천해 주세요.",
+                "options": OPTIONS,
+            },
+        )
+        body = response.json()
+
+        self.assertEqual(response.status_code, 502, response.text)
+        self.assertEqual(body["error"]["code"], "plan_validation_failed")
+        self.assertNotIn("plan", body)
+        self.assertNotIn("map_routes", body)
+        self.lookup.assert_not_called()
+
+    def test_wrong_move_duration_is_rejected_before_place_lookup(self):
+        route = make_route()
+        route["duration_seconds"] = 1800
+        self._set_result(make_plan(), [route])
+
+        response = self.client.post(
+            "/chat",
+            json={
+                "message": "일정을 추천해 주세요.",
+                "options": OPTIONS,
+            },
+        )
+        body = response.json()
+
+        self.assertEqual(response.status_code, 502, response.text)
+        self.assertEqual(body["error"]["code"], "plan_validation_failed")
+        self.assertTrue(
+            any(
+                "10분" in detail["reason"]
+                and "30분" in detail["reason"]
+                for detail in body["error"]["details"]
+            )
+        )
+        self.lookup.assert_not_called()
+
+    def test_rounded_duration_within_tolerance_is_allowed(self):
+        route = make_route()
+        route["duration_seconds"] = 601
+        self._set_result(make_plan(), [route])
+
         body = self._post()
 
-        self.assertEqual(body["map_routes"], [])
-        self.assertEqual(len(body["plan"]["days"][0]["items"]), 2)
-        self.assertEqual(len(body["warnings"]), 1)
+        self.assertEqual(
+            body["plan"]["days"][0]["items"][0]["duration_minutes"],
+            10,
+        )
+        self.assertEqual(
+            body["map_routes"][0]["duration_seconds"],
+            601,
+        )
+        self.assertEqual(body["warnings"], [])
+        self.lookup.assert_called_once()
 
     def test_geometry_problems_preserve_itinerary(self):
         cases = [

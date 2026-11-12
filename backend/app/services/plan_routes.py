@@ -28,18 +28,18 @@ class MapRoute(BaseModel):
     paths: list[MapPath]
     requested_at: AwareDatetime
 
-
-def _transport_mode(value):
+def normalize_transport_mode(value):
     aliases = {
         "driving": "driving", "자동차": "driving", "자가용": "driving",
         "렌터카": "driving", "렌트카": "driving", "택시": "driving",
         "차량": "driving", "렌터카또는자동차": "driving",
+        "rental_car": "driving", "taxi": "driving",
         "walking": "walking", "도보": "walking",
         "transit": "transit", "대중교통": "transit", "버스": "transit",
+        "bus": "transit", "대중교통(버스·도보)": "transit",
     }
     text = "".join(value.split()).lower() if isinstance(value, str) else ""
     return aliases.get(text)
-
 
 def select_plan_routes(
     plan: dict,
@@ -95,7 +95,7 @@ def select_plan_routes(
             )
             continue
 
-        mode = _transport_mode(item.get("transport"))
+        mode = normalize_transport_mode(item.get("transport"))
         if mode is not None and route.transport != mode:
             warnings.append(
                 prefix + "일정과 조회 경로의 이동수단이 달라 경로선을 표시하지 않습니다."
