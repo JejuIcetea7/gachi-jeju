@@ -1,4 +1,7 @@
 import re
+from datetime import date, timedelta
+
+from .closed_days import STATUS_CLOSED, WEEKDAY_NAMES, judge_closed_on_date
 
 
 def _to_minutes(value: str) -> int:
@@ -85,5 +88,39 @@ def validate_plan_times(
                     f"{label}: 소요시간은 시작·종료 시각의 차이인 "
                     f"{item_end - item_start}분과 일치해야 합니다."
                 )
+
+    return errors
+
+
+def validate_plan_closed_days(
+    plan: dict,
+    start_date: date,
+    closed_days_by_place_id: dict,
+) -> list[str]:
+    """일정을 수정하지 않고 휴무일에 방문하는 장소를 찾아 반환합니다.
+    N일차 날짜는 start_date + (N - 1)일이고, 판정은 services.closed_days 와 같습니다."""
+    errors = []
+
+    for day in plan["days"]:
+        visit_date = start_date + timedelta(days=day["day"] - 1)
+        weekday_name = WEEKDAY_NAMES[visit_date.weekday()]
+
+        for index, item in enumerate(day["items"], start=1):
+            if item.get("item_type") != "visit":
+                continue
+            place_id = item.get("place_id")
+            if place_id not in closed_days_by_place_id:
+                continue
+
+            closed_days = closed_days_by_place_id[place_id]
+            status = judge_closed_on_date(closed_days, visit_date)
+            if status != STATUS_CLOSED:
+                continue
+
+            label = f"{day['day']}일차 {index}번째 일정"
+            errors.append(
+                f"{label}: {item.get('title')}은(는) "
+                f"{visit_date.isoformat()}({weekday_name}) 휴무일({closed_days})입니다."
+            )
 
     return errors

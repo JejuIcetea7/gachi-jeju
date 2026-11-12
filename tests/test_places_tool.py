@@ -71,5 +71,32 @@ class PlaceDetailsTests(unittest.TestCase):
 
         self.assertEqual(result, {"status": "not_found"})
 
+    def test_closed_days_without_visit_dates(self):
+        # P092 국립제주박물관: 매주 월요일 휴관
+        result = get_place_details(place_id="P092")
+
+        self.assertIn("매주 월요일", result["closed_days"])
+        self.assertNotIn("closed_day_checks", result)
+
+    def test_closed_day_checks_by_date(self):
+        # 2026-12-14 월요일, 2026-12-15 화요일
+        result = get_place_details(
+            place_id="P092",
+            visit_dates=["2026-12-14", "2026-12-15", "12월 16일"],
+        )
+
+        self.assertEqual(result["closed_day_checks"], {
+            "2026-12-14": "휴무",
+            "2026-12-15": "영업",
+            "12월 16일": "날짜 형식 오류",
+        })
+
+    def test_blank_closed_days_is_unknown(self):
+        # P012 생각하는정원: 휴무일 확인필요(빈칸)
+        result = get_place_details(place_id="P012", visit_dates=["2026-12-14"])
+
+        self.assertEqual(result["closed_days"], "확인 안 됨")
+        self.assertEqual(result["closed_day_checks"], {"2026-12-14": "확인 안 됨"})
+
 if __name__ == "__main__":
     unittest.main()
