@@ -33,6 +33,8 @@ from .plan import (
 
 from ..services.plan_routes import MapRoute, select_plan_routes
 from ..services.plan_consistency import validate_plan_moves
+from ..services.plan_evaluation import extract_tool_trace
+from ..services.place_verification import restore_missing_place_ids
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -302,23 +304,37 @@ def create_chat(chat_request: ChatRequest):
                     "모든 일차를 순서대로 포함해야 합니다.",
                 )
 
-            visit_place_ids = []
-            for day in chat_reply.plan.days:
-                for item in day.items:
-                    if item.item_type == "visit" and item.place_id:
-                        visit_place_ids.append(item.place_id)
-            try:
-                closed_days_by_place_id = read_closed_days_by_place_id(visit_place_ids)
-            except sqlite3.Error:
-                return build_error_response(
-                    500, "internal_error", "장소 DB를 읽지 못했습니다."
+            if not errors:
+                try:
+                    tool_trace = extract_tool_trace(
+                        agent_result.get("messages") or []
+                    )
+                    restored_plan = restore_missing_place_ids(
+                        plan_data,
+                        tool_trace,
+                    )
+                    visit_place_ids = [
+                        item["place_id"]
+                        for day in restored_plan["days"]
+                        for item in day["items"]
+                        if item.get("item_type") == "visit"
+                        and item.get("place_id")
+                    ]
+                    closed_days_by_place_id = read_closed_days_by_place_id(
+                        visit_place_ids
+                    )
+                except sqlite3.Error:
+                    return build_error_response(
+                        500, "internal_error", "장소 DB를 읽지 못했습니다."
+                    )
+
+                errors.extend(
+                    validate_plan_closed_days(
+                        restored_plan,
+                        chat_reply.options.start_date,
+                        closed_days_by_place_id,
+                    )
                 )
-            closed_day_errors = validate_plan_closed_days(
-                plan_data,
-                chat_reply.options.start_date,
-                closed_days_by_place_id,
-            )
-            errors.extend(closed_day_errors)
 
             if errors:
                 return build_error_response(
@@ -332,7 +348,9 @@ def create_chat(chat_request: ChatRequest):
                 )
 
             try:
-                plan, warnings = verify_places(chat_reply.plan)
+                plan, warnings = verify_places(
+                    TripPlan.model_validate(restored_plan)
+                )
             except sqlite3.Error:
                 return build_error_response(
                     500, "internal_error", "장소 DB를 읽지 못했습니다."

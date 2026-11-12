@@ -9,7 +9,11 @@ from ..tools.map_transport import (
     create_bus_map_tool,
 )
 from ..tools.location import find_location
-from ..tools.places import get_place_details, search_places
+from ..tools.places import (
+    get_place_details,
+    search_places,
+    search_places_by_name,
+)
 from .planner import SYSTEM_PROMPT, count_model_calls, count_tool_calls
 
 
@@ -95,6 +99,8 @@ def build_chat_agent(
         tools=[
             find_location,
             search_places,
+            search_places_by_name,
+            get_place_details,
             get_place_details,
             driving_tool,
             bus_tool,

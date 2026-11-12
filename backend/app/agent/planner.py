@@ -10,7 +10,11 @@ from ..config import LLM_MODEL, LLM_REASONING_EFFORT, get_openai_api_key
 from ..tools.bus import get_bus_route_summary
 from ..tools.driving import get_driving_time
 from ..tools.location import find_location
-from ..tools.places import get_place_details, search_places
+from ..tools.places import (
+    get_place_details,
+    search_places,
+    search_places_by_name,
+)
 from ..tools.walking import get_walking_route
 
 SYSTEM_PROMPT = """너는 이동약자와 동반자의 조건을 고려하여 제주 여행 일정을 만드는 도우미다.
@@ -23,8 +27,12 @@ SYSTEM_PROMPT = """너는 이동약자와 동반자의 조건을 고려하여 �
 - 추가 요청이 선택한 시간이나 필수 조건과 충돌하면 조건을 임의로 완화하지 않는다.
 
 여행지와 접근성:
-- 여행지는 search_places 결과에서만 고른다.
-- 일정에 넣기 전에 get_place_details로 출입과 관람 구간, 계단, 경사, 화장실 등의 정보를 확인한다.
+- 여행지는 search_places 또는 search_places_by_name 결과에서 고른다.
+- 사용자가 특정 장소 이름을 말하면 search_places_by_name으로 DB 후보를 먼저 찾는다.
+- 주변 여행지 추천은 search_places로 반경 안의 후보를 찾는다.
+- name_match가 partial이거나 동명 후보가 여러 개면 이름만으로 동일 장소라고 확정하지 않는다.
+  후보의 이름·좌표와 find_location 결과 등으로 확인하고, 구분할 수 없으면 사용자에게 질문한다.
+- 후보를 선택한 뒤 get_place_details로 출입과 관람 구간, 계단, 경사, 화장실 등의 정보를 확인한다.
 - 필수 이용 조건을 충족하는 근거가 없는 장소는 확정 일정에 넣지 않는다.
 - 이용할 수 있는 구간과 제한되는 구간을 구분한다. 일부 구간의 설명을 장소 전체에 적용하지 않는다.
 - accessibility_notes에는 확인한 내용과 미확인 내용을 구분하고, 근거가 되는 지점 이름을 함께 적는다.
@@ -48,7 +56,9 @@ SYSTEM_PROMPT = """너는 이동약자와 동반자의 조건을 고려하여 �
 
 출력:
 - 하루마다 방문(visit)과 이동(move) 항목을 시간순으로 넣는다.
-- visit의 place_id는 search_places 결과를 그대로 쓴다. 휴식은 별도의 item_type으로 만들지 않는다.
+- visit의 title과 place_id는 장소 검색과 get_place_details에서 확인한 동일한 DB 장소의 이름과 ID를 그대로 쓴다.
+- 상세 조회한 장소의 place_id를 빠뜨리거나 다른 장소의 ID로 바꾸지 않는다.
+- 휴식은 별도의 item_type으로 만들지 않는다.
 - 조건을 충족하는 일정을 만들 수 없으면 해당 날짜의 items를 빈 목록으로 두고, 이유와 확인이 필요한 조건을 assumptions에 적는다.
 """
 
@@ -57,7 +67,10 @@ class ScheduleItem(BaseModel):
     end_time: str = Field(description="끝 시각, 예: 10:20")
     item_type: Literal["visit", "move"] = Field(description="visit: 장소 방문, move: 장소 사이 이동")
     title: str = Field(description="visit이면 장소 이름, move이면 '출발지 → 도착지'")
-    place_id: str | None = Field(default=None, description="visit일 때 search_places 결과의 place_id")
+    place_id: str | None = Field(
+        default=None,
+        description="visit일 때 장소 검색·상세 조회에서 확인한 place_id",
+    )
     transport: str | None = Field(default=None, description="move일 때 이동수단: 렌터카, 택시, 버스, 도보")
     duration_minutes: int | None = Field(default=None, description="머무는 시간 또는 이동 시간(분)")
     distance_km: float | None = Field(default=None, description="move일 때 이동 거리(km)")
@@ -88,6 +101,8 @@ def build_planner_agent():
     tools = [
         find_location,
         search_places,
+        search_places_by_name,
+        get_place_details,
         get_place_details,
         get_driving_time,
         get_bus_route_summary,
