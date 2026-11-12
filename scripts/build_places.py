@@ -25,6 +25,8 @@ OUTPUT_DIRECTORY = PROJECT_ROOT / "outputs" / "build_places"
 PLACES_FILE = PROCESSED_DIRECTORY / "places.csv"
 SPOTS_FILE = PROCESSED_DIRECTORY / "place_spots.csv"
 NEARBY_FILE = PROCESSED_DIRECTORY / "place_nearby.csv"
+ACCESSIBILITY_RAW_FILE = PROCESSED_DIRECTORY / "place_accessibility_raw.csv"
+HWP_HUB_INFO_DIRECTORY = PROCESSED_DIRECTORY / "hwp_hub_info"
 PLACE_ID_MAP_FILE = PROCESSED_DIRECTORY / "place_id_map.csv"
 DATABASE_FILE = PROCESSED_DIRECTORY / "gachi_jeju.db"
 
@@ -65,6 +67,20 @@ NEARBY_COLUMNS = [
     "access_note", "wheelchair_entry", "accessible_toilet", "source_file",
 ]
 PLACE_ID_MAP_COLUMNS = ["source_file", "source_format", "source_place_name", "place_id", "match_status"]
+ACCESSIBILITY_RAW_COLUMNS = ["place_id", "section", "facility_name", "description", "raw_value", "source_file"]
+
+# 일반정보 HWP 상세 표 제목(공백 제거) 앞부분 -> section
+ACCESSIBILITY_DETAIL_SECTIONS = [
+    ("추천대상", "추천 대상"),
+    ("주차장", "주차장"),
+    ("장애인화장실", "장애인 화장실"),
+    ("주출입구", "주출입구"),
+]
+# 주차장 표에서 접근성과 관계없는 구분 (일반 주차·대형버스·전기차)
+EXCLUDED_PARKING_GROUPS = ["일반주차구역", "대형버스접근여부", "전기차충전소"]
+# 허브 HWP 이용안내에서 가져올 항목. 주차장은 '장애인'이 들어간 경우만
+HUB_ACCESSIBILITY_LABELS = ["보조기기", "편의장비", "승강기"]
+HUB_PARKING_LABEL = "주차장"
 
 COLUMN_TYPES = {
     "latitude": "REAL",
@@ -912,6 +928,325 @@ def load_closed_days_map(failures):
     return closed_days_by_place_id
 
 
+# ---------------------------------------------------------------------------
+# 접근성 원본 표 (HWP 변환 결과 -> place_accessibility_raw)
+# ---------------------------------------------------------------------------
+
+def remove_spaces(text):
+    return re.sub(r"\s+", "", text)
+
+
+def list_origin_cells(cells):
+    """kordoc 표 격자에서 합쳐진 칸에 덮인 자리를 빼고, 행마다 (열 번호, 글자, 행 개수)를 남긴다"""
+    covered_positions = set()
+    origin_rows = []
+    for row_index, row in enumerate(cells):
+        origin_row = []
+        for column_index, cell in enumerate(row):
+            if (row_index, column_index) in covered_positions:
+                continue
+            for row_offset in range(cell["rowSpan"]):
+                for column_offset in range(cell["colSpan"]):
+                    if row_offset == 0 and column_offset == 0:
+                        continue
+                    covered_positions.add((row_index + row_offset, column_index + column_offset))
+            origin_cell = (column_index, cell["text"].strip(), cell["rowSpan"])
+            origin_row.append(origin_cell)
+        origin_rows.append(origin_row)
+    return origin_rows
+
+
+def read_cell_text_at(origin_row, column_index):
+    """그 열에서 시작하는 칸의 글자. 없으면 빈칸"""
+    cell_text = ""
+    for origin_column, text, _ in origin_row:
+        if origin_column == column_index:
+            cell_text = text
+    return cell_text
+
+
+def is_image_row(origin_row):
+    for _, text, _ in origin_row:
+        if text.startswith("![image]"):
+            return True
+    return False
+
+
+def make_accessibility_row(place_id, section, facility_name, description, raw_value, source_file):
+    return {
+        "place_id": place_id,
+        "section": section,
+        "facility_name": facility_name,
+        "description": description,
+        "raw_value": raw_value,
+        "source_file": source_file,
+    }
+
+
+def split_table_title(title):
+    """'주차장 1 – 리사무소' -> (section, '주차장 1 – 리사무소'의 시설명). 상세 표가 아니면 (None, '')"""
+    normalized_title = remove_spaces(title)
+    section = None
+    for title_prefix, section_name in ACCESSIBILITY_DETAIL_SECTIONS:
+        if normalized_title.startswith(title_prefix):
+            section = section_name
+    if section is None or "사진" in normalized_title:
+        return None, ""
+
+    facility_name = ""
+    title_parts = re.split(r"\s+[–-]\s+|–", title, maxsplit=1)
+    if len(title_parts) == 2:
+        facility_name = title_parts[1].strip()
+    number_match = re.search(r"(\d+)", title_parts[0])
+    if number_match is not None and facility_name != "":
+        facility_name = number_match.group(1) + ". " + facility_name
+    return section, facility_name
+
+
+def extract_basic_info_rows(origin_rows, place_id, source_file):
+    """기본정보 표: 주차장·화장실 3행 묶음(소제목 행, 값 행, 비고 행)과 보조기기 대여"""
+    rows = []
+    for row_index, origin_row in enumerate(origin_rows):
+        if len(origin_row) == 0 or origin_row[0][0] != 0:
+            continue
+        block_label = remove_spaces(origin_row[0][1])
+
+        if block_label.startswith("보조기기") and len(origin_row) > 1:
+            rows.append(make_accessibility_row(place_id, "기본정보", "", "보조기기 대여", origin_row[1][1], source_file))
+            continue
+        if block_label not in ("주차장", "화장실"):
+            continue
+
+        header_row = origin_row[1:]
+        value_row = origin_rows[row_index + 1]
+        for header_column, header_text, _ in header_row:
+            description = header_text
+            if block_label not in remove_spaces(header_text):
+                description = block_label + " " + header_text
+            raw_value = read_cell_text_at(value_row, header_column)
+            rows.append(make_accessibility_row(place_id, "기본정보", "", description, raw_value, source_file))
+
+        note_row = origin_rows[row_index + 2]
+        if len(note_row) >= 2:
+            note_label = note_row[0][1]
+            description = note_label
+            if block_label not in remove_spaces(note_label):
+                description = block_label + " " + note_label
+            rows.append(make_accessibility_row(place_id, "기본정보", "", description, note_row[1][1], source_file))
+    return rows
+
+
+def extract_recommendation_rows(origin_rows, place_id, source_file):
+    """추천 대상 표: 유형(없으면 구분)별 한 줄, 값은 추천여부 + 비고"""
+    rows = []
+    header_columns = {}
+    for header_column, header_text, _ in origin_rows[1]:
+        header_columns[remove_spaces(header_text)] = header_column
+
+    current_group = ""
+    for origin_row in origin_rows[2:]:
+        group = read_cell_text_at(origin_row, header_columns["구분"])
+        if group != "":
+            current_group = group
+        target_type = read_cell_text_at(origin_row, header_columns["유형"])
+        recommendation = read_cell_text_at(origin_row, header_columns["추천여부"])
+        note = read_cell_text_at(origin_row, header_columns["비고"])
+
+        description = target_type
+        if description == "":
+            description = current_group
+        raw_value = recommendation
+        if note != "":
+            raw_value = (raw_value + " " + note).strip()
+        rows.append(make_accessibility_row(place_id, "추천 대상", "", description, raw_value, source_file))
+    return rows
+
+
+def extract_detail_rows(origin_rows, section, facility_name, place_id, source_file):
+    """주차장·장애인 화장실·주출입구 표: 구분+항목 -> 내용+단위. 사진 행부터는 읽지 않는다"""
+    rows = []
+    header_columns = {}
+    for header_column, header_text, _ in origin_rows[1]:
+        normalized_header = remove_spaces(header_text)
+        if normalized_header != "":
+            header_columns[normalized_header] = header_column
+
+    current_group = ""
+    for origin_row in origin_rows[2:]:
+        if is_image_row(origin_row):
+            break
+        group = read_cell_text_at(origin_row, header_columns["구분"])
+        if group != "":
+            current_group = group
+        if section == "주차장" and remove_spaces(current_group) in EXCLUDED_PARKING_GROUPS:
+            continue
+
+        if remove_spaces(current_group) == "기타":
+            other_text = read_cell_text_at(origin_row, header_columns["항목"])
+            if other_text != "":
+                rows.append(make_accessibility_row(place_id, section, facility_name, "기타", other_text, source_file))
+            continue
+
+        item = read_cell_text_at(origin_row, header_columns["항목"])
+        content = read_cell_text_at(origin_row, header_columns["내용"])
+        unit = ""
+        if "단위" in header_columns:
+            unit = read_cell_text_at(origin_row, header_columns["단위"])
+
+        description = (current_group + " " + item).strip()
+        raw_value = content
+        if unit not in ("", "-") and content not in ("", "-"):
+            raw_value = content + unit
+        rows.append(make_accessibility_row(place_id, section, facility_name, description, raw_value, source_file))
+    return rows
+
+
+def extract_general_info_accessibility_rows(json_file, place_id):
+    """일반정보 HWP 변환 json -> 접근성 원본 줄 목록"""
+    source_file = relative_path(json_file)
+    with open(json_file, encoding="utf-8") as opened_file:
+        document = json.load(opened_file)
+
+    tables = []
+    for block in document["blocks"]:
+        if block["type"] == "table":
+            tables.append(list_origin_cells(block["table"]["cells"]))
+
+    rows = extract_basic_info_rows(tables[0], place_id, source_file)
+    for origin_rows in tables[1:]:
+        title = origin_rows[0][0][1]
+        section, facility_name = split_table_title(title)
+        if section is None:
+            continue
+        if section == "추천 대상":
+            rows.extend(extract_recommendation_rows(origin_rows, place_id, source_file))
+        else:
+            rows.extend(extract_detail_rows(origin_rows, section, facility_name, place_id, source_file))
+    return rows
+
+
+def read_hub_label(text):
+    """'보조기기', '편의장비', '승강기', '주차장' 중 하나로 시작하면 그 이름"""
+    normalized_text = remove_spaces(text)
+    for label in HUB_ACCESSIBILITY_LABELS + [HUB_PARKING_LABEL]:
+        if normalized_text.startswith(label):
+            return label
+    return None
+
+
+def keep_hub_value(label, raw_value):
+    if raw_value == "":
+        return False
+    if label == HUB_PARKING_LABEL and "장애인" not in raw_value:
+        return False
+    return True
+
+
+def extract_hub_info_accessibility_rows(json_file, place_id):
+    """허브 HWP 변환 json -> '이동약자를 위한 안내' 문단 + 이용안내의 보조기기·편의장비·승강기(·장애인 주차) 줄"""
+    source_file = relative_path(json_file)
+    with open(json_file, encoding="utf-8") as opened_file:
+        document = json.load(opened_file)
+
+    rows = []
+    in_mobility_guide = False
+    mobility_guide_found = False
+    for block in document["blocks"]:
+        # 개요의 '이동약자를 위한 안내'는 문단이 아닌 블록(제목·표·사진)이나 '이용안내'가 나오면 끝난다
+        if block["type"] != "paragraph":
+            in_mobility_guide = False
+
+        if block["type"] == "paragraph":
+            text = block.get("text", "").strip()
+            normalized_text = remove_spaces(text)
+            if normalized_text.startswith("이동약자를위한안내") and not mobility_guide_found:
+                mobility_guide_found = True
+                in_mobility_guide = True
+                inline_text = re.sub(r"^\s*이동약자\s*를\s*위한\s*안내\s*:?", "", text).strip()
+                if inline_text != "":
+                    rows.append(make_accessibility_row(place_id, "이용안내", "", "이동약자 안내", inline_text, source_file))
+                continue
+            if normalized_text == "이용안내":
+                in_mobility_guide = False
+                continue
+            if in_mobility_guide and text != "":
+                rows.append(make_accessibility_row(place_id, "이용안내", "", "이동약자 안내", text, source_file))
+                continue
+
+            paragraph_match = re.match(r"^\s*(보조기기|편의장비|승강기|주\s*차\s*장)\s*:\s*(.*)$", text)
+            if paragraph_match is not None:
+                label = read_hub_label(paragraph_match.group(1))
+                raw_value = paragraph_match.group(2).strip()
+                if keep_hub_value(label, raw_value):
+                    rows.append(make_accessibility_row(place_id, "이용안내", "", label, raw_value, source_file))
+            continue
+
+        if block["type"] != "table":
+            continue
+        current_label = None
+        for origin_row in list_origin_cells(block["table"]["cells"]):
+            if len(origin_row) == 0:
+                continue
+            first_column, first_text, _ = origin_row[0]
+            value_cells = origin_row
+            if first_column == 0:
+                current_label = read_hub_label(first_text)
+                value_cells = origin_row[1:]
+            if current_label is None:
+                continue
+
+            value_texts = []
+            for _, text, _ in value_cells:
+                if text != "":
+                    value_texts.append(text)
+            raw_value = " ".join(value_texts)
+            if keep_hub_value(current_label, raw_value):
+                rows.append(make_accessibility_row(place_id, "이용안내", "", current_label, raw_value, source_file))
+    return rows
+
+
+def load_place_id_by_hub_folder():
+    """대응표의 허브 폴더 이름(hub_N) -> place_id"""
+    _, map_rows = read_csv_file(PLACE_ID_MAP_FILE, "utf-8")
+    place_id_by_hub_folder = {}
+    for map_row in map_rows:
+        folder_match = re.search(r"jeju_datahub/(hub_\d+)/", map_row["source_file"])
+        if folder_match is None:
+            continue
+        place_id_by_hub_folder[folder_match.group(1)] = map_row["place_id"]
+    return place_id_by_hub_folder
+
+
+def build_accessibility_raw_rows(failures):
+    """일반정보 HWP 49곳 + 허브 HWP 20곳의 접근성 원본 줄"""
+    accessibility_rows = []
+
+    place_id_by_name_token = load_place_id_by_name_token()
+    for json_file in sorted(HWP_GENERAL_INFO_DIRECTORY.glob("*.json")):
+        data_id = json_file.stem
+        place_id = HWP_PLACE_ID_BY_DATA_ID.get(data_id)
+        if place_id is None:
+            hwp_files = sorted((PORTAL_DIRECTORY / f"dgk_{data_id}").glob("*.hwp"))
+            if len(hwp_files) > 0:
+                place_name_token = extract_place_name_token(hwp_files[0].name)
+                place_id = place_id_by_name_token.get(place_name_token)
+        if place_id is None:
+            failures.append({"source_file": relative_path(json_file), "step": "accessibility", "reason": "place_id 없음"})
+            continue
+        accessibility_rows.extend(extract_general_info_accessibility_rows(json_file, place_id))
+
+    place_id_by_hub_folder = load_place_id_by_hub_folder()
+    for json_file in sorted(HWP_HUB_INFO_DIRECTORY.glob("*.json")):
+        place_id = place_id_by_hub_folder.get(json_file.stem)
+        if place_id is None:
+            failures.append({"source_file": relative_path(json_file), "step": "accessibility", "reason": "place_id 없음"})
+            continue
+        accessibility_rows.extend(extract_hub_info_accessibility_rows(json_file, place_id))
+
+    accessibility_rows.sort(key=lambda row: row["place_id"])
+    return accessibility_rows
+
+
 def build_places_rows(place_ids, sources_by_place_id, spots_by_place_id, representative_spots, closed_days_by_place_id, conflicts):
     places_rows = []
     for place_id in place_ids:
@@ -1130,8 +1465,10 @@ def build_sqlite_database():
     load_csv_to_sqlite(connection, "places", PLACES_FILE)
     load_csv_to_sqlite(connection, "place_spots", SPOTS_FILE)
     load_csv_to_sqlite(connection, "place_nearby", NEARBY_FILE)
+    load_csv_to_sqlite(connection, "place_accessibility_raw", ACCESSIBILITY_RAW_FILE)
     connection.execute('CREATE INDEX idx_place_spots_place_id ON place_spots(place_id)')
     connection.execute('CREATE INDEX idx_place_nearby_place_id ON place_nearby(place_id)')
+    connection.execute('CREATE INDEX idx_place_accessibility_raw_place_id ON place_accessibility_raw(place_id)')
     connection.commit()
 
     cursor = connection.execute("SELECT COUNT(*) FROM places WHERE accessible_toilet = 'Y'")
@@ -1238,6 +1575,16 @@ def main():
     save_csv_file(PLACES_FILE, PLACES_COLUMNS, places_rows)
     save_csv_file(SPOTS_FILE, SPOTS_COLUMNS, spot_rows)
     save_csv_file(NEARBY_FILE, NEARBY_COLUMNS, nearby_rows)
+
+    # 7-1. 접근성 원본 표 (HWP 변환 결과)
+    accessibility_rows = build_accessibility_raw_rows(failures)
+    save_csv_file(ACCESSIBILITY_RAW_FILE, ACCESSIBILITY_RAW_COLUMNS, accessibility_rows)
+    accessibility_place_ids = set()
+    for accessibility_row in accessibility_rows:
+        accessibility_place_ids.add(accessibility_row["place_id"])
+    print("[접근성 원본] {}줄, {}곳 -> {}".format(
+        len(accessibility_rows), len(accessibility_place_ids), relative_path(ACCESSIBILITY_RAW_FILE)
+    ))
 
     # 8. 검증
     verify_outputs(sources, output_counts, excluded_source_files, places_rows, spot_rows, nearby_rows, failures)
