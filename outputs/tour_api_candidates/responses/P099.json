@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "597562",
+            "contenttypeid": "14",
+            "scale": "",
+            "usefee": "[개인]- 어른 2,000원- 청소년/군인 1,000원- 어린이 500원 [단체 (10인 이상)]- 어른 1,400원- 청소년/군인 700원- 어린이 300원※ 무료 - 6세 이하 / 65세 이상 / 장애인 등",
+            "discountinfo": "",
+            "spendtime": "",
+            "parkingfee": "무료",
+            "infocenterculture": "064-710-7801",
+            "accomcountculture": "",
+            "usetimeculture": "- 본관 09:00~18:00- 공공수장고 09:15~17:30※ 매표시간은 관람시간 종료 30분전까지",
+            "restdateculture": "매주 월요일 / 1월 1일 / 설·추석 연휴 ※ 월요일이 공휴일(대체공휴일 포함)인 경우에는 그 다음의 첫 번째 비공휴일",
+            "parkingculture": "",
+            "chkbabycarriageculture": "",
+            "chkpetculture": "",
+            "chkcreditcardculture": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

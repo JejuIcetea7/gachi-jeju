@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "130461",
+            "contenttypeid": "14",
+            "scale": "",
+            "usefee": "무료※ 단, 유료 특별전시 제외",
+            "discountinfo": "",
+            "spendtime": "약 1시간 내외",
+            "parkingfee": "무료",
+            "infocenterculture": "064-720-8000",
+            "accomcountculture": "",
+            "usetimeculture": "09:00~18:00 (입장 마감 17:30)",
+            "restdateculture": "매주 월요일 / 1월 1일 / 설·추석 당일",
+            "parkingculture": "",
+            "chkbabycarriageculture": "",
+            "chkpetculture": "",
+            "chkcreditcardculture": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

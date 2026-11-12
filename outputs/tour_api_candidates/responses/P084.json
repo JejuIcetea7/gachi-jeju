@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "992261",
+            "contenttypeid": "38",
+            "saleitem": "청과물 / 수산물 / 약초 / 양품 / 곡물 등",
+            "saleitemcost": "",
+            "fairday": "매월 5, 10, 15, 20, 25, 30일",
+            "opendateshopping": "",
+            "shopguide": "",
+            "culturecenter": "",
+            "restroom": "",
+            "infocentershopping": "064-782-0520",
+            "scaleshopping": "",
+            "restdateshopping": "",
+            "parkingshopping": "가능",
+            "chkbabycarriageshopping": "없음",
+            "chkpetshopping": "",
+            "chkcreditcardshopping": "",
+            "opentime": "08:00~15:00※ 점포별 상이함"
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

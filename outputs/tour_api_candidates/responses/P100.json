@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "2737330",
+            "contenttypeid": "38",
+            "saleitem": "생선회 / 옥돔 / 갈치 / 젓갈 / 건어물 등",
+            "saleitemcost": "",
+            "fairday": "",
+            "opendateshopping": "연중무휴",
+            "shopguide": "",
+            "culturecenter": "",
+            "restroom": "있음",
+            "infocentershopping": "064-752-8959",
+            "scaleshopping": "",
+            "restdateshopping": "점포별로 상이함",
+            "parkingshopping": "가능요금 (최초 30분 무료 / 이후 15분당 추가 요금 500원 씩 발생)",
+            "chkbabycarriageshopping": "없음",
+            "chkpetshopping": "",
+            "chkcreditcardshopping": "가능",
+            "opentime": "점포별로 상이함"
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "745313",
+            "contenttypeid": "12",
+            "heritage1": "0",
+            "heritage2": "0",
+            "heritage3": "0",
+            "infocenter": "064-728-8900",
+            "opendate": "2009년 3월 20일",
+            "restdate": "매주 월요일 / 신정 / 설 당일 / 추석 당일<br>(단, 월요일이 공휴일인 경우 그 공휴일 다음의 첫번째 평일)",
+            "expguide": "※ 월별로 진행하는 프로그램이 상이하므로 자세한 사항은 홈페이지 참조 요망",
+            "expagerange": "",
+            "accomcount": "",
+            "useseason": "",
+            "usetime": "[하절기(4월~9월)]<br>15:00~23:00<br>\n[동절기(10월~3월)]<br>14:00~22:00<br>\n※ 마감 1시간 30분 전까지 입장 가능",
+            "parking": "가능(약 소형 100대 / 대형 10대)",
+            "chkbabycarriage": "불가",
+            "chkpet": "",
+            "chkcreditcard": "가능"
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "1544730",
+            "contenttypeid": "14",
+            "scale": "",
+            "usefee": "[개인]- 어른 5,000원- 청소년 / 군경 3,500원[단체(10인 이상)]- 어른 4,000원- 청소년 / 군경 2,800원※ 무료 : 만 12세 이하 / 만 65세 이상 / 장애인 / 국가유공자 등※ 자세한 사항은 홈페이지 참조",
+            "discountinfo": "[50% 할인]- 제주도민※ 신분증 지참 필수",
+            "spendtime": "",
+            "parkingfee": "무료",
+            "infocenterculture": "064-710-7732~3",
+            "accomcountculture": "",
+            "usetimeculture": "09:00~18:00 (매표 마감 17:00)",
+            "restdateculture": "매주 월요일 (단, 월요일이 공휴일인 경우 다음의 첫번째 비공휴일에 휴원) / 1월 1일 / 설날 및 추석 당일",
+            "parkingculture": "",
+            "chkbabycarriageculture": "",
+            "chkpetculture": "",
+            "chkcreditcardculture": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "2661407",
+            "contenttypeid": "14",
+            "scale": "",
+            "usefee": "[개인]\n- 성인 10,000원\n- 청소년/군경 9,000원\n- 어린이/경로 8,000원\n[단체]\n- 성인 9,000원\n- 청소년/군경 8,000원\n- 어린이/경로 7,000원\n※ 무료 : 국빈 및 그 수행자 / 공무수행을 위해 출입하는 자 / 36개월 미만 영유아 등\n※ 체험료는 별도로 부과됨\n※ 자세한 사항은 홈페이지 참조 및 전화 문의 요망",
+            "discountinfo": "",
+            "spendtime": "",
+            "parkingfee": "",
+            "infocenterculture": "064-800-2114",
+            "accomcountculture": "",
+            "usetimeculture": "09:00~18:00 (입장 마감 17:00)",
+            "restdateculture": "매월 셋째 월요일",
+            "parkingculture": "",
+            "chkbabycarriageculture": "",
+            "chkpetculture": "",
+            "chkcreditcardculture": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

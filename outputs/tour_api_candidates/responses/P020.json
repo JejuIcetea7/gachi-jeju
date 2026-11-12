@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "879234",
+            "contenttypeid": "12",
+            "heritage1": "0",
+            "heritage2": "0",
+            "heritage3": "0",
+            "infocenter": "새연교 안내소 064-760-3471",
+            "opendate": "2009년 9월 28일",
+            "restdate": "연중무휴",
+            "expguide": "하절기 음악분수 / 불꽃놀이 등 /프로그램 상설(자세한 일정은 서귀포시 관광진흥과 홈페이지 참조)",
+            "expagerange": "",
+            "accomcount": "",
+            "useseason": "",
+            "usetime": "상시 개방※ 점등시간이 있으므로 자세한 사항은 전화문의 요망",
+            "parking": "가능",
+            "chkbabycarriage": "",
+            "chkpet": "",
+            "chkcreditcard": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

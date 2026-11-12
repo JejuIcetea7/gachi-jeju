@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "2752772",
+            "contenttypeid": "14",
+            "scale": "",
+            "usefee": "무료",
+            "discountinfo": "",
+            "spendtime": "약 30~60분",
+            "parkingfee": "무료",
+            "infocenterculture": "064-772-1252",
+            "accomcountculture": "",
+            "usetimeculture": "09:00~18:00 (미사 시간 별도)",
+            "restdateculture": "연중무휴",
+            "parkingculture": "가능",
+            "chkbabycarriageculture": "없음",
+            "chkpetculture": "",
+            "chkcreditcardculture": "없음"
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

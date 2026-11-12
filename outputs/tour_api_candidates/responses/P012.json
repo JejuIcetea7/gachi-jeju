@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "2907434",
+            "contenttypeid": "38",
+            "saleitem": "기념품점",
+            "saleitemcost": "",
+            "fairday": "월-일요일",
+            "opendateshopping": "",
+            "shopguide": "환급서비스 제공방식 : 사후",
+            "culturecenter": "",
+            "restroom": "완비",
+            "infocentershopping": "064-772-3701",
+            "scaleshopping": "",
+            "restdateshopping": "",
+            "parkingshopping": "가능",
+            "chkbabycarriageshopping": "",
+            "chkpetshopping": "",
+            "chkcreditcardshopping": "기타 모바일페이,직불카드,신용카드,위챗페이,알리페이,애플페이,삼성페이,카카오페이,제로페이",
+            "opentime": "09:00-18:00"
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

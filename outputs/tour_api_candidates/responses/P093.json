@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "2606209",
+            "contenttypeid": "12",
+            "heritage1": "0",
+            "heritage2": "0",
+            "heritage3": "0",
+            "infocenter": "0507-1388-9988",
+            "opendate": "2018-05-05",
+            "restdate": "연중무휴",
+            "expguide": "조류생태설명회 / 앵무새먹이체험 / 소동물먹이체험 등",
+            "expagerange": "",
+            "accomcount": "",
+            "useseason": "",
+            "usetime": "[하절기(3월~10월)]09:00~18:00 (입장 마감 17:00)[동절기(11월~2월)]09:00~17:30 (입장 마감 16:50)",
+            "parking": "가능",
+            "chkbabycarriage": "",
+            "chkpet": "",
+            "chkcreditcard": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

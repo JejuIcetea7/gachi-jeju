@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "665594",
+            "contenttypeid": "12",
+            "heritage1": "0",
+            "heritage2": "0",
+            "heritage3": "0",
+            "infocenter": "064-795-8080",
+            "opendate": "",
+            "restdate": "연중무휴",
+            "expguide": "관광승마 / 공연 관람 / 더마카트 등",
+            "expagerange": "",
+            "accomcount": "",
+            "useseason": "",
+            "usetime": "[카트/승마]- 09:00~17:00 - 입장 마감 16:30[공연]- 10:30~17:30※ 자세한 사항은 홈페이지 참조",
+            "parking": "가능",
+            "chkbabycarriage": "",
+            "chkpet": "",
+            "chkcreditcard": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

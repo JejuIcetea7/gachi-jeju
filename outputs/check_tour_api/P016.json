@@ -1,0 +1,82 @@
+{
+  "searchKeyword2": {
+    "response": {
+      "header": {
+        "resultCode": "0000",
+        "resultMsg": "OK"
+      },
+      "body": {
+        "items": {
+          "item": [
+            {
+              "addr1": "제주특별자치도 서귀포시 안덕면 병악로 166",
+              "addr2": "",
+              "zipcode": "63526",
+              "areacode": "",
+              "cat1": "",
+              "cat2": "",
+              "cat3": "",
+              "contentid": "741109",
+              "contenttypeid": "12",
+              "createdtime": "20090526200728",
+              "firstimage": "https://tong.visitkorea.or.kr/cms/resource/85/4064285_image2_1.jpg",
+              "firstimage2": "https://tong.visitkorea.or.kr/cms/resource/85/4064285_image3_1.jpg",
+              "cpyrhtDivCd": "Type1",
+              "mapx": "126.3682546610",
+              "mapy": "33.2898683072",
+              "mlevel": "6",
+              "modifiedtime": "20261111084803",
+              "sigungucode": "",
+              "tel": "",
+              "title": "카멜리아힐",
+              "lDongRegnCd": "50",
+              "lDongSignguCd": "130",
+              "lclsSystm1": "NA",
+              "lclsSystm2": "NA04",
+              "lclsSystm3": "NA040700"
+            }
+          ]
+        },
+        "numOfRows": 1,
+        "pageNo": 1,
+        "totalCount": 1
+      }
+    }
+  },
+  "detailIntro2": {
+    "response": {
+      "header": {
+        "resultCode": "0000",
+        "resultMsg": "OK"
+      },
+      "body": {
+        "items": {
+          "item": [
+            {
+              "contentid": "741109",
+              "contenttypeid": "12",
+              "heritage1": "0",
+              "heritage2": "0",
+              "heritage3": "0",
+              "infocenter": "064-759-0088",
+              "opendate": "",
+              "restdate": "연중무휴",
+              "expguide": "",
+              "expagerange": "",
+              "accomcount": "",
+              "useseason": "",
+              "usetime": "[하절기/간절기(3월~11월)]- 08:30~18:30- 입장 마감 17:30[동절기(11월~2월)]- 08:30~18:00- 입장 마감 17:00",
+              "parking": "가능",
+              "chkbabycarriage": "",
+              "chkpet": "",
+              "chkcreditcard": "가능"
+            }
+          ]
+        },
+        "numOfRows": 1,
+        "pageNo": 1,
+        "totalCount": 1
+      }
+    }
+  }
+}

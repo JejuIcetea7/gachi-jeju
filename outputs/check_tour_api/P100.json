@@ -1,0 +1,136 @@
+{
+  "searchKeyword2": {
+    "response": {
+      "header": {
+        "resultCode": "0000",
+        "resultMsg": "OK"
+      },
+      "body": {
+        "items": {
+          "item": [
+            {
+              "addr1": "제주특별자치도 제주시 관덕로 68 (일도일동)",
+              "addr2": "",
+              "zipcode": "63192",
+              "areacode": "",
+              "cat1": "",
+              "cat2": "",
+              "cat3": "",
+              "contentid": "4026823",
+              "contenttypeid": "38",
+              "createdtime": "20260228120712",
+              "firstimage": "https://tong.visitkorea.or.kr/cms/resource/44/4029544_image2_1.jpg",
+              "firstimage2": "https://tong.visitkorea.or.kr/cms/resource/44/4029544_image3_1.jpg",
+              "cpyrhtDivCd": "Type3",
+              "mapx": "126.526511001839",
+              "mapy": "33.5128644912115",
+              "mlevel": "",
+              "modifiedtime": "20260319093332",
+              "sigungucode": "",
+              "tel": "",
+              "title": "다이소 제주동문시장점",
+              "lDongRegnCd": "50",
+              "lDongSignguCd": "110",
+              "lclsSystm1": "SH",
+              "lclsSystm2": "SH04",
+              "lclsSystm3": "SH040300"
+            },
+            {
+              "addr1": "제주특별자치도 제주시 관덕로 62-1 (일도일동)",
+              "addr2": "",
+              "zipcode": "63192",
+              "areacode": "",
+              "cat1": "",
+              "cat2": "",
+              "cat3": "",
+              "contentid": "2911579",
+              "contenttypeid": "38",
+              "createdtime": "20221101092148",
+              "firstimage": "https://tong.visitkorea.or.kr/cms/resource/92/4029192_image2_1.JPG",
+              "firstimage2": "https://tong.visitkorea.or.kr/cms/resource/92/4029192_image3_1.JPG",
+              "cpyrhtDivCd": "Type3",
+              "mapx": "126.525948168862",
+              "mapy": "33.5128700923869",
+              "mlevel": "6",
+              "modifiedtime": "20260319094959",
+              "sigungucode": "",
+              "tel": "",
+              "title": "올리브영 제주동문시장점",
+              "lDongRegnCd": "50",
+              "lDongSignguCd": "110",
+              "lclsSystm1": "SH",
+              "lclsSystm2": "SH04",
+              "lclsSystm3": "SH040300"
+            },
+            {
+              "addr1": "제주특별자치도 제주시 동문로4길 3 (일도일동)",
+              "addr2": "",
+              "zipcode": "63264",
+              "areacode": "",
+              "cat1": "",
+              "cat2": "",
+              "cat3": "",
+              "contentid": "4026841",
+              "contenttypeid": "38",
+              "createdtime": "20260228122058",
+              "firstimage": "https://tong.visitkorea.or.kr/cms/resource/86/4045986_image2_1.png",
+              "firstimage2": "https://tong.visitkorea.or.kr/cms/resource/86/4045986_image3_1.png",
+              "cpyrhtDivCd": "Type3",
+              "mapx": "126.5286957175",
+              "mapy": "33.5126222702",
+              "mlevel": "",
+              "modifiedtime": "20260715200522",
+              "sigungucode": "",
+              "tel": "",
+              "title": "와인창고 동문시장점",
+              "lDongRegnCd": "50",
+              "lDongSignguCd": "110",
+              "lclsSystm1": "SH",
+              "lclsSystm2": "SH04",
+              "lclsSystm3": "SH040300"
+            }
+          ]
+        },
+        "numOfRows": 3,
+        "pageNo": 1,
+        "totalCount": 3
+      }
+    }
+  },
+  "detailIntro2": {
+    "response": {
+      "header": {
+        "resultCode": "0000",
+        "resultMsg": "OK"
+      },
+      "body": {
+        "items": {
+          "item": [
+            {
+              "contentid": "2911579",
+              "contenttypeid": "38",
+              "saleitem": "향수/화장품 , 잡화",
+              "saleitemcost": "",
+              "fairday": "월-일요일",
+              "opendateshopping": "",
+              "shopguide": "환급서비스 제공방식 : 즉시+사후",
+              "culturecenter": "",
+              "restroom": "없음",
+              "infocentershopping": "064-757-7300",
+              "scaleshopping": "",
+              "restdateshopping": "",
+              "parkingshopping": "불가능",
+              "chkbabycarriageshopping": "",
+              "chkpetshopping": "",
+              "chkcreditcardshopping": "가능",
+              "opentime": "10:00~21:30"
+            }
+          ]
+        },
+        "numOfRows": 1,
+        "pageNo": 1,
+        "totalCount": 1
+      }
+    }
+  }
+}

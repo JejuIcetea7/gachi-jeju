@@ -1,0 +1,109 @@
+{
+  "searchKeyword2": {
+    "response": {
+      "header": {
+        "resultCode": "0000",
+        "resultMsg": "OK"
+      },
+      "body": {
+        "items": {
+          "item": [
+            {
+              "addr1": "제주특별자치도 제주시 한림읍 한림로 300",
+              "addr2": "",
+              "zipcode": "63011",
+              "areacode": "",
+              "cat1": "",
+              "cat2": "",
+              "cat3": "",
+              "contentid": "129620",
+              "contenttypeid": "12",
+              "createdtime": "20070713090000",
+              "firstimage": "https://tong.visitkorea.or.kr/cms/resource/47/3481247_image2_1.jpg",
+              "firstimage2": "https://tong.visitkorea.or.kr/cms/resource/47/3481247_image3_1.jpg",
+              "cpyrhtDivCd": "Type3",
+              "mapx": "126.2418253313",
+              "mapy": "33.3878715739",
+              "mlevel": "6",
+              "modifiedtime": "20261111084802",
+              "sigungucode": "",
+              "tel": "",
+              "title": "쌍용굴(한림공원)",
+              "lDongRegnCd": "50",
+              "lDongSignguCd": "110",
+              "lclsSystm1": "NA",
+              "lclsSystm2": "NA03",
+              "lclsSystm3": "NA030100"
+            },
+            {
+              "addr1": "제주특별자치도 제주시 한림읍 한림로 300",
+              "addr2": "",
+              "zipcode": "63011",
+              "areacode": "",
+              "cat1": "",
+              "cat2": "",
+              "cat3": "",
+              "contentid": "126455",
+              "contenttypeid": "12",
+              "createdtime": "20040226090000",
+              "firstimage": "https://tong.visitkorea.or.kr/cms/resource/83/3553983_image2_1.jpg",
+              "firstimage2": "https://tong.visitkorea.or.kr/cms/resource/83/3553983_image3_1.jpg",
+              "cpyrhtDivCd": "Type1",
+              "mapx": "126.2415447847",
+              "mapy": "33.3886353694",
+              "mlevel": "6",
+              "modifiedtime": "20261111084802",
+              "sigungucode": "",
+              "tel": "",
+              "title": "한림공원",
+              "lDongRegnCd": "50",
+              "lDongSignguCd": "110",
+              "lclsSystm1": "VE",
+              "lclsSystm2": "VE03",
+              "lclsSystm3": "VE030100"
+            }
+          ]
+        },
+        "numOfRows": 2,
+        "pageNo": 1,
+        "totalCount": 2
+      }
+    }
+  },
+  "detailIntro2": {
+    "response": {
+      "header": {
+        "resultCode": "0000",
+        "resultMsg": "OK"
+      },
+      "body": {
+        "items": {
+          "item": [
+            {
+              "contentid": "126455",
+              "contenttypeid": "12",
+              "heritage1": "0",
+              "heritage2": "0",
+              "heritage3": "0",
+              "infocenter": "064-796-0001",
+              "opendate": "",
+              "restdate": "연중무휴",
+              "expguide": "",
+              "expagerange": "",
+              "accomcount": "",
+              "useseason": "",
+              "usetime": "- 2월~5월 09:00~17:00- 6월~8월 09:00~17:30- 9월~10월 09:00~17:00- 11월~1월 09:00~16:30",
+              "parking": "가능요금 (무료)",
+              "chkbabycarriage": "",
+              "chkpet": "",
+              "chkcreditcard": "가능"
+            }
+          ]
+        },
+        "numOfRows": 1,
+        "pageNo": 1,
+        "totalCount": 1
+      }
+    }
+  }
+}
