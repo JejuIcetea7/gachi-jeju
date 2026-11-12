@@ -31,6 +31,7 @@ from .plan import (
 )
 
 from ..services.plan_routes import MapRoute, select_plan_routes
+from ..services.plan_consistency import validate_plan_moves
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -277,7 +278,14 @@ def create_chat(chat_request: ChatRequest):
                 + "."
             )
         else:
-            errors = validate_plan_times(chat_reply.plan.model_dump())
+            plan_data = chat_reply.plan.model_dump()
+            errors = validate_plan_times(plan_data)
+            errors.extend(
+                validate_plan_moves(
+                    plan_data,
+                    agent_result.get("route_calls") or [],
+                )
+            )
             actual_days = [day.day for day in chat_reply.plan.days]
 
             if (
@@ -297,7 +305,7 @@ def create_chat(chat_request: ChatRequest):
                 return build_error_response(
                     502,
                     "plan_validation_failed",
-                    "생성된 일정의 구성이나 시간에 오류가 있습니다. 다시 시도해 주세요.",
+                    "생성된 일정의 구성·시간·이동 정보에 오류가 있습니다. 다시 시도해 주세요.",
                     details=[
                         {"field": "plan", "reason": reason}
                         for reason in errors
