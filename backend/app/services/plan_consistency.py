@@ -64,7 +64,11 @@ def validate_plan_moves(plan: dict, route_calls: list[dict] | None) -> list[str]
         mode = normalize_transport_mode(item.get("transport"))
 
         if mode is None or record.get("transport") != mode:
-            errors.append(f"{label}: 일정의 이동수단이 조회 결과와 다릅니다.")
+            errors.append(
+                f"{label}: 이동수단 확인 실패 "
+                f"(일정 표기={item.get('transport')!r}, "
+                f"해석 결과={mode!r}, 조회 수단={record.get('transport')!r})."
+            )
             continue
 
         seconds = record.get("duration_seconds")

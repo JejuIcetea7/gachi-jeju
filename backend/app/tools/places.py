@@ -1,6 +1,7 @@
 import math
 import sqlite3
 from pathlib import Path
+import unicodedata
 
 DATABASE_FILE = Path(__file__).resolve().parents[3] / "data" / "processed" / "gachi_jeju.db"
 EARTH_RADIUS_KM = 6371.0
@@ -94,7 +95,7 @@ def search_places(
 
 def get_place_details(*, place_id: str) -> dict:
     """여행지 하나의 관람 동선 지점별 접근성 설명(경사, 계단, 화장실, 대여 등)을 돌려줍니다.
-    place_id는 search_places 결과의 place_id를 씁니다."""
+    pplace_id는 장소 검색 도구 결과에서 선택한 place_id를 씁니다."""
     place_query = "SELECT place_id, name, category FROM places WHERE place_id = ?"
     spot_query = (
         'SELECT name, description FROM place_spots WHERE place_id = ? ORDER BY "order"'
@@ -131,4 +132,77 @@ def get_place_details(*, place_id: str) -> dict:
         "name": place_row["name"],
         "category": place_row["category"],
         "spots": spots,
+    }
+
+def normalize_place_name(value: str) -> str:
+    """공백과 대소문자, 한글 유니코드 표기를 정규화합니다."""
+    return unicodedata.normalize("NFC", "".join(value.split())).casefold()
+
+
+def search_places_by_name(*, keyword: str, max_count: int = 5) -> dict:
+    """DB 여행지 이름으로 후보를 찾습니다.
+
+    exact는 이름 정규화 후 일치, partial은 이름 일부가 겹치는 후보입니다.
+    partial을 같은 장소로 자동 확정하지 말고 후보의 이름·좌표를 확인합니다.
+    상세 정보는 후보의 place_id로 get_place_details를 호출합니다.
+    max_count는 1~10입니다.
+    """
+    if not isinstance(keyword, str) or not 1 <= len(keyword.strip()) <= 100:
+        return {
+            "status": "invalid_input",
+            "message": "장소 이름은 1~100자로 입력해 주세요.",
+            "places": [],
+        }
+
+    if type(max_count) is not int or not 1 <= max_count <= 10:
+        return {
+            "status": "invalid_input",
+            "message": "검색 결과 수는 1~10 사이의 정수여야 합니다.",
+            "places": [],
+        }
+
+    query_name = normalize_place_name(keyword)
+
+    try:
+        rows = read_rows(
+            "SELECT place_id, name, category, latitude, longitude FROM places",
+            (),
+        )
+    except sqlite3.Error:
+        return {"status": "db_error", "places": []}
+
+    matches = []
+    for row in rows:
+        if (
+            not isinstance(row["name"], str) or not row["name"].strip()
+            or not isinstance(row["place_id"], str) or not row["place_id"].strip()
+        ):
+            continue
+
+        candidate_name = normalize_place_name(row["name"])
+        if query_name == candidate_name:
+            name_match = "exact"
+        elif query_name in candidate_name or candidate_name in query_name:
+            name_match = "partial"
+        else:
+            continue
+
+        matches.append({
+            "place_id": row["place_id"],
+            "name": row["name"],
+            "category": row["category"],
+            "latitude": row["latitude"],
+            "longitude": row["longitude"],
+            "name_match": name_match,
+        })
+
+    matches.sort(key=lambda place: (
+        0 if place["name_match"] == "exact" else 1,
+        normalize_place_name(place["name"]),
+        place["place_id"],
+    ))
+    selected = matches[:max_count]
+    return {
+        "status": "ok" if selected else "not_found",
+        "places": selected,
     }
