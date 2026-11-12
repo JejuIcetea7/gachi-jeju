@@ -91,6 +91,24 @@ class PlaceDetailsTests(unittest.TestCase):
             "12월 16일": "날짜 형식 오류",
         })
 
+    def test_accessibility_facts_from_survey(self):
+        # P166 퍼시픽마리나요트공원: 일반정보 HWP의 장애인 주차 5대, 화장실 내부 출입문 폭 94cm
+        result = get_place_details(place_id="P166")
+
+        facts = result["accessibility_facts"]
+        fact_pairs = set()
+        for fact in facts:
+            self.assertNotIn(fact["raw_value"].strip(), ("", "-"))
+            fact_pairs.add((fact["description"], fact["raw_value"]))
+        self.assertIn(("장애인 주차 구역 주차면수", "5대"), fact_pairs)
+        self.assertIn(("내부 출입문 폭", "94cm"), fact_pairs)
+
+    def test_accessibility_facts_empty_without_survey(self):
+        # P001 한림공원: 조사 문서(HWP) 없음
+        result = get_place_details(place_id="P001")
+
+        self.assertEqual(result["accessibility_facts"], [])
+
     def test_blank_closed_days_is_unknown(self):
         # P012 생각하는정원: 휴무일 확인필요(빈칸)
         result = get_place_details(place_id="P012", visit_dates=["2026-12-14"])
