@@ -32,6 +32,8 @@ from .plan import (
 
 from ..services.plan_routes import MapRoute, select_plan_routes
 from ..services.plan_consistency import validate_plan_moves
+from ..services.plan_evaluation import extract_tool_trace
+from ..services.place_verification import restore_missing_place_ids
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -313,7 +315,16 @@ def create_chat(chat_request: ChatRequest):
                 )
 
             try:
-                plan, warnings = verify_places(chat_reply.plan)
+                tool_trace = extract_tool_trace(
+                    agent_result.get("messages") or []
+                )
+                restored_plan = restore_missing_place_ids(
+                    plan_data,
+                    tool_trace,
+                )
+                plan, warnings = verify_places(
+                    TripPlan.model_validate(restored_plan)
+                )
             except sqlite3.Error:
                 return build_error_response(
                     500, "internal_error", "장소 DB를 읽지 못했습니다."
