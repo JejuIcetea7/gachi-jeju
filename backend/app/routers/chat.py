@@ -18,7 +18,8 @@ from pydantic import (
 
 from ..agent.chat_planner import run_chat_agent
 from ..agent.planner import TripPlan
-from ..services.plan_validation import validate_plan_times
+from ..services.plan_validation import validate_plan_closed_days, validate_plan_times
+from ..tools.places import read_closed_days_by_place_id
 from .plan import (
     ErrorResponse,
     PlanBodyResponse,
@@ -277,6 +278,24 @@ def create_chat(chat_request: ChatRequest):
                     f"요청한 {chat_reply.options.trip_days}일에 맞춰 "
                     "모든 일차를 순서대로 포함해야 합니다.",
                 )
+
+            visit_place_ids = []
+            for day in chat_reply.plan.days:
+                for item in day.items:
+                    if item.item_type == "visit" and item.place_id:
+                        visit_place_ids.append(item.place_id)
+            try:
+                closed_days_by_place_id = read_closed_days_by_place_id(visit_place_ids)
+            except sqlite3.Error:
+                return build_error_response(
+                    500, "internal_error", "장소 DB를 읽지 못했습니다."
+                )
+            closed_day_errors = validate_plan_closed_days(
+                chat_reply.plan.model_dump(),
+                chat_reply.options.start_date,
+                closed_days_by_place_id,
+            )
+            errors.extend(closed_day_errors)
 
             if errors:
                 return build_error_response(

@@ -1,9 +1,13 @@
 import math
 import sqlite3
+from datetime import date
 from pathlib import Path
+
+from ..services.closed_days import STATUS_UNKNOWN, judge_closed_on_date
 
 DATABASE_FILE = Path(__file__).resolve().parents[3] / "data" / "processed" / "gachi_jeju.db"
 EARTH_RADIUS_KM = 6371.0
+INVALID_DATE_STATUS = "날짜 형식 오류"
 
 def calculate_distance_km(
     first_latitude: float,
@@ -92,10 +96,40 @@ def search_places(
         result = {"status": "not_found", "places": []}
     return result
 
-def get_place_details(*, place_id: str) -> dict:
-    """여행지 하나의 관람 동선 지점별 접근성 설명(경사, 계단, 화장실, 대여 등)을 돌려줍니다.
-    place_id는 search_places 결과의 place_id를 씁니다."""
-    place_query = "SELECT place_id, name, category FROM places WHERE place_id = ?"
+def check_closed_days_on_dates(closed_days: str, visit_dates: list[str]) -> dict:
+    """날짜(YYYY-MM-DD)마다 '휴무' / '영업' / '확인 안 됨' / '날짜 형식 오류'"""
+    closed_day_checks = {}
+    for visit_date_text in visit_dates:
+        try:
+            visit_date = date.fromisoformat(visit_date_text)
+        except ValueError:
+            closed_day_checks[visit_date_text] = INVALID_DATE_STATUS
+            continue
+        closed_day_checks[visit_date_text] = judge_closed_on_date(closed_days, visit_date)
+    return closed_day_checks
+
+def read_closed_days_by_place_id(place_ids: list[str]) -> dict:
+    """place_id -> closed_days 정리 값 (빈칸이면 ''). DB에 없는 place_id는 빠집니다."""
+    closed_days_by_place_id = {}
+    if len(place_ids) == 0:
+        return closed_days_by_place_id
+
+    placeholders = ", ".join(["?"] * len(place_ids))
+    query = f"SELECT place_id, closed_days FROM places WHERE place_id IN ({placeholders})"
+    rows = read_rows(query, tuple(place_ids))
+    for row in rows:
+        closed_days = row["closed_days"]
+        if closed_days is None:
+            closed_days = ""
+        closed_days_by_place_id[row["place_id"]] = closed_days
+    return closed_days_by_place_id
+
+def get_place_details(*, place_id: str, visit_dates: list[str] | None = None) -> dict:
+    """여행지 하나의 관람 동선 지점별 접근성 설명(경사, 계단, 화장실, 대여 등)과 휴무일을 돌려줍니다.
+    place_id는 search_places 결과의 place_id를 씁니다.
+    visit_dates에 방문할 수 있는 날짜(YYYY-MM-DD 목록)를 넣으면 closed_day_checks에 날짜별로
+    '휴무', '영업', '확인 안 됨' 중 하나를 돌려줍니다. closed_days가 '확인 안 됨'이면 휴무일 정보가 없습니다."""
+    place_query = "SELECT place_id, name, category, closed_days FROM places WHERE place_id = ?"
     spot_query = (
         'SELECT name, description FROM place_spots WHERE place_id = ? ORDER BY "order"'
     )
@@ -125,10 +159,22 @@ def get_place_details(*, place_id: str) -> dict:
         spots.append(spot)
 
     place_row = place_rows[0]
-    return {
+    closed_days = place_row["closed_days"]
+    if closed_days is None:
+        closed_days = ""
+
+    closed_days_text = closed_days
+    if closed_days_text == "":
+        closed_days_text = STATUS_UNKNOWN
+
+    result = {
         "status": "ok",
         "place_id": place_row["place_id"],
         "name": place_row["name"],
         "category": place_row["category"],
+        "closed_days": closed_days_text,
         "spots": spots,
     }
+    if visit_dates:
+        result["closed_day_checks"] = check_closed_days_on_dates(closed_days, visit_dates)
+    return result

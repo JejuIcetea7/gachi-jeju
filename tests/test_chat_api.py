@@ -195,6 +195,24 @@ class ChatApiTests(unittest.TestCase):
                 self.lookup.assert_not_called()
                 self.agent.assert_called_once()
 
+    def test_closed_day_visit_is_rejected(self):
+        # 2026-11-23 월요일, P092 국립제주박물관은 매주 월요일 휴관 (실제 DB 값)
+        options = {**OPTIONS, "start_date": "2026-11-23"}
+        plan = make_plan()
+        plan.days[0].items[0].place_id = "P092"
+        self.agent.return_value = make_result(plan, options)
+
+        response = self.client.post("/chat", json={"message": "일정을 추천해 주세요."})
+
+        self.assertEqual(response.status_code, 502)
+        error = response.json()["error"]
+        self.assertEqual(error["code"], "plan_validation_failed")
+        self.assertTrue(any(
+            "2026-11-23(월) 휴무일" in detail["reason"]
+            for detail in error["details"]
+        ))
+        self.lookup.assert_not_called()
+
     def test_empty_days_with_explanation_are_allowed(self):
         plan = TripPlan(
             assumptions=["조건을 충족하는 장소를 찾지 못했습니다."],
