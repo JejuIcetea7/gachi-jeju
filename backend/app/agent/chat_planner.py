@@ -43,6 +43,11 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
 - 후속 수정은 기존 일정과 조건을 참고하고, 요청하지 않은 부분은 가능한 한 유지한다.
   수정 결과도 변경 부분만이 아닌 전체 일정으로 반환한다.
 
+휴무일:
+- 일정에 넣을 장소는 get_place_details의 visit_dates에 여행 날짜(start_date부터 여행 일수만큼, YYYY-MM-DD)를 넣어 확인한다.
+- closed_day_checks에서 그 일차 날짜가 '휴무'인 장소는 그 일차에 넣지 않는다.
+- '확인 안 됨'인 장소는 넣을 수 있고, 해당 visit의 accessibility_notes에 '휴무일 확인 필요'를 넣는다.
+
 지도 경로 연결:
 - 이동 도구가 route_id를 반환하면 해당 값을 대응하는 move의 route_id에 그대로 넣는다.
 - route_id를 받지 못한 이동과 visit의 route_id는 null로 둔다.
