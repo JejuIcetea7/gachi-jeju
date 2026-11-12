@@ -8,7 +8,7 @@ import {
   resizePanelWeights,
 } from './services/workspacePanels.js'
 
-const STORAGE_KEY = 'gachi-jeju.workspace-panels'
+const STORAGE_KEY = 'gachi-jeju.workspace-panels.v2'
 const DIVIDERS = [
   { paneId: 'workspace-options-pane', titleId: 'workspace-options-title' },
   { paneId: 'workspace-chat-pane', titleId: 'conversation-title' },
@@ -27,7 +27,14 @@ function loadPanelWeights() {
 function ResizableWorkspace({ children }) {
   const containerRef = useRef(null)
   const dragRef = useRef(null)
-  const [weights, setWeights] = useState(loadPanelWeights)
+  const [panelState, setPanelState] = useState(() => ({
+    storageKey: STORAGE_KEY,
+    weights: loadPanelWeights(),
+  }))
+  const weights = panelState?.storageKey === STORAGE_KEY
+    && isPanelWeights(panelState.weights)
+    ? panelState.weights
+    : DEFAULT_PANEL_WEIGHTS
   const [totalWidth, setTotalWidth] = useState(0)
   const [activeDivider, setActiveDivider] = useState(null)
   const panels = Children.toArray(children)
@@ -61,6 +68,13 @@ function ResizableWorkspace({ children }) {
       // 저장에 실패해도 현재 화면의 너비 조절은 유지합니다.
     }
   }, [weights])
+
+  function setWeights(nextWeights) {
+    setPanelState({
+      storageKey: STORAGE_KEY,
+      weights: nextWeights,
+    })
+  }
 
   function stopDragging(event) {
     if (dragRef.current?.pointerId !== event.pointerId) return
