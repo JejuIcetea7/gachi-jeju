@@ -172,12 +172,27 @@ fieldset.option-group legend {
   cursor: pointer;
 }
 
-.workspace-options .origin-actions,
 .workspace-options .origin-search-form {
   flex-direction: column;
   align-items: stretch;
   gap: 8px;
   margin-top: 12px;
+}
+
+.workspace-options .origin-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.workspace-options .origin-actions .map-search-button {
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 4px;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: normal;
 }
 
 .workspace-options .map-search-button {
@@ -460,14 +475,19 @@ fieldset.option-group legend {
 }
 
 /* 일정 지도와 일정표 */
+.workspace-results {
+  container-type: inline-size;
+  container-name: travel-results;
+}
+
 .workspace-results-content {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
-.workspace-results-content > :not(.workspace-schedule-scroll) {
+.workspace-results-content > :not(.workspace-day-overview) {
   flex-shrink: 0;
 }
 
@@ -476,9 +496,29 @@ fieldset.option-group legend {
   margin-top: 0;
 }
 
-.workspace-schedule-scroll {
+.workspace-day-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(240px, 1fr);
   flex: 1;
-  min-height: 180px;
+  min-width: 0;
+  min-height: 0;
+  gap: 12px;
+  overflow: auto;
+}
+
+.workspace-day-overview > .itinerary-map {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.workspace-day-overview .itinerary-map-canvas {
+  height: 170px;
+}
+
+.workspace-schedule-scroll {
+  min-width: 0;
+  min-height: 240px;
   padding: 4px;
   overflow: auto;
   overscroll-behavior: contain;
@@ -487,6 +527,42 @@ fieldset.option-group legend {
 
 .workspace-schedule-scroll .travel-plan {
   margin-top: 0;
+}
+
+.workspace-day-overview .plan-table {
+  min-width: 560px;
+  font-size: 14px;
+}
+
+.workspace-day-overview .plan-table th,
+.workspace-day-overview .plan-table td {
+  padding: 12px 10px;
+}
+
+@container travel-results (min-width: 950px) {
+  .workspace-day-overview {
+    grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr);
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .workspace-day-overview > .itinerary-map {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .workspace-day-overview .itinerary-map > :not(.itinerary-map-canvas) {
+    flex-shrink: 0;
+  }
+
+  .workspace-day-overview .itinerary-map-canvas {
+    flex: 1 0 200px;
+    min-height: 200px;
+  }
+
+  .workspace-day-overview .workspace-schedule-scroll {
+    min-height: 0;
+  }
 }
 
 .itinerary-map {

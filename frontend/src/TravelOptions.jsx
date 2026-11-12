@@ -199,7 +199,6 @@ function TravelOptions({
                 onConfirm={(place) => {
                   if (disabled) return
                   onOriginConfirm(place)
-                  setOriginOpen(false)
                 }}
               />
             )}
