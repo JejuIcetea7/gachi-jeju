@@ -1247,7 +1247,58 @@ def build_accessibility_raw_rows(failures):
     return accessibility_rows
 
 
-def build_places_rows(place_ids, sources_by_place_id, spots_by_place_id, representative_spots, closed_days_by_place_id, conflicts):
+def has_positive_count(raw_value):
+    """'5대', '4면', '3' 처럼 1 이상의 숫자가 있으면 True"""
+    number_match = re.search(r"\d+", raw_value)
+    if number_match is None:
+        return False
+    return int(number_match.group(0)) > 0
+
+
+def decide_accessible_parking_by_place_id(accessibility_rows):
+    """접근성 원본 표 -> place_id별 accessible_parking (Y / N). 근거가 없는 장소는 빠진다
+
+    - 일반정보 HWP: 장애인 주차면수가 1 이상인 주차장이 있거나 '장애인 주차장 유무'가 있음·유면 Y,
+      유무가 없음·무이거나 주차면수가 모두 없음이면 N
+    - 허브 HWP: 이용안내 주차장 문장에 '장애인 주차구역 없음' 류 표현이 있으면 N, 장애인 주차 언급이 있으면 Y
+    """
+    has_parking_by_place_id = {}
+    no_parking_by_place_id = {}
+    for accessibility_row in accessibility_rows:
+        place_id = accessibility_row["place_id"]
+        description = remove_spaces(accessibility_row["description"])
+        raw_value = accessibility_row["raw_value"].strip()
+        normalized_value = remove_spaces(raw_value)
+
+        if description == "장애인주차장유무":
+            if normalized_value in ("있음", "유"):
+                has_parking_by_place_id[place_id] = True
+            if normalized_value in ("없음", "무"):
+                no_parking_by_place_id[place_id] = True
+
+        if accessibility_row["section"] == "주차장" and description == "장애인주차구역주차면수":
+            if has_positive_count(raw_value):
+                has_parking_by_place_id[place_id] = True
+            if normalized_value == "없음":
+                no_parking_by_place_id[place_id] = True
+
+        if accessibility_row["section"] == "이용안내" and description == "주차장":
+            if re.search(r"장애인(전용)?주차(구역|장)(은|이)?없", normalized_value):
+                no_parking_by_place_id[place_id] = True
+            elif "장애인" in normalized_value and "주차" in normalized_value:
+                # 예: '장애인, 임산부 주차구역이 1개씩 있으며'
+                has_parking_by_place_id[place_id] = True
+
+    accessible_parking_by_place_id = {}
+    for place_id in no_parking_by_place_id:
+        accessible_parking_by_place_id[place_id] = "N"
+    for place_id in has_parking_by_place_id:
+        accessible_parking_by_place_id[place_id] = "Y"
+    return accessible_parking_by_place_id
+
+
+def build_places_rows(place_ids, sources_by_place_id, spots_by_place_id, representative_spots, closed_days_by_place_id,
+                      accessible_parking_by_place_id, conflicts):
     places_rows = []
     for place_id in place_ids:
         place_sources = sources_by_place_id[place_id]
@@ -1289,7 +1340,7 @@ def build_places_rows(place_ids, sources_by_place_id, spots_by_place_id, represe
             "wheelchair_level": UNKNOWN,
             "stroller_level": UNKNOWN,
             "has_slope_or_stairs": aggregate_flag_from_spots(place_spots, "접근성"),
-            "accessible_parking": UNKNOWN,
+            "accessible_parking": accessible_parking_by_place_id.get(place_id, UNKNOWN),
             "accessible_toilet": aggregate_flag_from_spots(place_spots, "장애인화장실"),
             "wheelchair_rental": UNKNOWN,
             "stroller_rental": UNKNOWN,
@@ -1562,21 +1613,7 @@ def main():
     # 장소는 지점 원본이 있는 place_id만 만든다 (주변시설은 기존 장소에 붙음)
     place_ids = sorted(spots_by_place_id.keys())
 
-    # 7. places 집계 (휴무일: 일반정보 HWP 변환 결과, 그 위에 사람이 정리한 대응표)
-    closed_days_by_place_id = load_hwp_closed_days_by_place_id(failures)
-    closed_days_map = load_closed_days_map(failures)
-    for place_id, closed_days in closed_days_map.items():
-        closed_days_by_place_id[place_id] = closed_days
-    print("[휴무일] 일반정보 HWP + 대응표 {}곳".format(len(closed_days_by_place_id)))
-    places_rows = build_places_rows(
-        place_ids, sources_by_place_id, spots_by_place_id, representative_spots, closed_days_by_place_id, conflicts
-    )
-
-    save_csv_file(PLACES_FILE, PLACES_COLUMNS, places_rows)
-    save_csv_file(SPOTS_FILE, SPOTS_COLUMNS, spot_rows)
-    save_csv_file(NEARBY_FILE, NEARBY_COLUMNS, nearby_rows)
-
-    # 7-1. 접근성 원본 표 (HWP 변환 결과)
+    # 7. 접근성 원본 표 (HWP 변환 결과)
     accessibility_rows = build_accessibility_raw_rows(failures)
     save_csv_file(ACCESSIBILITY_RAW_FILE, ACCESSIBILITY_RAW_COLUMNS, accessibility_rows)
     accessibility_place_ids = set()
@@ -1585,6 +1622,22 @@ def main():
     print("[접근성 원본] {}줄, {}곳 -> {}".format(
         len(accessibility_rows), len(accessibility_place_ids), relative_path(ACCESSIBILITY_RAW_FILE)
     ))
+    accessible_parking_by_place_id = decide_accessible_parking_by_place_id(accessibility_rows)
+
+    # 7-1. places 집계 (휴무일: 일반정보 HWP 변환 결과, 그 위에 사람이 정리한 대응표 / 장애인 주차: 접근성 원본 표)
+    closed_days_by_place_id = load_hwp_closed_days_by_place_id(failures)
+    closed_days_map = load_closed_days_map(failures)
+    for place_id, closed_days in closed_days_map.items():
+        closed_days_by_place_id[place_id] = closed_days
+    print("[휴무일] 일반정보 HWP + 대응표 {}곳".format(len(closed_days_by_place_id)))
+    places_rows = build_places_rows(
+        place_ids, sources_by_place_id, spots_by_place_id, representative_spots, closed_days_by_place_id,
+        accessible_parking_by_place_id, conflicts
+    )
+
+    save_csv_file(PLACES_FILE, PLACES_COLUMNS, places_rows)
+    save_csv_file(SPOTS_FILE, SPOTS_COLUMNS, spot_rows)
+    save_csv_file(NEARBY_FILE, NEARBY_COLUMNS, nearby_rows)
 
     # 8. 검증
     verify_outputs(sources, output_counts, excluded_source_files, places_rows, spot_rows, nearby_rows, failures)
