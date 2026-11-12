@@ -2,6 +2,7 @@ import math
 import sqlite3
 from datetime import date
 from pathlib import Path
+import unicodedata
 
 from ..services.closed_days import STATUS_UNKNOWN, judge_closed_on_date
 
@@ -126,7 +127,7 @@ def read_closed_days_by_place_id(place_ids: list[str]) -> dict:
 
 def get_place_details(*, place_id: str, visit_dates: list[str] | None = None) -> dict:
     """여행지 하나의 관람 동선 지점별 접근성 설명(경사, 계단, 화장실, 대여 등)과 휴무일을 돌려줍니다.
-    place_id는 search_places 결과의 place_id를 씁니다.
+    place_id는 장소 검색 도구 결과에서 선택한 place_id를 씁니다.
     visit_dates에 방문할 수 있는 날짜(YYYY-MM-DD 목록)를 넣으면 closed_day_checks에 날짜별로
     '휴무', '영업', '확인 안 됨' 중 하나를 돌려줍니다. closed_days가 '확인 안 됨'이면 휴무일 정보가 없습니다."""
     place_query = "SELECT place_id, name, category, closed_days FROM places WHERE place_id = ?"
@@ -178,3 +179,76 @@ def get_place_details(*, place_id: str, visit_dates: list[str] | None = None) ->
     if visit_dates:
         result["closed_day_checks"] = check_closed_days_on_dates(closed_days, visit_dates)
     return result
+
+def normalize_place_name(value: str) -> str:
+    """공백과 대소문자, 한글 유니코드 표기를 정규화합니다."""
+    return unicodedata.normalize("NFC", "".join(value.split())).casefold()
+
+
+def search_places_by_name(*, keyword: str, max_count: int = 5) -> dict:
+    """DB 여행지 이름으로 후보를 찾습니다.
+
+    exact는 이름 정규화 후 일치, partial은 이름 일부가 겹치는 후보입니다.
+    partial을 같은 장소로 자동 확정하지 말고 후보의 이름·좌표를 확인합니다.
+    상세 정보는 후보의 place_id로 get_place_details를 호출합니다.
+    max_count는 1~10입니다.
+    """
+    if not isinstance(keyword, str) or not 1 <= len(keyword.strip()) <= 100:
+        return {
+            "status": "invalid_input",
+            "message": "장소 이름은 1~100자로 입력해 주세요.",
+            "places": [],
+        }
+
+    if type(max_count) is not int or not 1 <= max_count <= 10:
+        return {
+            "status": "invalid_input",
+            "message": "검색 결과 수는 1~10 사이의 정수여야 합니다.",
+            "places": [],
+        }
+
+    query_name = normalize_place_name(keyword)
+
+    try:
+        rows = read_rows(
+            "SELECT place_id, name, category, latitude, longitude FROM places",
+            (),
+        )
+    except sqlite3.Error:
+        return {"status": "db_error", "places": []}
+
+    matches = []
+    for row in rows:
+        if (
+            not isinstance(row["name"], str) or not row["name"].strip()
+            or not isinstance(row["place_id"], str) or not row["place_id"].strip()
+        ):
+            continue
+
+        candidate_name = normalize_place_name(row["name"])
+        if query_name == candidate_name:
+            name_match = "exact"
+        elif query_name in candidate_name or candidate_name in query_name:
+            name_match = "partial"
+        else:
+            continue
+
+        matches.append({
+            "place_id": row["place_id"],
+            "name": row["name"],
+            "category": row["category"],
+            "latitude": row["latitude"],
+            "longitude": row["longitude"],
+            "name_match": name_match,
+        })
+
+    matches.sort(key=lambda place: (
+        0 if place["name_match"] == "exact" else 1,
+        normalize_place_name(place["name"]),
+        place["place_id"],
+    ))
+    selected = matches[:max_count]
+    return {
+        "status": "ok" if selected else "not_found",
+        "places": selected,
+    }

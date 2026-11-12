@@ -207,7 +207,7 @@ def check_places_in_database(plan: dict | None, places_by_id: dict[str, dict]) -
 def collect_searched_place_ids(tool_trace: list[dict]) -> set[str]:
     searched_place_ids = set()
     for tool_record in tool_trace:
-        if tool_record["tool"] != "search_places":
+        if tool_record["tool"] not in {"search_places", "search_places_by_name"}:
             continue
         tool_output = tool_record["output"]
         if not isinstance(tool_output, dict):
@@ -220,7 +220,7 @@ def collect_searched_place_ids(tool_trace: list[dict]) -> set[str]:
     return searched_place_ids
 
 def check_places_from_search(plan: dict | None, tool_trace: list[dict]) -> dict:
-    """H5: 모든 방문 장소가 이번 실행의 search_places 결과에 있었는지 봅니다."""
+    """H5: 모든 방문 장소가 이번 실행의 장소 검색 도구 결과에 있었는지 봅니다."""
     if plan is None:
         return make_check_result(None, [])
 
