@@ -8,7 +8,7 @@ import {
   resizePanelWeights,
 } from './services/workspacePanels.js'
 
-const STORAGE_KEY = 'gachi-jeju.workspace-panels.v2'
+const STORAGE_KEY = 'gachi-jeju.workspace-panels.v4'
 const DIVIDERS = [
   { paneId: 'workspace-options-pane', titleId: 'workspace-options-title' },
   { paneId: 'workspace-chat-pane', titleId: 'conversation-title' },
