@@ -45,6 +45,13 @@
 ### place_nearby.csv (주변시설 1행)
 - `place_id`, `facility_type`, `name`, `distance_m`, `address`, `phone`, `access_note`, `wheelchair_entry`, `accessible_toilet`, `source_file`
 
+### place_accessibility_raw.csv (접근성 특징 1행)
+- `place_id`, `section`, `facility_name`, `description`, `raw_value`, `source_file`
+- HWP 69곳(일반정보 49, 허브 20)의 접근성 사실을 원문 그대로 담는다. 입력은 kordoc 변환 json(`hwp_general_info/`, `hwp_hub_info/`)
+- 일반정보: 기본정보(장애인 주차·화장실, 보조기기 대여), 추천 대상, 주차장(장애인·임산부 구역, 기타), 장애인 화장실, 주출입구
+- 허브: 이용안내의 보조기기·편의장비·승강기, 장애인 주차 문장, 개요의 '이동약자를 위한 안내'
+- 빼는 것: 관람동선 문장(`place_spots`와 겹침), 사진, 주변 시설, 일반 주차·대형버스·전기차, 관람시간·요금 등
+
 ### place_id_map.csv
 - 원본 파일 ↔ `place_id` 대응표. 중복 확정 결과를 담는다.
 
@@ -113,7 +120,7 @@
 - 충돌한 값은 충돌 로그에 남긴다.
 
 ### 7. SQLite 적재
-- CSV 3개를 `gachi_jeju.db`의 표 3개로 넣는다. DB는 CSV에서 다시 만들 수 있다.
+- CSV 4개를 `gachi_jeju.db`의 표 4개(`places`, `place_spots`, `place_nearby`, `place_accessibility_raw`)로 넣는다. DB는 CSV에서 다시 만들 수 있다.
 
 ## 실패 처리
 - 파일 읽기 실패, 예상과 다른 컬럼은 실패 로그에 파일 경로와 사유를 남기고 다음 파일로 넘어간다.
@@ -137,6 +144,7 @@
 - `build_places_rows`, `record_place_conflicts`: places 집계, 충돌 기록
 - `verify_outputs`: 행 수 대조, `place_id` 참조 확인
 - `find_anomalies`: 이상값 기록 (값은 고치지 않음)
+- `build_accessibility_raw_rows`: 접근성 원본 표 (`extract_general_info_accessibility_rows`, `extract_hub_info_accessibility_rows`, 표 격자 해석 `list_origin_cells`)
 - `build_sqlite_database`, `load_csv_to_sqlite`: SQLite 적재
 
 ## 검증 상태
@@ -152,6 +160,8 @@
 - 확인함: 허브 HWP 20개 `git lfs fetch`로 받음(크기·해시 일치), 20개 모두 `이용안내`에 관람시간·휴무 정보. `closed_days` 19곳 채움, P108 빈칸(휴무 언급 없음). 합계 67곳 채움, 103곳 빈칸 (2026-11-12)
 - 확인함: 한국관광공사 API로 103곳 중 74곳 채움(P108 포함). 합계 141곳 채움, 29곳 `확인필요` 빈칸. 대응표 정리 값 형식 위반 0건, `places.csv`에서 바뀐 칸은 `closed_days`뿐 (2026-11-12)
 - 확인 안 함: 1단계 59곳 후보 전수 대조 (규칙만으로 통과), 형식에서 뺀 조건("월요일이 공휴일이면 다음 비공휴일 휴무" 등)의 일정 영향
+- 확인함: 접근성 원본 표 69곳 3,145줄 (장애인 화장실 1,501, 기본정보 441, 주출입구 440, 추천 대상 392, 주차장 284, 이용안내 87). 퍼시픽마리나요트공원(장애인 주차 5대, 내부 출입문 폭 94cm, 추천 대상 8줄)·가문동해안길(장애인 주차 없음)을 원본과 대조. 기존 CSV 3개 변화 없음 (2026-11-12)
+- 확인 안 함: 69곳 전수 대조, 허브 HWP의 서술 구간(사진 설명·지점별 접근성 문단)
 
 ## 이후 개선
 
