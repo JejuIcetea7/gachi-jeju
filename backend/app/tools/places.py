@@ -128,16 +128,23 @@ def read_closed_days_by_place_id(place_ids: list[str]) -> dict:
 def get_place_details(*, place_id: str, visit_dates: list[str] | None = None) -> dict:
     """여행지 하나의 관람 동선 지점별 접근성 설명(경사, 계단, 화장실, 대여 등)과 휴무일을 돌려줍니다.
     place_id는 장소 검색 도구 결과에서 선택한 place_id를 씁니다.
+    accessibility_facts는 현장 조사 문서의 시설·추천 정보 원문입니다(장애인 주차·화장실·주출입구 치수,
+    장애 유형별 추천 여부, 보조기기 대여, 이동약자 안내). 조사 문서가 없는 장소는 빈 목록입니다.
     visit_dates에 방문할 수 있는 날짜(YYYY-MM-DD 목록)를 넣으면 closed_day_checks에 날짜별로
     '휴무', '영업', '확인 안 됨' 중 하나를 돌려줍니다. closed_days가 '확인 안 됨'이면 휴무일 정보가 없습니다."""
     place_query = "SELECT place_id, name, category, closed_days FROM places WHERE place_id = ?"
     spot_query = (
         'SELECT name, description FROM place_spots WHERE place_id = ? ORDER BY "order"'
     )
+    accessibility_query = (
+        "SELECT section, facility_name, description, raw_value FROM place_accessibility_raw "
+        "WHERE place_id = ? ORDER BY rowid"
+    )
 
     try:
         place_rows = read_rows(place_query, (place_id,))
         spot_rows = read_rows(spot_query, (place_id,))
+        accessibility_rows = read_rows(accessibility_query, (place_id,))
     except sqlite3.Error:
         return {"status": "db_error"}
 
@@ -159,6 +166,20 @@ def get_place_details(*, place_id: str, visit_dates: list[str] | None = None) ->
         spot = {"name": row["name"], "description": description}
         spots.append(spot)
 
+    accessibility_facts = []
+    for row in accessibility_rows:
+        raw_value = row["raw_value"]
+        # '-'와 빈칸은 조사 값이 없다는 뜻이라 응답 길이만 늘린다
+        if raw_value is None or raw_value.strip() in ("", "-"):
+            continue
+        fact = {
+            "section": row["section"],
+            "facility_name": row["facility_name"] or "",
+            "description": row["description"],
+            "raw_value": raw_value,
+        }
+        accessibility_facts.append(fact)
+
     place_row = place_rows[0]
     closed_days = place_row["closed_days"]
     if closed_days is None:
@@ -175,6 +196,7 @@ def get_place_details(*, place_id: str, visit_dates: list[str] | None = None) ->
         "category": place_row["category"],
         "closed_days": closed_days_text,
         "spots": spots,
+        "accessibility_facts": accessibility_facts,
     }
     if visit_dates:
         result["closed_day_checks"] = check_closed_days_on_dates(closed_days, visit_dates)
