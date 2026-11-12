@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import OriginMap from './OriginMap.jsx'
+import OriginSearch from './OriginSearch.jsx'
 import {
   CENTER_ORIGIN_NAME,
   getCenterOrigin,
@@ -64,7 +64,7 @@ function OriginPicker({ initialKeyword, confirmedPlace, onConfirm }) {
       if (requestId !== requestIdRef.current) return
       onConfirmRef.current({ ...place })
       setSearchKeyword(place.name)
-      setMessage('출발지를 선택했습니다. 지도에서 위치를 확인해 주세요.')
+      setMessage('출발지를 선택했습니다.')
     } catch (error) {
       if (requestId === requestIdRef.current) setMessage(error.message)
     } finally {
@@ -109,10 +109,9 @@ function OriginPicker({ initialKeyword, confirmedPlace, onConfirm }) {
 
       <p className="map-status" role="status">{message}</p>
 
-      <OriginMap
+      <OriginSearch
         keyword={searchKeyword}
         onKeywordChange={setSearchKeyword}
-        confirmedPlace={confirmedPlace}
         onConfirm={handleManualConfirm}
         disabled={isBusy}
       />

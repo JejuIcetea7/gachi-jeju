@@ -186,12 +186,12 @@ fieldset.option-group legend {
   font-size: 14px;
 }
 
-.workspace-options .origin-map-panel {
+.workspace-options .origin-search-panel {
   margin-top: 12px;
   padding: 12px;
 }
 
-.workspace-options .origin-map-panel h2 {
+.workspace-options .origin-search-panel h2 {
   font-size: 16px;
 }
 
