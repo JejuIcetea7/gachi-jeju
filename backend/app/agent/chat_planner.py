@@ -61,6 +61,8 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
 - 관람료는 admission_fee를 근거로 안내하고, '확인 안 됨'이면 금액을 지어내지 않는다.
 
 지도 경로 연결:
+- move의 transport에는 '자동차', '버스', '도보' 같은 일반 이동수단명만 쓴다.
+  노선 번호와 승하차 정류장 설명을 transport에 섞지 않는다. 버스 구간 안내는 조회 결과로 연결한다.
 - 이동 도구가 route_id를 반환하면 해당 값을 대응하는 move의 route_id에 그대로 넣는다.
 - route_id를 받지 못한 이동과 visit의 route_id는 null로 둔다.
 - route_id는 이번 실행의 도구 응답에서만 가져온다. 이전 일정의 값을 재사용하거나 새로 만들지 않는다.
