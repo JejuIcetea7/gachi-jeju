@@ -15,6 +15,95 @@
   background: #ffffff;
 }
 
+.workspace-options-slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.workspace-options-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.workspace-options-content[hidden] {
+  display: none;
+}
+
+.workspace-options-content > .workspace-options {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.workspace-options-scroll {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.workspace-options-content .workspace-panel-heading {
+  padding-right: 72px;
+  border-radius: 15px 15px 0 0;
+  background: #ffffff;
+}
+
+.workspace-options-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #52695d;
+  background: transparent;
+  line-height: 1;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.workspace-options-toggle svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+}
+
+.workspace-options-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.workspace-options-toggle:hover {
+  color: #1f644f;
+  background: #e8f3ed;
+}
+
+.workspace-layout[data-options-open="false"] > .workspace-options-slot {
+  align-self: start;
+  min-height: 44px;
+}
+
+.workspace-layout[data-options-open="false"] .workspace-options-toggle {
+  top: 0;
+  right: auto;
+  left: 0;
+}
+
 .workspace-header h1 {
   font-size: 24px;
 }
@@ -374,6 +463,8 @@ fieldset.option-group legend {
 
 .workspace-day-buttons {
   display: flex;
+  max-height: 100px;
+  overflow-y: auto;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 16px;
@@ -404,7 +495,7 @@ fieldset.option-group legend {
   font-size: 22px;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 900px) {
   .travel-workspace {
     height: auto;
     min-height: 100svh;
@@ -412,29 +503,22 @@ fieldset.option-group legend {
 
   .workspace-layout {
     flex: none;
-    grid-template-columns: 270px minmax(0, 1fr);
-    align-items: start;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
   }
 
-  .workspace-options {
-    max-height: 680px;
+  .workspace-options-slot {
+    max-height: min(420px, 65svh);
   }
 
   .workspace-chat {
-    height: 680px;
-  }
-
-  .workspace-results {
-    grid-column: 1 / -1;
-  }
-
-  .workspace-results-content {
-    overflow-y: visible;
+    height: clamp(480px, 75dvh, 680px);
   }
 }
 
 @media (max-width: 700px) {
   .workspace-header {
+    flex-wrap: wrap;
     padding: 14px;
   }
 
@@ -443,6 +527,7 @@ fieldset.option-group legend {
   }
 
   .brand-logo {
+    max-width: 100%;
     height: 48px;
   }
 
@@ -452,21 +537,7 @@ fieldset.option-group legend {
   }
 
   .workspace-layout {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
     padding: 12px;
-  }
-
-  .workspace-options {
-    max-height: 420px;
-  }
-
-  .workspace-chat {
-    height: 650px;
-  }
-
-  .workspace-results {
-    grid-column: auto;
   }
 
   .conversation-form-footer {
@@ -498,27 +569,37 @@ fieldset.option-group legend {
 
 .workspace-day-overview {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(240px, 1fr);
+  grid-template-columns: minmax(240px, 1fr) minmax(570px, 2fr);
+  grid-template-rows: minmax(0, 1fr);
   flex: 1;
   min-width: 0;
   min-height: 0;
   gap: 12px;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  outline-offset: -3px;
 }
 
 .workspace-day-overview > .itinerary-map {
+  display: flex;
+  flex-direction: column;
   min-height: 0;
   overflow-y: auto;
 }
 
+.workspace-day-overview .itinerary-map > :not(.itinerary-map-canvas) {
+  flex-shrink: 0;
+}
+
 .workspace-day-overview .itinerary-map-canvas {
-  height: 170px;
+  flex: 1 0 200px;
+  min-height: 200px;
 }
 
 .workspace-schedule-scroll {
   min-width: 0;
-  min-height: 240px;
+  min-height: 0;
   padding: 4px;
   overflow: auto;
   overscroll-behavior: contain;
@@ -539,29 +620,15 @@ fieldset.option-group legend {
   padding: 12px 10px;
 }
 
-@container travel-results (min-width: 950px) {
-  .workspace-day-overview {
-    grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr);
-    grid-template-rows: minmax(0, 1fr);
-    overflow: hidden;
-  }
+.workspace-overview-help {
+  display: none;
+  color: #52695d;
+  font-size: 13px;
+}
 
-  .workspace-day-overview > .itinerary-map {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .workspace-day-overview .itinerary-map > :not(.itinerary-map-canvas) {
-    flex-shrink: 0;
-  }
-
-  .workspace-day-overview .itinerary-map-canvas {
-    flex: 1 0 200px;
-    min-height: 200px;
-  }
-
-  .workspace-day-overview .workspace-schedule-scroll {
-    min-height: 0;
+@container travel-results (max-width: 900px) {
+  .workspace-overview-help {
+    display: block;
   }
 }
 
@@ -575,6 +642,7 @@ fieldset.option-group legend {
 
 .itinerary-map-heading {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
@@ -695,9 +763,9 @@ fieldset.option-group legend {
   margin-top: 8px;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 900px) {
   .workspace-results {
-    height: 850px;
+    height: clamp(640px, 90dvh, 900px);
   }
 }
 
@@ -706,7 +774,7 @@ fieldset.option-group legend {
   display: none;
 }
 
-@media (min-width: 1101px) {
+@media (min-width: 901px) {
   .workspace-layout.workspace-resizable {
     grid-template-columns:
       var(--workspace-options-width, 270px)
@@ -715,6 +783,14 @@ fieldset.option-group legend {
       16px
       var(--workspace-results-width, minmax(0, 1.4fr));
     column-gap: 0;
+  }
+
+  .workspace-layout.workspace-resizable[data-options-open="false"] {
+    grid-template-columns:
+      var(--workspace-options-rail-width, 56px)
+      var(--workspace-chat-width, minmax(280px, 0.4fr))
+      16px
+      var(--workspace-results-width, minmax(320px, 1fr));
   }
 
   .workspace-divider {
