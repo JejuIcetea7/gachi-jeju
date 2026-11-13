@@ -116,5 +116,23 @@ class PlaceDetailsTests(unittest.TestCase):
         self.assertEqual(result["closed_days"], "확인 안 됨")
         self.assertEqual(result["closed_day_checks"], {"2026-12-14": "확인 안 됨"})
 
+    def test_opening_hours_and_admission_fee(self):
+        # P042 한라생태숲: 계절별 운영시간, P040 돌문화공원: 관광공사 API 관람료
+        result = get_place_details(place_id="P042")
+
+        self.assertEqual(
+            result["opening_hours"],
+            "3-10월 09:00-18:00 입장마감 17:00;11-2월 09:00-17:00 입장마감 16:00",
+        )
+        self.assertIn("하절기", result["opening_hours_raw"])
+        self.assertIn("어른 5,000원", get_place_details(place_id="P040")["admission_fee"])
+
+    def test_blank_opening_hours_is_unknown(self):
+        # P100 동문시장: 운영시간 원문이 '점포별로 상이함'이라 정리 값 없음
+        result = get_place_details(place_id="P100")
+
+        self.assertEqual(result["opening_hours"], "확인 안 됨")
+        self.assertEqual(result["opening_hours_raw"], "점포별로 상이함")
+
 if __name__ == "__main__":
     unittest.main()

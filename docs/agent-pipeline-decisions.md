@@ -11,7 +11,7 @@
 | --- | --- | --- | --- |
 | 1 | `get_place_details`에 `place_nearby`(장애인 화장실, 휠체어 출입) 넣기 | 1차는 기본만 확인 | 미정 |
 | 2 | 접근성 등급 칸(`wheelchair_level` 등)으로 장소 거르기 | 170곳 모두 `unknown`. 추천 대상 표는 49곳 중 48곳이 같은 값이라 등급 기준은 다시 정해야 함. 2026-11-12 `get_place_details`가 `accessibility_facts`(HWP 69곳의 시설·추천 원문, 값 '-'·빈칸 제외)를 돌려주도록 반영 | 미정 |
-| 3 | 운영시간·휴무일·날씨 tool | 휴무일은 2026-11-12 반영: `get_place_details`의 `visit_dates`로 날짜별 휴무 판정(`services/closed_days.py`), 휴무 방문은 `/chat` 검증 오류, 미확인 장소는 항목 메모에 '휴무일 확인 필요'. 운영시간·날씨는 남음 | 부분 완료 |
+| 3 | 운영시간·휴무일·날씨 tool | 휴무일은 2026-11-12 반영: `get_place_details`의 `visit_dates`로 날짜별 휴무 판정(`services/closed_days.py`), 휴무 방문은 `/chat` 검증 오류, 미확인 장소는 항목 메모에 '휴무일 확인 필요'. 운영시간·관람료는 2026-11-13 반영: 같은 도구가 `opening_hours`·`admission_fee`를 돌려주고, 닫는 시각 이후 방문은 `/chat` 검증 오류(`services/opening_hours.py`). 날씨는 남음 | 부분 완료 |
 | 4 | `get_bus_trip` 설명 글 추가, LLM에 넘기는 경로 수 줄이기 | `get_bus_route_summary`로 임시 해결 (공항→한림공원 18,343자 → 350자) | 완료 |
 | 5 | FastAPI, React 연결 | 조건 전달, 생성 상태·오류 안내, 일정표와 결과 복원 연결. 2026-11-10 자동차 당일 일정 수동 확인 | 완료 |
 | 6 | 추자도 검색 | 제주도 범위 사각형에서 빠짐 | 미정 |

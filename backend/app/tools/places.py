@@ -125,14 +125,43 @@ def read_closed_days_by_place_id(place_ids: list[str]) -> dict:
         closed_days_by_place_id[row["place_id"]] = closed_days
     return closed_days_by_place_id
 
+def read_opening_hours_by_place_id(place_ids: list[str]) -> dict:
+    """place_id -> opening_hours 정리 값 (빈칸이면 ''). DB에 없는 place_id는 빠집니다."""
+    opening_hours_by_place_id = {}
+    if len(place_ids) == 0:
+        return opening_hours_by_place_id
+
+    placeholders = ", ".join(["?"] * len(place_ids))
+    query = f"SELECT place_id, opening_hours FROM places WHERE place_id IN ({placeholders})"
+    rows = read_rows(query, tuple(place_ids))
+    for row in rows:
+        opening_hours = row["opening_hours"]
+        if opening_hours is None:
+            opening_hours = ""
+        opening_hours_by_place_id[row["place_id"]] = opening_hours
+    return opening_hours_by_place_id
+
+def replace_blank_with_unknown(value: str | None) -> str:
+    text = value
+    if text is None or text == "":
+        text = STATUS_UNKNOWN
+    return text
+
 def get_place_details(*, place_id: str, visit_dates: list[str] | None = None) -> dict:
-    """여행지 하나의 관람 동선 지점별 접근성 설명(경사, 계단, 화장실, 대여 등)과 휴무일을 돌려줍니다.
+    """여행지 하나의 관람 동선 지점별 접근성 설명(경사, 계단, 화장실, 대여 등)과 휴무일·운영시간·관람료를 돌려줍니다.
     place_id는 장소 검색 도구 결과에서 선택한 place_id를 씁니다.
     accessibility_facts는 현장 조사 문서의 시설·추천 정보 원문입니다(장애인 주차·화장실·주출입구 치수,
     장애 유형별 추천 여부, 보조기기 대여, 이동약자 안내). 조사 문서가 없는 장소는 빈 목록입니다.
     visit_dates에 방문할 수 있는 날짜(YYYY-MM-DD 목록)를 넣으면 closed_day_checks에 날짜별로
-    '휴무', '영업', '확인 안 됨' 중 하나를 돌려줍니다. closed_days가 '확인 안 됨'이면 휴무일 정보가 없습니다."""
-    place_query = "SELECT place_id, name, category, closed_days FROM places WHERE place_id = ?"
+    '휴무', '영업', '확인 안 됨' 중 하나를 돌려줍니다. closed_days가 '확인 안 됨'이면 휴무일 정보가 없습니다.
+    opening_hours는 운영시간 정리 값입니다('상시 개방', '09:00-18:00 입장마감 17:00',
+    계절별은 '3-10월 09:00-18:00;11-2월 09:00-17:00'처럼 방문 날짜의 달로 고름).
+    opening_hours_raw는 원문(시설별 시간·공연 회차 등 포함), admission_fee는 관람료 원문입니다.
+    값이 없으면 '확인 안 됨'입니다."""
+    place_query = (
+        "SELECT place_id, name, category, closed_days, opening_hours, opening_hours_raw, admission_fee "
+        "FROM places WHERE place_id = ?"
+    )
     spot_query = (
         'SELECT name, description FROM place_spots WHERE place_id = ? ORDER BY "order"'
     )
@@ -195,6 +224,9 @@ def get_place_details(*, place_id: str, visit_dates: list[str] | None = None) ->
         "name": place_row["name"],
         "category": place_row["category"],
         "closed_days": closed_days_text,
+        "opening_hours": replace_blank_with_unknown(place_row["opening_hours"]),
+        "opening_hours_raw": replace_blank_with_unknown(place_row["opening_hours_raw"]),
+        "admission_fee": replace_blank_with_unknown(place_row["admission_fee"]),
         "spots": spots,
         "accessibility_facts": accessibility_facts,
     }

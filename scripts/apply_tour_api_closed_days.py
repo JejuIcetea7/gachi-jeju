@@ -5,6 +5,8 @@
   - 원문이 정확히 '연중무휴'면 그대로, 나머지는 아래 장소별 표로 정한다.
 - 그 외(보류·틀림·원문 없음): closed_days 빈칸, status '확인필요'
 - 대응표에서 source_file이 'tour_api'로 시작하는 줄만 다시 만들고, 나머지 줄(허브 HWP)은 그대로 둔다.
+- 같은 장소에 허브 HWP 줄이 있어도 API 값이 확정이면 API 값을 쓴다 (2026-11-13 사용자 결정, 관광공사 우선).
+  일반정보 HWP 장소도 대응표 값이 build_places.py에서 우선한다.
 
 실행: python3 scripts/apply_tour_api_closed_days.py  (그다음 python3 scripts/build_places.py)
 """
@@ -46,6 +48,14 @@ CLOSED_DAYS_BY_PLACE_ID = {
     "P099": MONDAY_NEW_YEAR_HOLIDAY_SEASONS,  # 제주현대미술관
     "P081": "매월 둘째 월요일;매월 넷째 월요일;1월 1일;설날연휴;추석연휴",  # 너븐숭이4.3기념관
     "P096": "매주 월요일",  # 그리스신화박물관
+    "P102": "매주 수요일",  # 제주해양동물박물관
+    "P104": "1월 1일;설날;추석",  # 서복전시관: '1월1일 / 설·추석 당일'
+    "P112": "매월 첫째 화요일;설날;추석",  # 세계자연유산센터
+    "P113": "1월 1일;설날연휴;추석연휴",  # 제주항일기념관
+    "P114": MONDAY_NEW_YEAR_HOLIDAYS,  # 김만덕기념관 (+ 월요일이 공휴일이면 다음 평일 휴관)
+    "P115": "매주 월요일;설날연휴;추석연휴;법정공휴일",  # 산지천갤러리
+    "P118": "매월 둘째 월요일;매월 넷째 월요일;1월 1일;설날;추석",  # 제주국제평화센터
+    "P120": MONDAY_NEW_YEAR_HOLIDAYS,  # 김영갑갤러리두모악
     "P012": "",  # 생각하는정원: 휴무 원문 없음
     "P014": "",  # 오설록: 휴무 원문 없음
     "P100": "",  # 동문시장: '점포별로 상이함'
@@ -112,11 +122,6 @@ def main():
         kept_rows.append(existing_row)
         kept_place_ids.add(existing_row["place_id"])
 
-    blank_kept_place_ids = set()
-    for kept_row in kept_rows:
-        if kept_row["closed_days"] == "":
-            blank_kept_place_ids.add(kept_row["place_id"])
-
     candidate_rows = read_csv_rows(CANDIDATES_FILE, "utf-8-sig")
     tour_api_rows = []
     replaced_place_ids = set()
@@ -125,8 +130,8 @@ def main():
         place_id = candidate_row["place_id"]
         map_row = build_tour_api_map_row(candidate_row, unknown_raw_texts)
         if place_id in kept_place_ids:
-            # 기존 줄(허브 HWP)이 빈칸이고 API 값이 확정이면 API 값으로 바꾼다 (예: P108)
-            if place_id not in blank_kept_place_ids or map_row["status"] != STATUS_CONFIRMED:
+            # 기존 줄(허브 HWP)은 API 값이 확정일 때만 API 값으로 바꾼다
+            if map_row["status"] != STATUS_CONFIRMED:
                 continue
             replaced_place_ids.add(place_id)
         tour_api_rows.append(map_row)
