@@ -21,9 +21,20 @@ data/raw/*/*
 .venv/
 __pycache__/
 *.pyc
+.DS_Store
 
 # Node (루트 실행 스크립트용)
 /node_modules/
 
 # 평가 실행 결과 (실험 문서에 쓴 폴더만 git add -f 로 올림)
 outputs/chat_eval/
+
+# 통합 사진과 HWP 변환 중간 파일 (목록 CSV·문서는 Git 관리)
+/data/processed/photos/
+/outputs/place_photos/
+/data/processed/photos_web/
+/outputs/photo_web/
+
+# 데이터 공유용 대용량 압축 파일
+/data/**/*.zip
+/outputs/**/*.zip
