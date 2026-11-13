@@ -36,6 +36,13 @@ from ..services.plan_consistency import validate_plan_moves
 from ..services.route_endpoints import validate_route_endpoints
 from ..services.plan_evaluation import extract_tool_trace
 from ..services.place_verification import restore_missing_place_ids
+from ..services.plan_retry import (
+    MAX_PLAN_RETRIES,
+    PlanValidationFailure,
+    build_plan_retry_messages,
+    merge_agent_metrics,
+    validate_retry_options,
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -219,46 +226,7 @@ class ChatResponse(BaseModel):
     warnings: list[str]
     meta: PlanMetaResponse
 
-@router.post(
-    "/chat",
-    response_model=ChatResponse,
-    responses={
-        400: {"model": ErrorResponse, "description": "입력 오류"},
-        429: {"model": ErrorResponse, "description": "AI 호출 한도 초과"},
-        500: {"model": ErrorResponse, "description": "내부 처리 오류"},
-        502: {"model": ErrorResponse, "description": "AI 응답 또는 생성 일정 오류"},
-        503: {"model": ErrorResponse, "description": "AI 서버 오류 또는 잔액 부족"},
-        504: {"model": ErrorResponse, "description": "AI 시간 초과"},
-    },
-)
-
-def create_chat(chat_request: ChatRequest):
-    """대화와 선택 옵션을 받아 질문 또는 검증한 일정을 반환합니다."""
-    started_at = time.perf_counter()
-
-    try:
-        agent_result = run_chat_agent(
-            build_chat_messages(chat_request),
-            ChatAgentReply,
-        )
-    except StructuredOutputError:
-        return build_error_response(
-            502, "llm_invalid_response", "AI 답변 형식이 올바르지 않습니다."
-        )
-    except Exception as error:
-        logger.exception("대화 처리 중 오류")
-        status_code, provider_code = read_llm_error(error)
-        return build_llm_error_response(status_code, provider_code)
-
-    try:
-        chat_reply = ChatAgentReply.model_validate(
-            agent_result.get("chat_reply")
-        )
-    except ValidationError:
-        return build_error_response(
-            502, "llm_invalid_response", "AI 답변 형식이 올바르지 않습니다."
-        )
-
+def _build_chat_result(chat_reply: ChatAgentReply, agent_result: dict):
     reply_text = chat_reply.reply
     plan = None
     map_routes = []
@@ -338,15 +306,7 @@ def create_chat(chat_request: ChatRequest):
                 )
 
             if errors:
-                return build_error_response(
-                    502,
-                    "plan_validation_failed",
-                    "생성된 일정의 구성·시간·이동 정보에 오류가 있습니다. 다시 시도해 주세요.",
-                    details=[
-                        {"field": "plan", "reason": reason}
-                        for reason in errors
-                    ],
-                )
+                raise PlanValidationFailure(errors)
 
             try:
                 plan, warnings = verify_places(
@@ -368,14 +328,12 @@ def create_chat(chat_request: ChatRequest):
             return_to_origin=chat_reply.options.return_to_origin is True,
         )
         if endpoint_errors:
-            return build_error_response(
-                502,
-                "plan_validation_failed",
-                "생성된 일정과 이동 경로의 위치가 일치하지 않습니다. 다시 시도해 주세요.",
-                details=[
-                    {"field": "plan", "reason": reason}
-                    for reason in endpoint_errors
-                ],
+            raise PlanValidationFailure(
+                endpoint_errors,
+                message=(
+                    "생성된 일정과 이동 경로의 위치가 일치하지 않습니다. "
+                    "다시 시도해 주세요."
+                ),
             )
 
         map_routes, route_warnings = select_plan_routes(
@@ -390,9 +348,93 @@ def create_chat(chat_request: ChatRequest):
         "plan": plan,
         "map_routes": map_routes,
         "warnings": warnings,
-        "meta": {
-            "model_call_count": agent_result["model_call_count"],
-            "tool_call_counts": agent_result["tool_call_counts"],
-            "elapsed_seconds": round(time.perf_counter() - started_at, 1),
-        },
     }
+
+
+@router.post(
+    "/chat",
+    response_model=ChatResponse,
+    responses={
+        400: {"model": ErrorResponse, "description": "입력 오류"},
+        429: {"model": ErrorResponse, "description": "AI 호출 한도 초과"},
+        500: {"model": ErrorResponse, "description": "내부 처리 오류"},
+        502: {"model": ErrorResponse, "description": "AI 응답 또는 생성 일정 오류"},
+        503: {"model": ErrorResponse, "description": "AI 서버 오류 또는 잔액 부족"},
+        504: {"model": ErrorResponse, "description": "AI 시간 초과"},
+    },
+)
+def create_chat(chat_request: ChatRequest):
+    """검증에 실패한 일정은 조건을 유지하며 최대 한 번 다시 생성합니다."""
+    started_at = time.perf_counter()
+    original_messages = build_chat_messages(chat_request)
+    messages = original_messages
+    attempt_results = []
+    locked_options = None
+
+    for attempt in range(MAX_PLAN_RETRIES + 1):
+        try:
+            agent_result = run_chat_agent(messages, ChatAgentReply)
+        except StructuredOutputError:
+            return build_error_response(
+                502, "llm_invalid_response", "AI 답변 형식이 올바르지 않습니다."
+            )
+        except Exception as error:
+            logger.exception("대화 처리 중 오류")
+            status_code, provider_code = read_llm_error(error)
+            return build_llm_error_response(status_code, provider_code)
+
+        attempt_results.append(agent_result)
+        try:
+            chat_reply = ChatAgentReply.model_validate(
+                agent_result.get("chat_reply")
+            )
+        except ValidationError:
+            return build_error_response(
+                502, "llm_invalid_response", "AI 답변 형식이 올바르지 않습니다."
+            )
+
+        if locked_options is not None:
+            option_errors = validate_retry_options(
+                locked_options,
+                chat_reply.options.model_dump(mode="json"),
+            )
+            if option_errors:
+                return build_error_response(
+                    502,
+                    "plan_validation_failed",
+                    "자동 재생성에서 여행 조건이 변경되어 일정을 제공하지 못했습니다.",
+                    details=[
+                        {"field": "options", "reason": reason}
+                        for reason in option_errors
+                    ],
+                )
+
+        try:
+            body = _build_chat_result(chat_reply, agent_result)
+        except PlanValidationFailure as failure:
+            if attempt >= MAX_PLAN_RETRIES:
+                return build_error_response(
+                    502,
+                    "plan_validation_failed",
+                    failure.message,
+                    details=[
+                        {"field": "plan", "reason": reason}
+                        for reason in failure.errors
+                    ],
+                )
+
+            locked_options = chat_reply.options.model_dump(mode="json")
+            messages = build_plan_retry_messages(
+                original_messages,
+                failed_plan=chat_reply.plan.model_dump(mode="json"),
+                options=locked_options,
+                errors=failure.errors,
+            )
+            continue
+
+        if isinstance(body, dict):
+            body["meta"] = {
+                **merge_agent_metrics(attempt_results),
+                "elapsed_seconds": round(time.perf_counter() - started_at, 1),
+            }
+        return body
