@@ -18,8 +18,12 @@ from pydantic import (
 
 from ..agent.chat_planner import run_chat_agent
 from ..agent.planner import TripPlan
-from ..services.plan_validation import validate_plan_closed_days, validate_plan_times
-from ..tools.places import read_closed_days_by_place_id
+from ..services.plan_validation import (
+    validate_plan_closed_days,
+    validate_plan_opening_hours,
+    validate_plan_times,
+)
+from ..tools.places import read_closed_days_by_place_id, read_opening_hours_by_place_id
 from .plan import (
     ErrorResponse,
     PlanBodyResponse,
@@ -292,6 +296,9 @@ def _build_chat_result(chat_reply: ChatAgentReply, agent_result: dict):
                     closed_days_by_place_id = read_closed_days_by_place_id(
                         visit_place_ids
                     )
+                    opening_hours_by_place_id = read_opening_hours_by_place_id(
+                        visit_place_ids
+                    )
                 except sqlite3.Error:
                     return build_error_response(
                         500, "internal_error", "장소 DB를 읽지 못했습니다."
@@ -302,6 +309,13 @@ def _build_chat_result(chat_reply: ChatAgentReply, agent_result: dict):
                         restored_plan,
                         chat_reply.options.start_date,
                         closed_days_by_place_id,
+                    )
+                )
+                errors.extend(
+                    validate_plan_opening_hours(
+                        restored_plan,
+                        chat_reply.options.start_date,
+                        opening_hours_by_place_id,
                     )
                 )
 

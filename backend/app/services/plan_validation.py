@@ -2,6 +2,7 @@ import re
 from datetime import date, timedelta
 
 from .closed_days import STATUS_CLOSED, WEEKDAY_NAMES, judge_closed_on_date
+from .opening_hours import find_closing_time
 
 
 def _to_minutes(value: str) -> int:
@@ -121,6 +122,49 @@ def validate_plan_closed_days(
             errors.append(
                 f"{label}: {item.get('title')}은(는) "
                 f"{visit_date.isoformat()}({weekday_name}) 휴무일({closed_days})입니다."
+            )
+
+    return errors
+
+
+def validate_plan_opening_hours(
+    plan: dict,
+    start_date: date,
+    opening_hours_by_place_id: dict,
+) -> list[str]:
+    """일정을 수정하지 않고 닫는 시각보다 늦게 끝나는 방문을 찾아 반환합니다.
+    N일차 날짜는 start_date + (N - 1)일이고, 계절별 운영시간은 그 날짜의 달로 고릅니다.
+    운영시간이 없거나 상시 개방이면 검사하지 않습니다."""
+    errors = []
+
+    for day in plan["days"]:
+        visit_date = start_date + timedelta(days=day["day"] - 1)
+
+        for index, item in enumerate(day["items"], start=1):
+            if item.get("item_type") != "visit":
+                continue
+            place_id = item.get("place_id")
+            if place_id not in opening_hours_by_place_id:
+                continue
+
+            closing_time = find_closing_time(opening_hours_by_place_id[place_id], visit_date)
+            if closing_time is None:
+                continue
+
+            end_time = item.get("end_time")
+            try:
+                end_minutes = _to_minutes(end_time)
+            except ValueError:
+                continue
+            closing_hour, closing_minute = closing_time.split(":")
+            closing_minutes = int(closing_hour) * 60 + int(closing_minute)
+            if end_minutes <= closing_minutes:
+                continue
+
+            label = f"{day['day']}일차 {index}번째 일정"
+            errors.append(
+                f"{label}: {item.get('title')}은(는) {visit_date.isoformat()} "
+                f"{closing_time}에 닫는데 {end_time}에 끝납니다."
             )
 
     return errors
