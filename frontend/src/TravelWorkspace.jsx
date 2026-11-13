@@ -383,7 +383,11 @@ function TravelWorkspace() {
                       </div>
                     )}
 
-                    <TravelPlan plan={visiblePlan} autoFocus={false} />
+                    <TravelPlan
+                      plan={visiblePlan}
+                      autoFocus={false}
+                      transitRoutes={planResult.transit_routes}
+                    />
                   </div>
                 </div>
               </>

@@ -32,6 +32,9 @@ from .plan import (
 )
 
 from ..services.plan_routes import MapRoute, select_plan_routes
+from ..services.transit_guidance import (
+    TransitRouteGuidance, select_plan_transit_guidance,
+)
 from ..services.plan_consistency import validate_plan_moves
 from ..services.route_endpoints import validate_route_endpoints
 from ..services.plan_evaluation import extract_tool_trace
@@ -223,6 +226,7 @@ class ChatResponse(BaseModel):
     options: ChatOptions
     plan: PlanBodyResponse | None
     map_routes: list[MapRoute] = Field(default_factory=list)
+    transit_routes: list[TransitRouteGuidance] = Field(default_factory=list)
     warnings: list[str]
     meta: PlanMetaResponse
 
@@ -230,6 +234,7 @@ def _build_chat_result(chat_reply: ChatAgentReply, agent_result: dict):
     reply_text = chat_reply.reply
     plan = None
     map_routes = []
+    transit_routes = []
     warnings = []
 
     if chat_reply.plan is not None:
@@ -341,12 +346,17 @@ def _build_chat_result(chat_reply: ChatAgentReply, agent_result: dict):
             agent_result.get("route_calls") or [],
         )
         warnings.extend(route_warnings)
+        transit_routes = select_plan_transit_guidance(
+            plan,
+            agent_result.get("route_calls") or [],
+        )
 
     return {
         "reply": reply_text,
         "options": chat_reply.options,
         "plan": plan,
         "map_routes": map_routes,
+        "transit_routes": transit_routes,
         "warnings": warnings,
     }
 
