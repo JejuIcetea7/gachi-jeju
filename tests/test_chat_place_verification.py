@@ -303,7 +303,9 @@ class ChatPlaceVerificationTests(unittest.TestCase):
             "2026-11-20(금) 휴무일" in detail["reason"]
             for detail in body["error"]["details"]
         ))
-        self.closed_lookup.assert_called_once_with(["P043"])
+        self.assertEqual(self.agent.call_count, 2)
+        self.assertEqual(self.closed_lookup.call_count, 2)
+        self.closed_lookup.assert_called_with(["P043"])
         self.place_lookup.assert_not_called()
 
     def test_restored_id_on_open_day_is_allowed(self):

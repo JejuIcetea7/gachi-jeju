@@ -193,7 +193,7 @@ class ChatApiTests(unittest.TestCase):
                     for detail in error["details"]
                 ))
                 self.lookup.assert_not_called()
-                self.agent.assert_called_once()
+                self.assertEqual(self.agent.call_count, 2)
 
     def test_closed_day_visit_is_rejected(self):
         # 2026-11-23 월요일, P092 국립제주박물관은 매주 월요일 휴관 (실제 DB 값)
@@ -212,6 +212,7 @@ class ChatApiTests(unittest.TestCase):
             for detail in error["details"]
         ))
         self.lookup.assert_not_called()
+        self.assertEqual(self.agent.call_count, 2)
 
     def test_empty_days_with_explanation_are_allowed(self):
         plan = TripPlan(
