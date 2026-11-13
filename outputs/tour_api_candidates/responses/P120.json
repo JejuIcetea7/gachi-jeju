@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "130723",
+            "contenttypeid": "14",
+            "scale": "",
+            "usefee": "- 어른 5,000원 <br>- 어린이 / 경로 / 청소년 / 국가유공자 / 제주도민 / 장애인 3,000원",
+            "discountinfo": "",
+            "spendtime": "1시간 이내",
+            "parkingfee": "무료",
+            "infocenterculture": "064-784-9907",
+            "accomcountculture": "",
+            "usetimeculture": "- 봄 (3월~6월) / 가을 (9월~10월) 09:30~18:00<br>\n- 여름 (7월~8월) 09:30~18:30<br>\n- 겨울 (11월~2월) 09:30~17:00<br>\n※ 관람시간 30분전 입장 마감",
+            "restdateculture": "매주 월요일 / 1월 1일 / 설·추석 당일",
+            "parkingculture": "가능",
+            "chkbabycarriageculture": "",
+            "chkpetculture": "",
+            "chkcreditcardculture": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

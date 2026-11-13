@@ -20,6 +20,7 @@ LINKS_FILE = PORTAL_DIRECTORY / "links.csv"
 PROCESSED_DIRECTORY = PROJECT_ROOT / "data" / "processed"
 HWP_GENERAL_INFO_DIRECTORY = PROCESSED_DIRECTORY / "hwp_general_info"
 CLOSED_DAYS_MAP_FILE = PROCESSED_DIRECTORY / "closed_days_map.csv"
+OPENING_HOURS_MAP_FILE = PROCESSED_DIRECTORY / "opening_hours_map.csv"  # scripts/build_opening_hours_map.py 결과
 OUTPUT_DIRECTORY = PROJECT_ROOT / "outputs" / "build_places"
 
 PLACES_FILE = PROCESSED_DIRECTORY / "places.csv"
@@ -27,6 +28,7 @@ SPOTS_FILE = PROCESSED_DIRECTORY / "place_spots.csv"
 NEARBY_FILE = PROCESSED_DIRECTORY / "place_nearby.csv"
 ACCESSIBILITY_RAW_FILE = PROCESSED_DIRECTORY / "place_accessibility_raw.csv"
 HWP_HUB_INFO_DIRECTORY = PROCESSED_DIRECTORY / "hwp_hub_info"
+TOUR_API_CANDIDATES_FILE = PROJECT_ROOT / "outputs" / "tour_api_candidates" / "candidates.csv"  # scripts/match_tour_api_places.py 결과
 PLACE_ID_MAP_FILE = PROCESSED_DIRECTORY / "place_id_map.csv"
 DATABASE_FILE = PROCESSED_DIRECTORY / "gachi_jeju.db"
 
@@ -55,7 +57,7 @@ PLACES_COLUMNS = [
     "region", "address", "latitude", "longitude",
     "wheelchair_level", "stroller_level", "has_slope_or_stairs",
     "accessible_parking", "accessible_toilet", "wheelchair_rental", "stroller_rental",
-    "indoor_outdoor", "visit_minutes", "opening_hours", "closed_days", "admission_fee",
+    "indoor_outdoor", "visit_minutes", "opening_hours", "opening_hours_raw", "closed_days", "admission_fee",
     "sources", "data_date",
 ]
 SPOTS_COLUMNS = [
@@ -81,6 +83,16 @@ EXCLUDED_PARKING_GROUPS = ["일반주차구역", "대형버스접근여부", "�
 # 허브 HWP 이용안내에서 가져올 항목. 주차장은 '장애인'이 들어간 경우만
 HUB_ACCESSIBILITY_LABELS = ["보조기기", "편의장비", "승강기"]
 HUB_PARKING_LABEL = "주차장"
+
+# 관람료 정리: 값 전체가 이것이면 '무료', 홈페이지·전화 참조 안내는 지운다
+FREE_FEE_RAW_TEXTS = ["없음", "무료"]
+FEE_REFERENCE_NOTE_PATTERN = r"※\s*자세한[^※]*"  # 예: ※ 자세한 사항은 홈페이지 참조 및 전화 문의 요망
+# 원문이 장소 자체의 관람료가 아닌 곳 (place_id -> 관람료)
+ADMISSION_FEE_OVERRIDES_BY_PLACE_ID = {
+    "P156": "무료",  # 이중섭거리: 원문은 이중섭미술관 관람료, 거리 자체는 무료
+}
+# 허브 HWP '관람료 :' 문단 뒤에서 관람료가 끝나는 다음 항목
+HUB_FEE_STOP_PATTERN = r"^\W*(보\s*조\s*기\s*기|편\s*의\s*장\s*비|승\s*강\s*기|주\s*차\s*장|문\s*의|주\s*소|홈\s*페\s*이\s*지)"
 
 COLUMN_TYPES = {
     "latitude": "REAL",
@@ -140,6 +152,13 @@ CLOSED_DAY_PATTERNS = [
     r"설날|추석|설날연휴|추석연휴",
     r"법정공휴일",
 ]
+
+# opening_hours 정리 값 한 항목 형식 (여러 개는 ';'로 잇는다). 예: '3-10월 09:00-18:00 입장마감 17:00'
+OPENING_HOURS_ITEM_PATTERN = (
+    r"상시 개방"
+    r"|((1[0-2]|[1-9])-(1[0-2]|[1-9])월 )?([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-4]):[0-5]\d"
+    r"( 입장마감 ([01]\d|2[0-3]):[0-5]\d)?"
+)
 
 # 원본 파일 이름의 장소명 오타로 이름 대조가 안 되는 일반정보 HWP (데이터ID -> place_id)
 HWP_PLACE_ID_BY_DATA_ID = {
@@ -928,6 +947,26 @@ def load_closed_days_map(failures):
     return closed_days_by_place_id
 
 
+def load_opening_hours_map(failures):
+    """운영시간 대응표 -> place_id별 (opening_hours 정리 값, 원문). 형식에 안 맞는 정리 값은 빈칸 + 실패 로그"""
+    opening_hours_by_place_id = {}
+    if not OPENING_HOURS_MAP_FILE.exists():
+        return opening_hours_by_place_id
+
+    source_file = relative_path(OPENING_HOURS_MAP_FILE)
+    _, map_rows = read_csv_file(OPENING_HOURS_MAP_FILE, "utf-8")
+    for map_row in map_rows:
+        opening_hours = map_row["opening_hours"]
+        if opening_hours != "":
+            for opening_hours_item in opening_hours.split(";"):
+                if re.fullmatch(OPENING_HOURS_ITEM_PATTERN, opening_hours_item) is None:
+                    failures.append({"source_file": source_file, "step": "opening_hours", "reason": map_row["place_id"] + " 형식에 없는 정리 값: " + opening_hours})
+                    opening_hours = ""
+                    break
+        opening_hours_by_place_id[map_row["place_id"]] = (opening_hours, map_row["raw_text"])
+    return opening_hours_by_place_id
+
+
 # ---------------------------------------------------------------------------
 # 접근성 원본 표 (HWP 변환 결과 -> place_accessibility_raw)
 # ---------------------------------------------------------------------------
@@ -1217,19 +1256,25 @@ def load_place_id_by_hub_folder():
     return place_id_by_hub_folder
 
 
+def find_general_info_place_id(json_file, place_id_by_name_token):
+    """일반정보 HWP 변환 json(<데이터ID>.json) -> place_id. 못 찾으면 None"""
+    data_id = json_file.stem
+    place_id = HWP_PLACE_ID_BY_DATA_ID.get(data_id)
+    if place_id is None:
+        hwp_files = sorted((PORTAL_DIRECTORY / f"dgk_{data_id}").glob("*.hwp"))
+        if len(hwp_files) > 0:
+            place_name_token = extract_place_name_token(hwp_files[0].name)
+            place_id = place_id_by_name_token.get(place_name_token)
+    return place_id
+
+
 def build_accessibility_raw_rows(failures):
     """일반정보 HWP 49곳 + 허브 HWP 20곳의 접근성 원본 줄"""
     accessibility_rows = []
 
     place_id_by_name_token = load_place_id_by_name_token()
     for json_file in sorted(HWP_GENERAL_INFO_DIRECTORY.glob("*.json")):
-        data_id = json_file.stem
-        place_id = HWP_PLACE_ID_BY_DATA_ID.get(data_id)
-        if place_id is None:
-            hwp_files = sorted((PORTAL_DIRECTORY / f"dgk_{data_id}").glob("*.hwp"))
-            if len(hwp_files) > 0:
-                place_name_token = extract_place_name_token(hwp_files[0].name)
-                place_id = place_id_by_name_token.get(place_name_token)
+        place_id = find_general_info_place_id(json_file, place_id_by_name_token)
         if place_id is None:
             failures.append({"source_file": relative_path(json_file), "step": "accessibility", "reason": "place_id 없음"})
             continue
@@ -1297,8 +1342,137 @@ def decide_accessible_parking_by_place_id(accessibility_rows):
     return accessible_parking_by_place_id
 
 
+# ---------------------------------------------------------------------------
+# 관람료 원문 (한국관광공사 API > 허브 HWP > 일반정보 HWP)
+# ---------------------------------------------------------------------------
+
+def clean_admission_fee(raw_text):
+    """줄바꿈·공백 정리, 홈페이지 참조 문구 삭제, '없음'은 '무료'로"""
+    cleaned_text = re.sub(r"<br\s*/?>", " ", raw_text)
+    cleaned_text = re.sub(FEE_REFERENCE_NOTE_PATTERN, "", cleaned_text)
+    cleaned_text = re.sub(r"\s+", " ", cleaned_text).strip()
+    if remove_spaces(cleaned_text) in FREE_FEE_RAW_TEXTS:
+        cleaned_text = "무료"
+    return cleaned_text
+
+
+def read_general_info_fee(json_file):
+    """일반정보 HWP 변환 json의 첫 표 '관람료' 행 값. 없으면 빈칸"""
+    raw_text = ""
+    document = read_json_file(json_file)
+    for block in document["blocks"]:
+        if block["type"] != "table":
+            continue
+        for row in block["table"]["cells"]:
+            if remove_spaces(row[0]["text"]) == "관람료":
+                raw_text = row[1]["text"]
+        break
+    return raw_text
+
+
+def read_hub_info_fee(json_file):
+    """허브 HWP 변환 json의 관람료. 표의 '관람료' 행(합쳐진 아래 행 포함) 또는
+    '관람료 :' 문단과 다음 항목(보조기기·문의 등) 전까지의 문단을 잇는다. 없으면 빈칸"""
+    fee_texts = []
+    document = read_json_file(json_file)
+    blocks = document["blocks"]
+    for block_index, block in enumerate(blocks):
+        if block["type"] == "paragraph":
+            paragraph_match = re.match(r"^\W*관\s*람\s*료\s*:?\s*(.*)$", block.get("text", ""), re.DOTALL)
+            if paragraph_match is None:
+                continue
+            fee_texts.append(paragraph_match.group(1))
+            for next_block in blocks[block_index + 1:]:
+                if next_block["type"] != "paragraph":
+                    break
+                next_text = next_block.get("text", "")
+                if re.match(HUB_FEE_STOP_PATTERN, next_text):
+                    break
+                fee_texts.append(next_text)
+            break
+
+        if block["type"] != "table":
+            continue
+        # 세로로 합쳐진 칸은 아래 행에도 같은 글자를 채운다 (예: 점보빌리지 트래킹 18,000원)
+        text_by_column_by_row = []
+        for origin_row in list_origin_cells(block["table"]["cells"]):
+            text_by_column = {}
+            for column_index, text, _ in origin_row:
+                text_by_column[column_index] = text
+            text_by_column_by_row.append(text_by_column)
+        for row_index, origin_row in enumerate(list_origin_cells(block["table"]["cells"])):
+            for column_index, text, row_span in origin_row:
+                for row_offset in range(1, row_span):
+                    text_by_column_by_row[row_index + row_offset][column_index] = text
+
+        for text_by_column in text_by_column_by_row:
+            first_text = text_by_column.get(0, "")
+            if not remove_spaces(first_text).startswith("관람료"):
+                continue
+            value_texts = []
+            for column_index in sorted(text_by_column):
+                text = text_by_column[column_index]
+                if column_index == 0 or text == "":
+                    continue
+                value_texts.append(text)
+            fee_texts.append(" / ".join(value_texts))
+
+    raw_text = " ".join(fee_texts)
+    return raw_text
+
+
+def is_accepted_tour_api_candidate(candidate_row):
+    """1단계(자동)이거나 사람이 '통과'로 확인한 후보 (scripts/apply_tour_api_closed_days.py와 같은 기준)"""
+    accepted = False
+    if candidate_row["stage"] == "1" and candidate_row["review"] == "":
+        accepted = True
+    if candidate_row["review"] == "통과":
+        accepted = True
+    return accepted
+
+
+def load_admission_fee_by_place_id(failures):
+    """place_id -> 정리한 관람료 원문. 같은 장소면 한국관광공사 API > 허브 HWP > 일반정보 HWP 순으로 쓴다"""
+    admission_fee_by_place_id = {}
+
+    place_id_by_name_token = load_place_id_by_name_token()
+    for json_file in sorted(HWP_GENERAL_INFO_DIRECTORY.glob("*.json")):
+        place_id = find_general_info_place_id(json_file, place_id_by_name_token)
+        if place_id is None:
+            failures.append({"source_file": relative_path(json_file), "step": "admission_fee", "reason": "place_id 없음"})
+            continue
+        admission_fee = clean_admission_fee(read_general_info_fee(json_file))
+        if admission_fee != "":
+            admission_fee_by_place_id[place_id] = admission_fee
+
+    place_id_by_hub_folder = load_place_id_by_hub_folder()
+    for json_file in sorted(HWP_HUB_INFO_DIRECTORY.glob("*.json")):
+        place_id = place_id_by_hub_folder.get(json_file.stem)
+        if place_id is None:
+            failures.append({"source_file": relative_path(json_file), "step": "admission_fee", "reason": "place_id 없음"})
+            continue
+        admission_fee = clean_admission_fee(read_hub_info_fee(json_file))
+        if admission_fee != "":
+            admission_fee_by_place_id[place_id] = admission_fee
+
+    if not TOUR_API_CANDIDATES_FILE.exists():
+        failures.append({"source_file": relative_path(TOUR_API_CANDIDATES_FILE), "step": "admission_fee", "reason": "파일 없음"})
+        return admission_fee_by_place_id
+    _, candidate_rows = read_csv_file(TOUR_API_CANDIDATES_FILE, "utf-8-sig")
+    for candidate_row in candidate_rows:
+        if not is_accepted_tour_api_candidate(candidate_row):
+            continue
+        admission_fee = clean_admission_fee(candidate_row["usefee_raw"])
+        if admission_fee != "":
+            admission_fee_by_place_id[candidate_row["place_id"]] = admission_fee
+
+    for place_id, admission_fee in ADMISSION_FEE_OVERRIDES_BY_PLACE_ID.items():
+        admission_fee_by_place_id[place_id] = admission_fee
+    return admission_fee_by_place_id
+
+
 def build_places_rows(place_ids, sources_by_place_id, spots_by_place_id, representative_spots, closed_days_by_place_id,
-                      accessible_parking_by_place_id, conflicts):
+                      accessible_parking_by_place_id, admission_fee_by_place_id, opening_hours_by_place_id, conflicts):
     places_rows = []
     for place_id in place_ids:
         place_sources = sources_by_place_id[place_id]
@@ -1329,6 +1503,7 @@ def build_places_rows(place_ids, sources_by_place_id, spots_by_place_id, represe
                 data_date = source["data_date"]
 
         place_spots = spots_by_place_id.get(place_id, [])
+        opening_hours, opening_hours_raw = opening_hours_by_place_id.get(place_id, ("", ""))
         place_row = {
             "place_id": place_id,
             "name": main_source["place_name"],
@@ -1346,9 +1521,10 @@ def build_places_rows(place_ids, sources_by_place_id, spots_by_place_id, represe
             "stroller_rental": UNKNOWN,
             "indoor_outdoor": UNKNOWN,
             "visit_minutes": DEFAULT_VISIT_MINUTES,
-            "opening_hours": "",
+            "opening_hours": opening_hours,
+            "opening_hours_raw": opening_hours_raw,
             "closed_days": closed_days_by_place_id.get(place_id, ""),
-            "admission_fee": "",
+            "admission_fee": admission_fee_by_place_id.get(place_id, ""),
             "sources": ";".join(source_files),
             "data_date": data_date,
         }
@@ -1624,15 +1800,23 @@ def main():
     ))
     accessible_parking_by_place_id = decide_accessible_parking_by_place_id(accessibility_rows)
 
-    # 7-1. places 집계 (휴무일: 일반정보 HWP 변환 결과, 그 위에 사람이 정리한 대응표 / 장애인 주차: 접근성 원본 표)
+    # 7-1. places 집계 (휴무일: 일반정보 HWP 변환 결과, 그 위에 사람이 정리한 대응표 / 장애인 주차: 접근성 원본 표
+    #      / 관람료: 한국관광공사 API > 허브 HWP > 일반정보 HWP / 운영시간: 운영시간 대응표)
     closed_days_by_place_id = load_hwp_closed_days_by_place_id(failures)
     closed_days_map = load_closed_days_map(failures)
     for place_id, closed_days in closed_days_map.items():
+        # 대응표가 빈칸(확인필요)이면 일반정보 HWP 값을 지우지 않는다
+        if closed_days == "" and place_id in closed_days_by_place_id:
+            continue
         closed_days_by_place_id[place_id] = closed_days
     print("[휴무일] 일반정보 HWP + 대응표 {}곳".format(len(closed_days_by_place_id)))
+    admission_fee_by_place_id = load_admission_fee_by_place_id(failures)
+    print("[관람료] {}곳".format(len(admission_fee_by_place_id)))
+    opening_hours_by_place_id = load_opening_hours_map(failures)
+    print("[운영시간] 대응표 {}곳".format(len(opening_hours_by_place_id)))
     places_rows = build_places_rows(
         place_ids, sources_by_place_id, spots_by_place_id, representative_spots, closed_days_by_place_id,
-        accessible_parking_by_place_id, conflicts
+        accessible_parking_by_place_id, admission_fee_by_place_id, opening_hours_by_place_id, conflicts
     )
 
     save_csv_file(PLACES_FILE, PLACES_COLUMNS, places_rows)

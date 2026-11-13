@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "2833763",
+            "contenttypeid": "14",
+            "scale": "",
+            "usefee": "무료",
+            "discountinfo": "",
+            "spendtime": "",
+            "parkingfee": "",
+            "infocenterculture": "064-800-9341",
+            "accomcountculture": "",
+            "usetimeculture": "- 10:00~18:00- 입장 마감 17:30",
+            "restdateculture": "매주 월요일 / 설·추석 연휴 / 공휴일",
+            "parkingculture": "",
+            "chkbabycarriageculture": "",
+            "chkpetculture": "",
+            "chkcreditcardculture": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

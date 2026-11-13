@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "130308",
+            "contenttypeid": "14",
+            "scale": "56,198m² (지하 1층, 지상 2층 연면적 1,696m²)",
+            "usefee": "무료",
+            "discountinfo": "",
+            "spendtime": "",
+            "parkingfee": "무료",
+            "infocenterculture": "064-783-2008",
+            "accomcountculture": "",
+            "usetimeculture": "09:00~18:00 (입장 마감 17:30)",
+            "restdateculture": "1월1일 / 설날연휴(3일) / 추석연휴(3일)",
+            "parkingculture": "",
+            "chkbabycarriageculture": "없음",
+            "chkpetculture": "",
+            "chkcreditcardculture": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

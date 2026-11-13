@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "2931892",
+            "contenttypeid": "14",
+            "scale": "",
+            "usefee": "- 성인 19,000원\n- 청소년 14,000원\n- 어린이 11,000원\n※ 무료 : 36개월 미만 영유아\n※ 자세한 사항은 홈페이지 참조",
+            "discountinfo": "",
+            "spendtime": "",
+            "parkingfee": "무료",
+            "infocenterculture": "1522-2653",
+            "accomcountculture": "",
+            "usetimeculture": "10:00~18:20 (입장 마감 17:30)",
+            "restdateculture": "연중무휴",
+            "parkingculture": "",
+            "chkbabycarriageculture": "",
+            "chkpetculture": "",
+            "chkcreditcardculture": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

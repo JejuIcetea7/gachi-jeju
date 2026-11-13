@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "130682",
+            "contenttypeid": "14",
+            "scale": "",
+            "usefee": "무료",
+            "discountinfo": "",
+            "spendtime": "",
+            "parkingfee": "무료",
+            "infocenterculture": "064-760-6361",
+            "accomcountculture": "",
+            "usetimeculture": "09:00~18:00 (입장 마감 17:30)",
+            "restdateculture": "1월1일 / 설·추석 당일",
+            "parkingculture": "",
+            "chkbabycarriageculture": "없음",
+            "chkpetculture": "",
+            "chkcreditcardculture": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

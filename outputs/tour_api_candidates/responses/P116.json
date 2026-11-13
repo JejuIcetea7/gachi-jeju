@@ -1,0 +1,35 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "2798709",
+            "contenttypeid": "28",
+            "openperiod": "",
+            "reservation": "",
+            "infocenterleports": "064-783-8855",
+            "scaleleports": "",
+            "accomcountleports": "",
+            "restdateleports": "연중무휴",
+            "usetimeleports": "10:00~18:00",
+            "usefeeleports": "",
+            "expagerangeleports": "",
+            "parkingleports": "",
+            "parkingfeeleports": "무료",
+            "chkbabycarriageleports": "",
+            "chkpetleports": "",
+            "chkcreditcardleports": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

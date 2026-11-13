@@ -1,4 +1,4 @@
-"""휴무일 빈칸 장소를 한국관광공사 API(KorService2)에서 찾아 후보 1개씩 고르고 3단계로 나눈다.
+"""places.csv 전체 장소를 한국관광공사 API(KorService2)에서 찾아 후보 1개씩 고르고 3단계로 나눈다.
 
 - 후보 목록: 제주(법정동 시도코드 50)의 관광지(12)·문화시설(14)·레포츠(28)·쇼핑(38) 전체를
   지역기반 조회(areaBasedList2)로 한 번 받아 두고 이 안에서 고른다.
@@ -7,7 +7,8 @@
   1. 완전 일치: 정규화한 이름(괄호 속 별칭 포함)이 같고 3km 이내, 또는 한쪽 이름이 다른 쪽에 통째로 들어 있고 500m 이내
   2. 같은 장소로 봄: 이름이 비슷하고(유사도 0.6 이상) 1km 이내
   3. 불확실: 그 외
-- 고른 후보의 소개정보(detailIntro2)에서 휴무일·이용시간 원문을 가져온다.
+- 고른 후보의 소개정보(detailIntro2)에서 휴무일·이용시간·이용요금 원문을 가져온다.
+  (관광지(12)·쇼핑(38)은 소개정보에 이용요금 칸이 없다)
 
 결과: outputs/tour_api_candidates/candidates.csv
 원본: outputs/tour_api_candidates/jeju_catalog.json (제주 전체 목록), responses/<place_id>.json (소개정보)
@@ -44,17 +45,17 @@ STAGE_EXACT = 1
 STAGE_SIMILAR = 2
 STAGE_UNCERTAIN = 3
 
-# 콘텐츠 유형 -> (휴무일 칸, 이용시간 칸)
+# 콘텐츠 유형 -> (휴무일 칸, 이용시간 칸, 이용요금 칸)
 INTRO_FIELDS_BY_CONTENT_TYPE = {
-    "12": ("restdate", "usetime"),  # 관광지
-    "14": ("restdateculture", "usetimeculture"),  # 문화시설
-    "28": ("restdateleports", "usetimeleports"),  # 레포츠
-    "38": ("restdateshopping", "opentime"),  # 쇼핑
+    "12": ("restdate", "usetime", None),  # 관광지
+    "14": ("restdateculture", "usetimeculture", "usefee"),  # 문화시설
+    "28": ("restdateleports", "usetimeleports", "usefeeleports"),  # 레포츠
+    "38": ("restdateshopping", "opentime", None),  # 쇼핑
 }
 
 CANDIDATE_COLUMNS = [
     "place_id", "name", "category", "stage", "candidate_title", "distance_m", "name_similarity",
-    "content_id", "content_type_id", "nearby_count", "review", "restdate_raw", "usetime_raw", "error",
+    "content_id", "content_type_id", "nearby_count", "review", "restdate_raw", "usetime_raw", "usefee_raw", "error",
 ]
 
 
@@ -109,12 +110,11 @@ def compare_names(place_name, candidate_title):
     return best_similarity, is_contained
 
 
-def load_unfilled_places():
+def load_all_places():
     places = []
     with open(PLACES_FILE, encoding="utf-8", newline="") as places_file:
         for row in csv.DictReader(places_file):
-            if row["closed_days"] == "":
-                places.append(row)
+            places.append(row)
     return places
 
 
@@ -230,25 +230,28 @@ def load_saved_intro(place_id, content_id):
 
 
 def fetch_intro(place_id, candidate, api_key):
-    """(휴무일 원문, 이용시간 원문, 오류, 응답). 같은 후보의 저장된 응답이 있으면 API를 부르지 않는다"""
+    """(휴무일 원문, 이용시간 원문, 이용요금 원문, 오류, 응답). 같은 후보의 저장된 응답이 있으면 API를 부르지 않는다"""
     content_type_id = str(candidate["contenttypeid"])
     content_id = str(candidate["contentid"])
-    restdate_field, usetime_field = INTRO_FIELDS_BY_CONTENT_TYPE[content_type_id]
+    restdate_field, usetime_field, usefee_field = INTRO_FIELDS_BY_CONTENT_TYPE[content_type_id]
 
     intro_data = load_saved_intro(place_id, content_id)
     if intro_data is None:
         intro_params = {"contentId": content_id, "contentTypeId": content_type_id}
         intro_data, intro_error = call_api("detailIntro2", api_key, intro_params)
         if intro_error is not None:
-            return "", "", "소개정보 " + intro_error, intro_data
+            return "", "", "", "소개정보 " + intro_error, intro_data
 
     intro_items = extract_items(intro_data)
     if len(intro_items) == 0:
-        return "", "", "소개정보 없음", intro_data
+        return "", "", "", "소개정보 없음", intro_data
 
     restdate_raw = intro_items[0].get(restdate_field, "")
     usetime_raw = intro_items[0].get(usetime_field, "")
-    return restdate_raw, usetime_raw, "", intro_data
+    usefee_raw = ""
+    if usefee_field is not None:
+        usefee_raw = intro_items[0].get(usefee_field, "")
+    return restdate_raw, usetime_raw, usefee_raw, "", intro_data
 
 
 def match_place(place, catalog, api_key):
@@ -266,6 +269,7 @@ def match_place(place, catalog, api_key):
         "review": "",
         "restdate_raw": "",
         "usetime_raw": "",
+        "usefee_raw": "",
         "error": "",
     }
 
@@ -284,9 +288,10 @@ def match_place(place, catalog, api_key):
     row["content_id"] = str(candidate["contentid"])
     row["content_type_id"] = str(candidate["contenttypeid"])
 
-    restdate_raw, usetime_raw, intro_error, intro_data = fetch_intro(place["place_id"], candidate, api_key)
+    restdate_raw, usetime_raw, usefee_raw, intro_error, intro_data = fetch_intro(place["place_id"], candidate, api_key)
     row["restdate_raw"] = restdate_raw
     row["usetime_raw"] = usetime_raw
+    row["usefee_raw"] = usefee_raw
     row["error"] = intro_error
     return row, intro_data
 
@@ -304,7 +309,7 @@ def main():
         catalog = download_jeju_catalog(api_key)
         CATALOG_FILE.write_text(json.dumps(catalog, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    places = load_unfilled_places()
+    places = load_all_places()
     review_by_key = load_reviews()
     rows = []
     for index, place in enumerate(places, start=1):
