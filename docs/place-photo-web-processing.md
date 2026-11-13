@@ -94,7 +94,7 @@ sRGB로 변환한 뒤 웹용 RGB로 저장하고 변환 사실을 기록한다. 
 
 | 추가 컬럼 | 의미 |
 | --- | --- |
-| `web_image_path` | 프로젝트 기준 웹용 WebP 경로 |
+| `web_image_path` | 프로젝트 기준 웹용 WebP 경로. 운영체제와 관계없이 `/`로 구분합니다. |
 | `web_width`, `web_height` | 방향 보정과 축소 후 픽셀 크기 |
 | `web_size_bytes`, `web_sha256` | 웹용 파일 용량·내용 검사값 |
 | `web_resized` | 해상도를 축소했으면 `True` |
