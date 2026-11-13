@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "2751843",
+            "contenttypeid": "14",
+            "scale": "",
+            "usefee": "[개인]- 일반 10,000원- 청소년 9,000원- 어린이 8,000원- 가족(성인2,어린이2) 32,000원[단체(20인 이상)]- 일반 9,000원- 청소년 8,000원- 어린이 7,000원- 가족(성인2,어린이2) 30,000원",
+            "discountinfo": "",
+            "spendtime": "약 2시간",
+            "parkingfee": "무료",
+            "infocenterculture": "064-782-3711",
+            "accomcountculture": "",
+            "usetimeculture": "09:00~18:00",
+            "restdateculture": "매주 수요일",
+            "parkingculture": "",
+            "chkbabycarriageculture": "",
+            "chkpetculture": "",
+            "chkcreditcardculture": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

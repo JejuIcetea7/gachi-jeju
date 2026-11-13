@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "3030422",
+            "contenttypeid": "14",
+            "scale": "",
+            "usefee": "- 성인 25,000원- 청소년 22,000원- 소인 20,000원",
+            "discountinfo": "",
+            "spendtime": "",
+            "parkingfee": "",
+            "infocenterculture": "064-787-2258",
+            "accomcountculture": "",
+            "usetimeculture": "09:40~15:30 (휴게시간 12:00~13:00)※ 매일 3회 공연 09:40 / 11:00 / 14:30",
+            "restdateculture": "연중무휴",
+            "parkingculture": "",
+            "chkbabycarriageculture": "",
+            "chkpetculture": "",
+            "chkcreditcardculture": ""
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

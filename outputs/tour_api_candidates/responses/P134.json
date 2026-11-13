@@ -1,0 +1,36 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "0000",
+      "resultMsg": "OK"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "contentid": "2893962",
+            "contenttypeid": "38",
+            "saleitem": "의류",
+            "saleitemcost": "",
+            "fairday": "월-일요일",
+            "opendateshopping": "",
+            "shopguide": "",
+            "culturecenter": "",
+            "restroom": "있음",
+            "infocentershopping": "064-753-6114",
+            "scaleshopping": "",
+            "restdateshopping": "명절",
+            "parkingshopping": "가능",
+            "chkbabycarriageshopping": "",
+            "chkpetshopping": "",
+            "chkcreditcardshopping": "가능",
+            "opentime": "10:30-19:00"
+          }
+        ]
+      },
+      "numOfRows": 1,
+      "pageNo": 1,
+      "totalCount": 1
+    }
+  }
+}

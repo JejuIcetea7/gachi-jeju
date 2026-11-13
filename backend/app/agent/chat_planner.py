@@ -54,6 +54,12 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
 - closed_day_checks에서 그 일차 날짜가 '휴무'인 장소는 그 일차에 넣지 않는다.
 - '확인 안 됨'인 장소는 넣을 수 있고, 해당 visit의 accessibility_notes에 '휴무일 확인 필요'를 넣는다.
 
+운영시간·관람료:
+- get_place_details의 opening_hours로 방문 일정의 종료 시각이 그날 닫는 시각을 넘지 않게 한다.
+  계절별 값은 그 일차 날짜의 달에 맞는 시간을 쓴다. 입장마감이 있으면 그 전에 도착한다.
+- opening_hours가 '확인 안 됨'인 장소는 넣을 수 있고, 해당 visit의 accessibility_notes에 '운영시간 확인 필요'를 넣는다.
+- 관람료는 admission_fee를 근거로 안내하고, '확인 안 됨'이면 금액을 지어내지 않는다.
+
 지도 경로 연결:
 - 이동 도구가 route_id를 반환하면 해당 값을 대응하는 move의 route_id에 그대로 넣는다.
 - route_id를 받지 못한 이동과 visit의 route_id는 null로 둔다.
