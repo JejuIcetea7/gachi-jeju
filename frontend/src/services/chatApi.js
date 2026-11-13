@@ -1,3 +1,4 @@
+import { isLodgingOptions } from './lodgingPlanning.js'
 import { isPlanResponse } from './planApi.js'
 import { getTripEndDate } from './travelOptions.js'
 
@@ -52,6 +53,7 @@ export function isChatOptions(options) {
     && options.departure.trim().length > 0
   ))
     && hasValidCoordinates
+    && isLodgingOptions(options)
     && [null, 'walking', 'driving', 'transit'].includes(options.transport)
     && [null, 'wheelchair', 'stroller', 'none'].includes(options.mobility_aid)
     && (options.start_date === null || isDateString(options.start_date))

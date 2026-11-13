@@ -41,6 +41,11 @@ from ..services.transit_guidance import (
 )
 from ..services.plan_consistency import validate_plan_moves
 from ..services.route_endpoints import validate_route_endpoints
+from ..services.lodging_planning import (
+    LodgingStatus, LodgingStay, build_lodging_warnings, retain_lodging_state,
+    UNDECIDED_LODGING_NOTE, prepare_undecided_lodging_plan,
+    validate_lodging_boundaries, validate_lodging_options, validate_lodging_selections,
+)
 from ..services.plan_evaluation import extract_tool_trace
 from ..services.place_verification import restore_missing_place_ids
 from ..services.plan_retry import (
@@ -123,6 +128,20 @@ class ChatOptions(BaseModel):
         max_length=3,
     )
     return_to_origin: bool | None = None
+    lodging_status: LodgingStatus | None = Field(
+        default=None,
+        description="undecided: 숙소 미정, provided: 숙소 정보를 제공함, not_needed: 숙박 불필요. 관광 일정 생성은 숙소 미정이어도 가능",
+    )
+    lodging_stays: list[LodgingStay] = Field(
+        default_factory=list,
+        description="숙박일별로 사용자가 선택하거나 제공한 숙소의 확인된 위치. 검색 후보를 임의 선택하지 않음",
+    )
+
+    @model_validator(mode="after")
+    def validate_lodgings(self):
+        validate_lodging_options(self.trip_days, self.lodging_status, self.lodging_stays)
+        return self
+
 
     @model_validator(mode="after")
     def validate_coordinates(self):
@@ -234,12 +253,28 @@ class ChatResponse(BaseModel):
     warnings: list[str]
     meta: PlanMetaResponse
 
-def _build_chat_result(chat_reply: ChatAgentReply, agent_result: dict):
+def _build_chat_result(
+    chat_reply: ChatAgentReply, agent_result: dict, *, request_options=None, user_message="",
+):
+    if request_options is not None and chat_reply.options.lodging_stays:
+        selection_errors = validate_lodging_selections(
+            request_options, chat_reply.options.model_dump(),
+            user_message=user_message,
+            tool_trace=extract_tool_trace(agent_result.get("messages") or []),
+        )
+        if selection_errors:
+            if chat_reply.plan is not None:
+                raise PlanValidationFailure(selection_errors)
+            return build_error_response(
+                502, "plan_validation_failed", "숙소 선택 정보를 확인하지 못했습니다.",
+                details=[{"field": "options.lodging_stays", "reason": reason} for reason in selection_errors],
+            )
     reply_text = chat_reply.reply
     plan = None
     map_routes = []
     transit_routes = []
     warnings = []
+    omitted_lodging_warnings = []
 
     if chat_reply.plan is not None:
         missing = [
@@ -259,7 +294,12 @@ def _build_chat_result(chat_reply: ChatAgentReply, agent_result: dict):
                 + "."
             )
         else:
-            plan_data = chat_reply.plan.model_dump()
+            plan_data, omitted_lodging_warnings = prepare_undecided_lodging_plan(
+                chat_reply.plan.model_dump(),
+                trip_days=chat_reply.options.trip_days,
+                lodging_status=chat_reply.options.lodging_status,
+                lodging_stays=[stay.model_dump() for stay in chat_reply.options.lodging_stays],
+            )
             errors = validate_plan_times(plan_data)
             errors.extend(
                 validate_plan_moves(
@@ -281,6 +321,14 @@ def _build_chat_result(chat_reply: ChatAgentReply, agent_result: dict):
                     f"요청한 {chat_reply.options.trip_days}일에 맞춰 "
                     "모든 일차를 순서대로 포함해야 합니다.",
                 )
+
+            if not errors:
+                errors.extend(validate_lodging_boundaries(
+                    plan_data,
+                    trip_days=chat_reply.options.trip_days,
+                    lodging_status=chat_reply.options.lodging_status,
+                    lodging_stays=[stay.model_dump() for stay in chat_reply.options.lodging_stays],
+                ))
 
             if not errors:
                 try:
@@ -345,6 +393,7 @@ def _build_chat_result(chat_reply: ChatAgentReply, agent_result: dict):
                 "longitude": chat_reply.options.departure_longitude,
             },
             return_to_origin=chat_reply.options.return_to_origin is True,
+            lodging_stays=[stay.model_dump() for stay in chat_reply.options.lodging_stays],
         )
         if endpoint_errors:
             raise PlanValidationFailure(
@@ -360,6 +409,17 @@ def _build_chat_result(chat_reply: ChatAgentReply, agent_result: dict):
             agent_result.get("route_calls") or [],
         )
         warnings.extend(route_warnings)
+        warnings.extend(omitted_lodging_warnings)
+        if omitted_lodging_warnings:
+            reply_text = (
+                reply_text[:4000 - len(UNDECIDED_LODGING_NOTE) - 2].rstrip()
+                + "\n\n" + UNDECIDED_LODGING_NOTE
+            )
+        warnings.extend(build_lodging_warnings(
+            trip_days=chat_reply.options.trip_days,
+            lodging_status=chat_reply.options.lodging_status,
+            lodging_stays=[stay.model_dump() for stay in chat_reply.options.lodging_stays],
+        ))
         transit_routes = select_plan_transit_guidance(
             plan,
             agent_result.get("route_calls") or [],
@@ -417,6 +477,11 @@ def create_chat(chat_request: ChatRequest):
                 502, "llm_invalid_response", "AI 답변 형식이 올바르지 않습니다."
             )
 
+        if chat_reply.options.lodging_status is None and chat_request.options.lodging_status is not None:
+            chat_reply.options = ChatOptions.model_validate(retain_lodging_state(
+                chat_reply.options.model_dump(), chat_request.options.model_dump(),
+            ))
+
         if locked_options is not None:
             option_errors = validate_retry_options(
                 locked_options,
@@ -434,7 +499,10 @@ def create_chat(chat_request: ChatRequest):
                 )
 
         try:
-            body = _build_chat_result(chat_reply, agent_result)
+            body = _build_chat_result(
+                chat_reply, agent_result,
+                request_options=chat_request.options.model_dump(), user_message=chat_request.message,
+            )
         except PlanValidationFailure as failure:
             if attempt >= MAX_PLAN_RETRIES:
                 return build_error_response(

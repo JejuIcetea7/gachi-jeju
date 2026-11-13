@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import chat, place_details, place_images, plan
+from .routers import chat, lodgings, place_details, place_images, plan
 from .routers.plan import build_error_response
 
 ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:5173"]
@@ -22,6 +22,7 @@ app.include_router(plan.router)
 app.include_router(chat.router)
 app.include_router(place_images.router)
 app.include_router(place_details.router)
+app.include_router(lodgings.router)
 
 def translate_validation_error(error: dict) -> str:
     """FastAPI 입력 오류를 화면에 보여 줄 한국어 이유로 바꿉니다."""

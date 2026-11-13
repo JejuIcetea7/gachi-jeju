@@ -34,6 +34,8 @@ export function createDefaultChatOptions() {
     travel_styles: [],
     requirements: [],
     return_to_origin: null,
+    lodging_status: null,
+    lodging_stays: [],
   }
 }
 
