@@ -170,127 +170,129 @@ function TravelOptions({
         <p>필요한 항목만 선택하세요. 대화로 알려주셔도 됩니다.</p>
       </div>
 
-      <fieldset className="options-fieldset" disabled={disabled}>
-        <legend className="sr-only">선택할 여행 조건</legend>
+      <div className="workspace-options-scroll">
+        <fieldset className="options-fieldset" disabled={disabled}>
+          <legend className="sr-only">선택할 여행 조건</legend>
 
-        <section className="option-group">
-          <h3>출발지</h3>
-          <p className="option-value">{options.departure || DEFAULT_ORIGIN}</p>
-          {confirmedOrigin?.address && (
-            <p className="options-note">{confirmedOrigin.address}</p>
-          )}
-          <details
-            open={originOpen}
-            onToggle={(event) => setOriginOpen(event.currentTarget.open)}
-          >
-            <summary
-              aria-disabled={disabled}
-              onClick={(event) => {
-                if (disabled) event.preventDefault()
-              }}
-            >
-              출발지 변경
-            </summary>
-            {originOpen && (
-              <OriginPicker
-                key={originKey}
-                initialKeyword={options.departure || DEFAULT_ORIGIN}
-                confirmedPlace={confirmedOrigin}
-                onConfirm={(place) => {
-                  if (disabled) return
-                  onOriginConfirm(place)
-                }}
-              />
+          <section className="option-group">
+            <h3>출발지</h3>
+            <p className="option-value">{options.departure || DEFAULT_ORIGIN}</p>
+            {confirmedOrigin?.address && (
+              <p className="options-note">{confirmedOrigin.address}</p>
             )}
-          </details>
-        </section>
-
-        <section className="option-group">
-          <h3>여행 날짜와 기간</h3>
-          <div className="options-date-grid">
-            <label className="option-select" htmlFor="option-start-date">
-              <span>출발일</span>
-              <input
-                id="option-start-date"
-                type="date"
-                value={options.start_date ?? ''}
-                min={today}
-                aria-invalid={Boolean(dateError)}
-                onChange={(event) => handleStartDate(event.target.value)}
-              />
-            </label>
-            <label className="option-select" htmlFor="option-end-date">
-              <span>마지막 날</span>
-              <input
-                id="option-end-date"
-                type="date"
-                value={endDate}
-                min={options.start_date && options.start_date > today
-                  ? options.start_date : today}
-                disabled={!options.start_date}
-                aria-invalid={Boolean(dateError)}
-                onChange={(event) => handleEndDate(event.target.value)}
-              />
-            </label>
-          </div>
-          <p className="options-note">
-            {formatTripDuration(options.trip_days)} · 당일은 같은 날짜를 선택하세요.
-          </p>
-          {dateError && (
-            <p className="form-error" role="alert">{dateError}</p>
-          )}
-        </section>
-
-        <section className="option-group">
-          <h3>이동 조건</h3>
-          <OptionSelect
-            id="option-transport"
-            label="이동수단"
-            value={options.transport}
-            choices={TRANSPORT_OPTIONS}
-            onChange={(value) => onChange({ transport: value })}
-          />
-          <OptionSelect
-            id="option-mobility"
-            label="이동 보조기구"
-            value={options.mobility_aid}
-            choices={MOBILITY_OPTIONS}
-            onChange={(value) => onChange({ mobility_aid: value })}
-          />
-        </section>
-
-        <fieldset className="option-group">
-          <legend>여행 종류</legend>
-          <div className="option-check-list">
-            {TRAVEL_STYLES.map((style) => (
-              <label key={style} className="option-check">
-                <input
-                  type="checkbox"
-                  checked={options.travel_styles.includes(style)}
-                  onChange={() => toggleList('travel_styles', style)}
+            <details
+              open={originOpen}
+              onToggle={(event) => setOriginOpen(event.currentTarget.open)}
+            >
+              <summary
+                aria-disabled={disabled}
+                onClick={(event) => {
+                  if (disabled) event.preventDefault()
+                }}
+              >
+                출발지 변경
+              </summary>
+              {originOpen && (
+                <OriginPicker
+                  key={originKey}
+                  initialKeyword={options.departure || DEFAULT_ORIGIN}
+                  confirmedPlace={confirmedOrigin}
+                  onConfirm={(place) => {
+                    if (disabled) return
+                    onOriginConfirm(place)
+                  }}
                 />
-                <span>{style}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
+              )}
+            </details>
+          </section>
 
-        <fieldset className="option-group">
-          <legend>필요한 접근 조건</legend>
-          <div className="option-check-list">
-            {ACCESS_REQUIREMENTS.map((item) => (
-              <label key={item.value} className="option-check">
+          <section className="option-group">
+            <h3>여행 날짜와 기간</h3>
+            <div className="options-date-grid">
+              <label className="option-select" htmlFor="option-start-date">
+                <span>출발일</span>
                 <input
-                  type="checkbox"
-                  checked={options.requirements.includes(item.value)}
-                  onChange={() => toggleList('requirements', item.value)}
+                  id="option-start-date"
+                  type="date"
+                  value={options.start_date ?? ''}
+                  min={today}
+                  aria-invalid={Boolean(dateError)}
+                  onChange={(event) => handleStartDate(event.target.value)}
                 />
-                <span>{item.label}</span>
               </label>
-            ))}
-          </div>
+              <label className="option-select" htmlFor="option-end-date">
+                <span>마지막 날</span>
+                <input
+                  id="option-end-date"
+                  type="date"
+                  value={endDate}
+                  min={options.start_date && options.start_date > today
+                    ? options.start_date : today}
+                  disabled={!options.start_date}
+                  aria-invalid={Boolean(dateError)}
+                  onChange={(event) => handleEndDate(event.target.value)}
+                />
+              </label>
+            </div>
+            <p className="options-note">
+              {formatTripDuration(options.trip_days)} · 당일은 같은 날짜를 선택하세요.
+            </p>
+            {dateError && (
+              <p className="form-error" role="alert">{dateError}</p>
+            )}
+          </section>
+
+          <section className="option-group">
+            <h3>이동 조건</h3>
+            <OptionSelect
+              id="option-transport"
+              label="이동수단"
+              value={options.transport}
+              choices={TRANSPORT_OPTIONS}
+              onChange={(value) => onChange({ transport: value })}
+            />
+            <OptionSelect
+              id="option-mobility"
+              label="이동 보조기구"
+              value={options.mobility_aid}
+              choices={MOBILITY_OPTIONS}
+              onChange={(value) => onChange({ mobility_aid: value })}
+            />
+          </section>
+
+          <fieldset className="option-group">
+            <legend>여행 종류</legend>
+            <div className="option-check-list">
+              {TRAVEL_STYLES.map((style) => (
+                <label key={style} className="option-check">
+                  <input
+                    type="checkbox"
+                    checked={options.travel_styles.includes(style)}
+                    onChange={() => toggleList('travel_styles', style)}
+                  />
+                  <span>{style}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="option-group">
+            <legend>필요한 접근 조건</legend>
+            <div className="option-check-list">
+              {ACCESS_REQUIREMENTS.map((item) => (
+                <label key={item.value} className="option-check">
+                  <input
+                    type="checkbox"
+                    checked={options.requirements.includes(item.value)}
+                    onChange={() => toggleList('requirements', item.value)}
+                  />
+                  <span>{item.label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
         </fieldset>
-      </fieldset>
+      </div>
     </aside>
   )
 }

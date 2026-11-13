@@ -54,6 +54,7 @@ function TravelWorkspace() {
       : null,
   }))
   const [viewKey, setViewKey] = useState(0)
+  const [optionsOpen, setOptionsOpen] = useState(true)
   const busyRef = useRef(false)
 
   const { options, originPlace, messages, planResult, selectedDay } = session
@@ -257,6 +258,7 @@ function TravelWorkspace() {
     setSession(createEmptyChatSession())
     setRequestState({ isSending: false, error: null })
     setViewKey((previous) => previous + 1)
+    setOptionsOpen(true)
   }
 
   return (
@@ -278,7 +280,11 @@ function TravelWorkspace() {
         </button>
       </header>
 
-      <ResizableWorkspace key={viewKey}>
+      <ResizableWorkspace
+        key={viewKey}
+        optionsOpen={optionsOpen}
+        onToggleOptions={() => setOptionsOpen((previous) => !previous)}
+      >
         <TravelOptions
           options={options}
           originPlace={originPlace}
@@ -342,7 +348,17 @@ function TravelWorkspace() {
                   </div>
                 )}
 
-                <div className="workspace-day-overview">
+                <p className="workspace-overview-help">
+                  공간이 좁으면 아래 지도와 일정표 영역을 좌우로 스크롤해 주세요.
+                  옵션을 접으면 더 넓게 볼 수 있습니다.
+                </p>
+
+                <div
+                  className="workspace-day-overview"
+                  role="region"
+                  aria-label="지도와 일정표 좌우 보기"
+                  tabIndex={0}
+                >
                   <ItineraryMap
                     day={visiblePlan?.days[0] ?? null}
                     options={planOptions}
