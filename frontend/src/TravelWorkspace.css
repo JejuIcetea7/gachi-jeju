@@ -1128,3 +1128,80 @@ fieldset.option-group legend {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+.lodging-panel {
+  padding: 12px;
+  margin-bottom: 16px;
+  border: 1px solid #d6e3dc;
+  border-radius: 10px;
+  background: #f5faf7;
+  overflow-wrap: anywhere;
+}
+
+.lodging-panel-heading,
+.lodging-candidate-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lodging-panel-heading h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.lodging-panel p {
+  margin: 8px 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.lodging-panel .secondary-button {
+  padding: 6px 9px;
+  font-size: 0.8rem;
+}
+
+.lodging-text-button {
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #236451;
+  padding: 4px 0;
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+}
+
+.lodging-search-results {
+  max-height: 280px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  margin-top: 8px;
+  padding: 0 4px;
+}
+
+.lodging-candidates {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.lodging-candidates li {
+  margin: 10px 0;
+  padding: 12px;
+  border: 1px solid #d6e3dc;
+  border-radius: 8px;
+  background: white;
+}
+
+.lodging-candidate-actions a,
+.lodging-query-time {
+  font-size: 0.78rem;
+}
+
+.itinerary-map-marker.is-lodging {
+  background: #655487;
+}

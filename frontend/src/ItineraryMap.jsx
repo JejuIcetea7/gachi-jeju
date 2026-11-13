@@ -1,3 +1,4 @@
+import { getLodgingMapAnchors } from './services/lodgingPlanning.js'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { loadKakaoMaps } from './services/kakaoMaps.js'
 import { getDayMapRoutes } from './services/itineraryRoutes.js'
@@ -45,19 +46,10 @@ function hasCoordinates(value) {
 function getMapPlaces(day, options) {
   const points = []
   const missing = []
-  const origin = {
-    latitude: options?.departure_latitude,
-    longitude: options?.departure_longitude,
-  }
-
-  if (hasCoordinates(origin)) {
-    points.push({
-      id: 'origin',
-      label: '출발',
-      title: options.departure || '여행 출발지',
-      ...origin,
-    })
-  } else if (options?.departure) {
+  const anchors = getLodgingMapAnchors(day, options)
+  points.push(...anchors.filter((point) => point.position === 'start'))
+  if ((!day || day.day === 1 || options?.lodging_status === 'not_needed')
+    && !points.some((point) => point.role === 'origin') && options?.departure) {
     missing.push(`출발지: ${options.departure}`)
   }
 
@@ -81,6 +73,7 @@ function getMapPlaces(day, options) {
     })
   }
 
+  points.push(...anchors.filter((point) => point.position === 'end'))
   return { points, missing }
 }
 
@@ -222,9 +215,11 @@ function ItineraryMap({ day = null, options, mapRoutes }) {
           const point = group[0]
           const label = document.createElement('span')
 
-          label.className = group.some((item) => item.id === 'origin')
+          label.className = group.some((item) => item.role === 'origin')
             ? 'itinerary-map-marker is-origin'
-            : 'itinerary-map-marker'
+            : group.some((item) => item.role === 'lodging')
+              ? 'itinerary-map-marker is-lodging'
+              : 'itinerary-map-marker'
 
           label.textContent = group.map((item) => item.label).join('·')
           label.title = group.map((item) => item.title).join(' / ')
@@ -313,7 +308,7 @@ function ItineraryMap({ day = null, options, mapRoutes }) {
       </div>
 
       <p className="itinerary-map-description">
-        여행 출발지와 {day ? `${day.day}일차 ` : ''}방문 장소의 위치입니다.
+        {day ? `${day.day}일차의 ` : ''}출발·숙소·방문 장소와 이동 경로입니다.
       </p>
 
       {status === 'loading' && (
@@ -346,7 +341,7 @@ function ItineraryMap({ day = null, options, mapRoutes }) {
         ref={containerRef}
         className="itinerary-map-canvas"
         role="region"
-        aria-label="여행 출발지, 방문 장소와 이동 경로 지도"
+        aria-label="여행 출발지, 숙소, 방문 장소와 이동 경로 지도"
         aria-busy={status === 'loading'}
         tabIndex={0}
       />

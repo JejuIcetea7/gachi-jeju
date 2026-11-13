@@ -2,7 +2,7 @@
 
 > 현재 메인 화면은 POST /chat을 사용하는 대화형 UI입니다.
 > 최신 실행 방법과 검증 상태는 [대화형 여행 플래너](chat-planner.md)를 참고합니다.
-> 장소 상세 조회와 /chat의 버스 안내(transit_routes)는 위 최신 문서에 정리돼 있습니다.
+> 장소 상세 조회, /chat의 버스 안내(transit_routes)·숙소 선택 조건과 주변 숙소 검색은 위 최신 문서에 정리돼 있습니다.
 > 아래 상세 요청·응답 설명은 단계형 UI와 기존 POST /plan 연동을 기준으로 작성되었습니다.
 
 최종 검증일(기존 /plan): 2026-11-10
@@ -38,6 +38,7 @@ npm --prefix frontend run dev
 |---|---|---|
 | 상태 확인 | GET /health | GET /api/health |
 | 대화형 일정 생성·수정 | POST /chat | POST /api/chat |
+| 주변 숙소 후보 | GET /lodgings/nearby | GET /api/lodgings/nearby |
 | 장소 상세 조회 | GET /places/{place_id}/details | GET /api/places/{place_id}/details |
 | 장소 사진 목록 | GET /places/{place_id}/images | GET /api/places/{place_id}/images |
 | 장소 사진 파일 | GET /places/{place_id}/images/{image_id} | GET /api/places/{place_id}/images/{image_id} |
