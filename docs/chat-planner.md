@@ -470,12 +470,13 @@ node --test tests/frontend/test_itinerary_routes.mjs tests/frontend/test_place_i
 npm --prefix frontend run lint && npm --prefix frontend run build
 ```
 
-2026-11-13, `feature/plan-auto-retry`에서 Python 전체 검사를 확인했습니다.
+2026-11-13, 최신 접근성 DB·상세 응답 확장과 자동 재생성을
+병합한 `dev`에서 Python 전체 검사를 확인했습니다.
 아래 프론트 검사 결과는 앞선 UI 작업의 검증 기록입니다.
 
 | 검증 | 결과 |
 |---|---|
-| Python 전체 테스트 | 347개 통과 |
+| Python 전체 테스트 | 349개 통과 |
 | 프론트 JavaScript 테스트 | 기존 UI 검증에서 30개 통과 |
 | 프론트 lint | 기존 UI 검증에서 오류 없음 |
 | 프론트 build | 기존 UI 검증에서 통과 |
@@ -495,6 +496,9 @@ DB·외부 서비스·응답 형식 오류에 추가 일정 재생성을 적용�
 사진 API 테스트에는 실제 여행지 사진을 사용하지 않습니다.
 
 **2026-11-13 자동 재생성 도입 후 화면 확인**
+
+이 화면 확인은 작업 브랜치 기준입니다.
+최신 접근성 DB·상세 응답 확장과 통합한 상태는 위 전체 자동 검사로 확인했습니다.
 
 사용자가 서버를 다시 실행한 뒤 2026-11-23 자동차 당일 일정을 요청했습니다.
 제주빅데이터센터 출발·귀환과 한라수목원 60분 방문 일정,
