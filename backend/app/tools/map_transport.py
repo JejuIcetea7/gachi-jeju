@@ -9,6 +9,7 @@ from ..services.kakao_mobility import get_driving_route
 from ..services.kakao_walking import get_walking_route as fetch_walking_route
 from ..services.walking_geometry import extract_walking_geometry
 from ..services.kakao_transit import get_transit_routes
+from ..services.transit_guidance import build_transit_segments
 from .bus import _build_bus_route_summary
 
 def create_driving_map_tool(route_calls: list[dict]) -> Callable[..., dict]:
@@ -186,6 +187,7 @@ def create_bus_map_tool(route_calls: list[dict]) -> Callable[..., dict]:
             "geometry_status": route.get("geometry_status", "missing"),
             "paths": deepcopy(route.get("paths") or []),
             "requested_at": requested_at,
+            "transit_segments": build_transit_segments(route.get("segments")),
         })
 
         return {**summary, "route_id": route_id}

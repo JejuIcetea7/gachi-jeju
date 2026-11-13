@@ -4,9 +4,10 @@ from typing import Literal
 
 from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from ..config import LLM_MODEL, LLM_REASONING_EFFORT, get_openai_api_key
+from ..services.plan_routes import canonicalize_transport_label
 from ..tools.bus import get_bus_route_summary
 from ..tools.driving import get_driving_time
 from ..tools.location import find_location
@@ -71,7 +72,10 @@ class ScheduleItem(BaseModel):
         default=None,
         description="visit일 때 장소 검색·상세 조회에서 확인한 place_id",
     )
-    transport: str | None = Field(default=None, description="move일 때 이동수단: 렌터카, 택시, 버스, 도보")
+    transport: str | None = Field(
+        default=None,
+        description="move일 때 일반 이동수단명만 작성: 자동차, 렌터카, 택시, 버스, 도보. 노선 번호와 승하차 설명은 포함하지 않음",
+    )
     duration_minutes: int | None = Field(default=None, description="머무는 시간 또는 이동 시간(분)")
     distance_km: float | None = Field(default=None, description="move일 때 이동 거리(km)")
     accessibility_notes: list[str] = Field(default_factory=list, description="주차, 경사·동선, 화장실, 대여 등 접근성 메모")
@@ -80,6 +84,12 @@ class ScheduleItem(BaseModel):
         max_length=80,
         description="move일 때 이동 도구가 반환한 route_id. 식별값이 없거나 visit이면 null",
     )
+
+    @field_validator("transport", mode="before")
+    @classmethod
+    def canonicalize_transport(cls, value):
+        return canonicalize_transport_label(value)
+
 
 class DayPlan(BaseModel):
     day: int = Field(description="여행 N일차")

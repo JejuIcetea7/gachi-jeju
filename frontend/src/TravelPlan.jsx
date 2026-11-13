@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import PlaceImageDialog from './PlaceImageDialog.jsx'
+import { getPlanTransitGuidance, isTransitMove } from './services/planTransit.js'
 
 function formatDistance(value) {
   if (!Number.isFinite(value) || value < 0) {
@@ -11,9 +12,75 @@ function formatDistance(value) {
   return `${value.toLocaleString('ko-KR', { maximumFractionDigits: 2 })}km`
 }
 
-function TravelPlan({ plan, autoFocus = true }) {
+function segmentEstimate(segment) {
+  const values = []
+  if (Number.isFinite(segment.distance_m)) {
+    values.push(formatDistance(segment.distance_m / 1000))
+  }
+  if (Number.isFinite(segment.duration_seconds)) {
+    values.push(`${Math.ceil(segment.duration_seconds / 60)}분`)
+  }
+  return values.join(' · ')
+}
+
+function TransitMoveGuide({ guidance }) {
+  if (!guidance) {
+    return (
+      <p className="plan-transit-empty">
+        버스 승하차 상세 정보를 확인하지 못했습니다.
+      </p>
+    )
+  }
+
+  return (
+    <div className="plan-transit-guide">
+      <ol className="plan-transit-steps" aria-label="대중교통 이동 순서">
+        {guidance.segments.map((segment, index) => (
+          <li key={index}>
+            {segment.type === 'BUS' ? (
+              <>
+                <strong>
+                  {segment.route_numbers.length > 0
+                    ? `버스 ${segment.route_numbers.join(' 또는 ')}`
+                    : '버스 노선 미확인'}
+                </strong>
+                <span>
+                  {segment.boarding_stop?.trim()
+                    ? `${segment.boarding_stop} 승차`
+                    : '승차 정류장 미확인'}
+                  {' → '}
+                  {segment.alighting_stop?.trim()
+                    ? `${segment.alighting_stop} 하차`
+                    : '하차 정류장 미확인'}
+                </span>
+                <span>
+                  {segment.ride_stop_count === null
+                    ? '이동 정거장 수 미확인'
+                    : `${segment.ride_stop_count}정거장 이동`}
+                </span>
+              </>
+            ) : segment.type === 'WALKING' ? (
+              <span>도보{segmentEstimate(segment) && ` · ${segmentEstimate(segment)}`}</span>
+            ) : (
+              <span>연결 이동 구간의 상세 정보가 확인되지 않았습니다.</span>
+            )}
+          </li>
+        ))}
+      </ol>
+      <p className="plan-transit-query">
+        경로 조회 시각(한국):{' '}
+        {new Date(guidance.requested_at).toLocaleString('ko-KR', {
+          timeZone: 'Asia/Seoul', dateStyle: 'short', timeStyle: 'short',
+        })}
+      </p>
+    </div>
+  )
+}
+
+function TravelPlan({ plan, autoFocus = true, transitRoutes = [] }) {
   const headingRef = useRef(null)
   const [photoPlace, setPhotoPlace] = useState(null)
+  const guidanceById = getPlanTransitGuidance(plan, transitRoutes)
 
   useEffect(() => {
     if (plan && autoFocus) {
@@ -32,7 +99,7 @@ function TravelPlan({ plan, autoFocus = true }) {
       </h2>
       <p className="plan-description">
         자료 등록 표시는 여행지 목록에 포함된 장소라는 뜻입니다.
-        이용 가능한 동선과 편의시설은 각 항목의 안내를 확인해 주세요.
+        장소명을 누르면 이번 일정의 접근성 안내와 시설·동선 정보를 확인할 수 있습니다.
       </p>
 
       {plan.days.length === 0 && (
@@ -57,14 +124,13 @@ function TravelPlan({ plan, autoFocus = true }) {
               aria-label={`${day.day}일차 일정표`}
               tabIndex={0}
             >
-              <table className="plan-table">
+              <table className="plan-table plan-table-compact">
                 <caption>방문·이동 시간표</caption>
                 <thead>
                   <tr>
                     <th scope="col">시간</th>
                     <th scope="col">일정</th>
                     <th scope="col">소요시간</th>
-                    <th scope="col">접근성 안내</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -78,24 +144,39 @@ function TravelPlan({ plan, autoFocus = true }) {
                           {item.item_type === 'visit' ? '방문' : '이동'}
                         </span>
                         {item.item_type === 'visit' ? (
-                          <button
-                            type="button"
-                            className="plan-item-title plan-place-button"
-                            aria-haspopup="dialog"
-                            aria-label={`${item.title} 사진 보기`}
-                            onClick={() => setPhotoPlace(item)}
-                          >
-                            {item.title}
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              className="plan-item-title plan-place-button"
+                              aria-haspopup="dialog"
+                              aria-label={`${item.title} 상세 정보 및 사진 보기`}
+                              onClick={() => setPhotoPlace(item)}
+                            >
+                              {item.title}
+                            </button>
+                            <span className="plan-source">
+                              {item.verified === true
+                                ? '여행지 자료 등록'
+                                : '여행지 정보 확인 필요'}
+                            </span>
+                          </>
                         ) : (
-                          <strong className="plan-item-title">{item.title}</strong>
-                        )}
-                        {item.item_type === 'visit' && (
-                          <span className="plan-source">
-                            {item.verified === true
-                              ? '여행지 자료 등록'
-                              : '여행지 정보 확인 필요'}
-                          </span>
+                          <>
+                            <strong className="plan-item-title">{item.title}</strong>
+                            {isTransitMove(item) && (
+                              <TransitMoveGuide guidance={guidanceById.get(item.route_id)} />
+                            )}
+                            {item.accessibility_notes.length > 0 && (
+                              <details className="plan-move-notes">
+                                <summary>이동 시 확인사항</summary>
+                                <ul className="plan-notes">
+                                  {item.accessibility_notes.map((text, noteIndex) => (
+                                    <li key={noteIndex}>{text}</li>
+                                  ))}
+                                </ul>
+                              </details>
+                            )}
+                          </>
                         )}
                       </td>
                       <td>
@@ -111,24 +192,17 @@ function TravelPlan({ plan, autoFocus = true }) {
                           </small>
                         )}
                       </td>
-                      <td>
-                        {item.accessibility_notes.length > 0 ? (
-                          <ul className="plan-notes">
-                            {item.accessibility_notes.map((text, noteIndex) => (
-                              <li key={noteIndex}>{text}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="plan-muted">
-                            접근성 안내가 제공되지 않았습니다.
-                          </p>
-                        )}
-                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+          )}
+          {day.items.some(isTransitMove) && (
+            <p className="plan-transit-footnote">
+              정거장 수는 승차지를 제외하고 하차지를 포함합니다.
+              조회 시점의 경로이므로 여행 당일 운행을 확인해 주세요.
+            </p>
           )}
         </div>
       ))}

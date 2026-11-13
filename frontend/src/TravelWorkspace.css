@@ -569,7 +569,7 @@ fieldset.option-group legend {
 
 .workspace-day-overview {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) minmax(570px, 2fr);
+  grid-template-columns: minmax(240px, 1fr) minmax(420px, 2fr);
   grid-template-rows: minmax(0, 1fr);
   flex: 1;
   min-width: 0;
@@ -611,7 +611,7 @@ fieldset.option-group legend {
 }
 
 .workspace-day-overview .plan-table {
-  min-width: 560px;
+  min-width: 400px;
   font-size: 14px;
 }
 
@@ -929,5 +929,202 @@ fieldset.option-group legend {
 
 .place-image-gallery figcaption {
   margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+
+/* 여행지 상세 정보 */
+.place-detail-view-buttons {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #d9e4da;
+}
+
+.place-detail-view-buttons button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid #9db1a5;
+  border-radius: 10px;
+  color: #1f644f;
+  background: #ffffff;
+  font-weight: 700;
+}
+
+.place-detail-view-buttons button[aria-pressed="true"] {
+  border-color: #1f644f;
+  color: #ffffff;
+  background: #1f644f;
+}
+
+.place-details-content,
+.place-detail-spots {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.place-detail-section {
+  min-width: 0;
+}
+
+.place-detail-section h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.place-detail-source,
+.place-detail-note {
+  color: #52695d;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.place-detail-note {
+  margin: 0 0 12px;
+}
+
+.place-detail-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+.place-detail-fact-group {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #d9e4da;
+  border-radius: 12px;
+  background: #f7faf7;
+}
+
+.place-detail-fact-group h4 {
+  margin: 0;
+  color: #52695d;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.place-detail-facility {
+  margin: 4px 0 12px;
+  font-weight: 700;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.place-detail-fields {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.place-detail-fields > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 10px;
+}
+
+.place-detail-fields dt,
+.place-detail-fields dd {
+  min-width: 0;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.place-detail-fields dt {
+  color: #52695d;
+}
+
+.place-detail-spot {
+  min-width: 0;
+  padding: 0 14px;
+  border: 1px solid #d9e4da;
+  border-radius: 10px;
+}
+
+.place-detail-spot summary {
+  min-height: 44px;
+  padding: 10px 0;
+  color: #1f644f;
+  font-weight: 700;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.place-detail-spot p {
+  margin: 0 0 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* 일정표의 버스 안내와 일정별 접근성 메모 */
+.plan-table-compact {
+  min-width: 400px;
+}
+
+.plan-table-compact th:last-child {
+  width: 80px;
+}
+
+.plan-transit-guide,
+.plan-move-notes {
+  margin-top: 10px;
+}
+
+.plan-transit-steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.plan-transit-steps li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.plan-transit-steps li > strong,
+.plan-transit-steps li > span {
+  display: block;
+}
+
+.plan-transit-steps li > strong {
+  color: #1f644f;
+}
+
+.plan-transit-query,
+.plan-transit-footnote,
+.plan-transit-empty {
+  margin-top: 8px;
+  color: #52695d;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.plan-move-notes summary {
+  min-height: 40px;
+  padding: 8px 0;
+  color: #1f644f;
+  cursor: pointer;
+}
+
+.place-plan-accessibility {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #b4c6b9;
+  border-radius: 12px;
+  background: #edf4ee;
+}
+
+.place-plan-accessibility h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.place-plan-accessibility .plan-notes {
+  white-space: pre-wrap;
   overflow-wrap: anywhere;
 }

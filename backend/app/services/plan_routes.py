@@ -1,3 +1,4 @@
+import re
 from collections import Counter
 from typing import Annotated, Literal
 
@@ -28,6 +29,31 @@ class MapRoute(BaseModel):
     paths: list[MapPath]
     requested_at: AwareDatetime
 
+def canonicalize_transport_label(value):
+    """노선 번호와 승하차 설명이 붙은 명확한 버스 표기만 일반 이름으로 정리합니다."""
+    if not isinstance(value, str):
+        return value
+    text = "".join(value.split()).lower()
+    stem, marker, tail = text.partition("(")
+    if not re.fullmatch(r"(?:버스|bus)[0-9]+(?:-[0-9]+)?번?", stem):
+        return value
+    if not marker:
+        return "버스"
+
+    annotation = "(" + tail
+    if "승차" not in annotation or "하차" not in annotation:
+        return value
+    depth = 0
+    for index, character in enumerate(annotation):
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+        if depth < 0 or (depth == 0 and index != len(annotation) - 1):
+            return value
+    return "버스" if depth == 0 else value
+
+
 def normalize_transport_mode(value):
     aliases = {
         "driving": "driving", "자동차": "driving", "자가용": "driving",
@@ -38,6 +64,7 @@ def normalize_transport_mode(value):
         "transit": "transit", "대중교통": "transit", "버스": "transit",
         "bus": "transit", "대중교통(버스·도보)": "transit",
     }
+    value = canonicalize_transport_label(value)
     text = "".join(value.split()).lower() if isinstance(value, str) else ""
     return aliases.get(text)
 
