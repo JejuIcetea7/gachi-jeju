@@ -109,7 +109,7 @@ def process_photo(row, project_root=PROJECT_ROOT, photos_directory=PHOTOS_DIRECT
                 output_file.write(data)
         width, height = web_image.size
     return {
-        "web_image_path": str(destination.relative_to(project_root)),
+        "web_image_path": destination.relative_to(project_root).as_posix(),
         "web_width": width, "web_height": height,
         "web_size_bytes": len(data), "web_sha256": calculate_hash(data),
         "web_resized": resized, "web_size_difference_bytes": len(data) - len(source_data),
