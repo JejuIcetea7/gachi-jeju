@@ -1,3 +1,4 @@
+import { normalizeLodgingOptions } from './lodgingPlanning.js'
 import { isChatOptions } from './chatApi.js'
 import { isPlanResponse } from './planApi.js'
 import { loadTravelSession } from './travelSession.js'
@@ -69,6 +70,11 @@ function normalizeRestoredState(state) {
 
   return {
     ...state,
+    options: normalizeLodgingOptions(state.options),
+    planResult: state.planResult ? {
+      ...state.planResult,
+      options: normalizeLodgingOptions(state.planResult.options),
+    } : null,
     messages: state.messages.map((message) => (
       message.status === 'pending'
         ? { ...message, status: 'failed' }

@@ -1,5 +1,7 @@
 import math
 
+from .lodging_planning import _night_choices
+
 
 EARTH_RADIUS_M = 6_371_000.0
 ENDPOINT_TOLERANCE_M = 100.0
@@ -52,11 +54,13 @@ def validate_route_endpoints(
     *,
     departure: dict | None = None,
     return_to_origin: bool = False,
+    lodging_stays: list[dict] | None = None,
 ) -> list[str]:
     """DB 검증 후의 일정과 길찾기에 전달한 좌표를 대조합니다.
 
     확인된 방문 장소의 바로 앞뒤 이동과 연속 이동의 연결을 검사합니다.
     출발지는 1일차 첫 이동, 귀환은 마지막 일차의 마지막 이동에만 적용합니다.
+    선택한 숙소는 해당 일차 마지막 이동의 도착과 다음 일차 첫 이동의 출발에 대조합니다.
     비교 기준 좌표가 없으면 해당 끝점은 검사하지 않습니다.
     도로선 paths는 사용하지 않으며, 입력은 변경하지 않습니다.
     """
@@ -79,6 +83,7 @@ def validate_route_endpoints(
         return records.get(route_id)
 
     departure_coordinate = _coordinate(departure)
+    stay_choices = _night_choices(lodging_stays)
     days = plan["days"]
     errors = []
 
@@ -99,8 +104,13 @@ def validate_route_endpoints(
             origin = _visit_coordinate(previous)
             destination = _visit_coordinate(following)
 
-            if day.get("day") == 1 and index == 0:
-                origin = departure_coordinate
+            if index == 0:
+                origin = (
+                    departure_coordinate if day.get("day") == 1
+                    else _coordinate(stay_choices.get(day["day"] - 1))
+                )
+            if index == len(items) - 1 and day_index < len(days) - 1:
+                destination = _coordinate(stay_choices.get(day["day"]))
             if (
                 return_to_origin is True
                 and day_index == len(days) - 1

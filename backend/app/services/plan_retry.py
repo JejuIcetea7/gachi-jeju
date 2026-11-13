@@ -17,6 +17,8 @@ OPTION_LABELS = {
     "travel_styles": "여행 종류",
     "requirements": "필수 이용 조건",
     "return_to_origin": "출발지 귀환",
+    "lodging_status": "숙소 상태",
+    "lodging_stays": "숙박일별 숙소",
 }
 
 
@@ -100,6 +102,10 @@ def validate_retry_options(expected: dict, actual: dict) -> list[str]:
             if isinstance(expected_value, list) and isinstance(actual_value, list):
                 expected_value = sorted(expected_value)
                 actual_value = sorted(actual_value)
+        if field == "lodging_stays":
+            if isinstance(expected_value, list) and isinstance(actual_value, list):
+                expected_value = sorted(json.dumps(stay, sort_keys=True) for stay in expected_value)
+                actual_value = sorted(json.dumps(stay, sort_keys=True) for stay in actual_value)
         if expected_value != actual_value:
             errors.append(f"자동 재생성에서 {label} 조건을 변경할 수 없습니다.")
     return errors

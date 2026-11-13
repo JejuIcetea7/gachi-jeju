@@ -2,6 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import ConversationPanel from './ConversationPanel.jsx'
 import TravelOptions from './TravelOptions.jsx'
 import TravelPlan from './TravelPlan.jsx'
+import LodgingPanel from './LodgingPanel.jsx'
+import {
+  chooseLodging, getLodgingSearchCenter, getLodgingSelectionMessage, getLodgingStay,
+  normalizeLodgingOptions, removeLodging, resizeLodgingOptions,
+} from './services/lodgingPlanning.js'
 import ItineraryMap from './ItineraryMap.jsx'
 import { isChatOptions, requestTravelChat } from './services/chatApi.js'
 import {
@@ -130,7 +135,10 @@ function TravelWorkspace() {
     if (busyRef.current) return
 
     setSession((previous) => {
-      const next = { ...previous.options, ...patch }
+      const changed = { ...previous.options, ...patch }
+      const next = Object.hasOwn(patch, 'trip_days')
+        ? resizeLodgingOptions(changed)
+        : normalizeLodgingOptions(changed)
       if (!isChatOptions(next)) return previous
 
       return {
@@ -158,12 +166,12 @@ function TravelWorkspace() {
     })
   }
 
-  async function receiveReply(messageId, content) {
+  async function receiveReply(messageId, content, requestOptions = options) {
     try {
       const response = await requestTravelChat({
         message: content,
         history: messages.filter((item) => item.status === 'sent'),
-        options,
+        options: requestOptions,
         currentPlan: planResult?.plan ?? null,
       })
 
@@ -216,9 +224,9 @@ function TravelWorkspace() {
     }
   }
 
-  function handleSend(content) {
+  function handleSend(content, requestOptions = options) {
     const text = content.trim()
-    if (busyRef.current || !text || text.length > 1000) return false
+    if (busyRef.current || !text || text.length > 1000 || !isChatOptions(requestOptions)) return false
 
     const messageId = crypto.randomUUID()
     busyRef.current = true
@@ -226,14 +234,35 @@ function TravelWorkspace() {
     setRequestState({ isSending: true, error: null })
     setSession((previous) => ({
       ...previous,
+      options: requestOptions,
+      originPlace: reconcileOrigin(previous.originPlace, requestOptions),
       messages: [
         ...previous.messages,
         { id: messageId, role: 'user', content: text, status: 'pending' },
       ],
     }))
 
-    void receiveReply(messageId, text)
+    void receiveReply(messageId, text, requestOptions)
     return true
+  }
+
+  function handleLodgingSelect(night, candidate) {
+    if (busyRef.current || hasChangedOptions) return false
+    try {
+      const next = chooseLodging(options, night, candidate)
+      const selected = getLodgingStay(next, night)
+      return handleSend(getLodgingSelectionMessage(selected), next)
+    } catch (cause) {
+      setRequestState({ isSending: false, error: { message: cause.message } })
+      return false
+    }
+  }
+
+  function handleLodgingRemove(night) {
+    if (busyRef.current || hasChangedOptions) return false
+    const next = removeLodging(options, night)
+    return handleSend(`${night}일차 숙소 선택을 취소하고 미정으로 두겠습니다. `
+      + '해당 숙소 도착 이동과 다음 날 숙소 출발 이동을 제외하고 기존 관광 일정과 조건은 유지해 주세요.', next)
   }
 
   function handleRetry() {
@@ -382,6 +411,15 @@ function TravelWorkspace() {
                         </ul>
                       </div>
                     )}
+
+                    <LodgingPanel
+                      key={JSON.stringify([selectedDay, getLodgingSearchCenter(visiblePlan?.days[0])])}
+                      day={visiblePlan?.days[0] ?? null}
+                      options={planOptions}
+                      disabled={Boolean(isSending || hasChangedOptions)}
+                      onSelect={handleLodgingSelect}
+                      onRemove={handleLodgingRemove}
+                    />
 
                     <TravelPlan
                       plan={visiblePlan}
