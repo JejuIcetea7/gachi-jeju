@@ -157,9 +157,14 @@ def get_place_details(*, place_id: str, visit_dates: list[str] | None = None) ->
     opening_hours는 운영시간 정리 값입니다('상시 개방', '09:00-18:00 입장마감 17:00',
     계절별은 '3-10월 09:00-18:00;11-2월 09:00-17:00'처럼 방문 날짜의 달로 고름).
     opening_hours_raw는 원문(시설별 시간·공연 회차 등 포함), admission_fee는 관람료 원문입니다.
-    값이 없으면 '확인 안 됨'입니다."""
+    값이 없으면 '확인 안 됨'입니다.
+    accessibility는 DB의 장애인 화장실·주차 및 계단·경사 집계 값을 그대로 제공합니다.
+    Y/N/unknown은 항목별 의미와 accessibility_facts·spots의 원문을 함께 확인합니다.
+    has_slope_or_stairs의 Y는 계단·경사 정보가 있다는 뜻이며, 계단 존재나 통행 불가 판정이 아닙니다.
+    unknown은 시설이 없다는 뜻이 아닙니다."""
     place_query = (
-        "SELECT place_id, name, category, closed_days, opening_hours, opening_hours_raw, admission_fee "
+        "SELECT place_id, name, category, closed_days, opening_hours, opening_hours_raw, admission_fee, "
+        "accessible_toilet, accessible_parking, has_slope_or_stairs "
         "FROM places WHERE place_id = ?"
     )
     spot_query = (
@@ -227,6 +232,11 @@ def get_place_details(*, place_id: str, visit_dates: list[str] | None = None) ->
         "opening_hours": replace_blank_with_unknown(place_row["opening_hours"]),
         "opening_hours_raw": replace_blank_with_unknown(place_row["opening_hours_raw"]),
         "admission_fee": replace_blank_with_unknown(place_row["admission_fee"]),
+        "accessibility": {
+            "accessible_toilet": place_row["accessible_toilet"],
+            "accessible_parking": place_row["accessible_parking"],
+            "has_slope_or_stairs": place_row["has_slope_or_stairs"],
+        },
         "spots": spots,
         "accessibility_facts": accessibility_facts,
     }
