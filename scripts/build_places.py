@@ -4,6 +4,7 @@
 설계: docs/plans/build_places.md
 """
 
+import argparse
 import csv
 import difflib
 import json
@@ -21,6 +22,7 @@ PROCESSED_DIRECTORY = PROJECT_ROOT / "data" / "processed"
 HWP_GENERAL_INFO_DIRECTORY = PROCESSED_DIRECTORY / "hwp_general_info"
 CLOSED_DAYS_MAP_FILE = PROCESSED_DIRECTORY / "closed_days_map.csv"
 OPENING_HOURS_MAP_FILE = PROCESSED_DIRECTORY / "opening_hours_map.csv"  # scripts/build_opening_hours_map.py 결과
+MANUAL_OPERATING_INFO_FILE = PROCESSED_DIRECTORY / "manual_place_operating_info.csv"
 OUTPUT_DIRECTORY = PROJECT_ROOT / "outputs" / "build_places"
 
 PLACES_FILE = PROCESSED_DIRECTORY / "places.csv"
@@ -57,7 +59,7 @@ PLACES_COLUMNS = [
     "region", "address", "latitude", "longitude",
     "wheelchair_level", "stroller_level", "has_slope_or_stairs",
     "accessible_parking", "accessible_toilet", "wheelchair_rental", "stroller_rental",
-    "indoor_outdoor", "visit_minutes", "opening_hours", "opening_hours_raw", "closed_days", "admission_fee",
+    "indoor_outdoor", "visit_minutes", "opening_hours", "opening_hours_raw", "closed_days", "closed_days_note", "admission_fee",
     "sources", "data_date",
 ]
 SPOTS_COLUMNS = [
@@ -930,6 +932,40 @@ def is_valid_closed_days(closed_days):
     return True
 
 
+def load_manual_operating_info():
+    """사용자 조사 대응표. 빈 정리 값은 기존 정보를 덮어쓰지 않는다."""
+    if not MANUAL_OPERATING_INFO_FILE.exists():
+        return []
+    _, rows = read_csv_file(MANUAL_OPERATING_INFO_FILE, "utf-8")
+    return rows
+
+
+def update_operating_info_maps():
+    """수동 조사 정리 값을 기존 휴무일·운영시간 대응표에 반영한다."""
+    manual_rows = load_manual_operating_info()
+    for map_file, field in [(CLOSED_DAYS_MAP_FILE, "closed_days"), (OPENING_HOURS_MAP_FILE, "opening_hours")]:
+        columns, map_rows = read_csv_file(map_file, "utf-8")
+        rows_by_place_id = {}
+        for map_row in map_rows:
+            rows_by_place_id[map_row["place_id"]] = map_row
+        for manual_row in manual_rows:
+            if manual_row[field] == "":
+                continue
+            place_id = manual_row["place_id"]
+            rows_by_place_id[place_id] = {
+                "place_id": place_id,
+                "name": manual_row["name"],
+                "source_file": relative_path(MANUAL_OPERATING_INFO_FILE) + "#" + place_id,
+                "raw_text": manual_row[field + "_raw"],
+                field: manual_row[field],
+                "status": "확정",
+            }
+        sorted_rows = []
+        for place_id in sorted(rows_by_place_id):
+            sorted_rows.append(rows_by_place_id[place_id])
+        save_csv_file(map_file, columns, sorted_rows)
+
+
 def load_closed_days_map(failures):
     """사람이 원문을 보고 정리한 휴무일 대응표 (place_id -> closed_days). HWP 일반정보 값보다 우선"""
     closed_days_by_place_id = {}
@@ -1457,6 +1493,9 @@ def load_admission_fee_by_place_id(failures):
 
     if not TOUR_API_CANDIDATES_FILE.exists():
         failures.append({"source_file": relative_path(TOUR_API_CANDIDATES_FILE), "step": "admission_fee", "reason": "파일 없음"})
+        for manual_row in load_manual_operating_info():
+            if manual_row["admission_fee"] != "":
+                admission_fee_by_place_id[manual_row["place_id"]] = manual_row["admission_fee"]
         return admission_fee_by_place_id
     _, candidate_rows = read_csv_file(TOUR_API_CANDIDATES_FILE, "utf-8-sig")
     for candidate_row in candidate_rows:
@@ -1468,11 +1507,17 @@ def load_admission_fee_by_place_id(failures):
 
     for place_id, admission_fee in ADMISSION_FEE_OVERRIDES_BY_PLACE_ID.items():
         admission_fee_by_place_id[place_id] = admission_fee
+    for manual_row in load_manual_operating_info():
+        if manual_row["admission_fee"] != "":
+            admission_fee_by_place_id[manual_row["place_id"]] = manual_row["admission_fee"]
     return admission_fee_by_place_id
 
 
 def build_places_rows(place_ids, sources_by_place_id, spots_by_place_id, representative_spots, closed_days_by_place_id,
                       accessible_parking_by_place_id, admission_fee_by_place_id, opening_hours_by_place_id, conflicts):
+    closed_days_notes_by_place_id = {}
+    for manual_row in load_manual_operating_info():
+        closed_days_notes_by_place_id[manual_row["place_id"]] = manual_row["closed_days_note"]
     places_rows = []
     for place_id in place_ids:
         place_sources = sources_by_place_id[place_id]
@@ -1524,6 +1569,7 @@ def build_places_rows(place_ids, sources_by_place_id, spots_by_place_id, represe
             "opening_hours": opening_hours,
             "opening_hours_raw": opening_hours_raw,
             "closed_days": closed_days_by_place_id.get(place_id, ""),
+            "closed_days_note": closed_days_notes_by_place_id.get(place_id, ""),
             "admission_fee": admission_fee_by_place_id.get(place_id, ""),
             "sources": ";".join(source_files),
             "data_date": data_date,
@@ -1708,7 +1754,50 @@ def build_sqlite_database():
 # 실행
 # ---------------------------------------------------------------------------
 
+def rebuild_operating_info():
+    """저장된 장소 CSV의 운영정보만 갱신하고 기존 네 표를 DB에 다시 적재한다."""
+    failures = []
+    update_operating_info_maps()
+    closed_days_by_place_id = load_closed_days_map(failures)
+    opening_hours_by_place_id = load_opening_hours_map(failures)
+    if failures:
+        raise ValueError(failures)
+
+    columns, place_rows = read_csv_file(PLACES_FILE, "utf-8")
+    if "closed_days_note" not in columns:
+        columns.insert(columns.index("closed_days") + 1, "closed_days_note")
+    manual_rows_by_place_id = {}
+    for manual_row in load_manual_operating_info():
+        manual_rows_by_place_id[manual_row["place_id"]] = manual_row
+    for place_row in place_rows:
+        place_id = place_row["place_id"]
+        if "closed_days_note" not in place_row:
+            place_row["closed_days_note"] = ""
+        if closed_days_by_place_id.get(place_id, "") != "":
+            place_row["closed_days"] = closed_days_by_place_id[place_id]
+        if place_id in opening_hours_by_place_id:
+            opening_hours, raw_text = opening_hours_by_place_id[place_id]
+            place_row["opening_hours"] = opening_hours
+            place_row["opening_hours_raw"] = raw_text
+        manual_row = manual_rows_by_place_id.get(place_id)
+        if manual_row is not None and manual_row["closed_days_note"] != "":
+            place_row["closed_days_note"] = manual_row["closed_days_note"]
+        if manual_row is not None and manual_row["admission_fee"] != "":
+            place_row["admission_fee"] = manual_row["admission_fee"]
+    save_csv_file(PLACES_FILE, columns, place_rows)
+    build_sqlite_database()
+    print("[운영정보 갱신] {}곳".format(len(place_rows)))
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--operating-info-only", action="store_true", help="저장된 CSV의 운영정보만 갱신")
+    arguments = parser.parse_args()
+    if arguments.operating_info_only:
+        rebuild_operating_info()
+        return
+
+    update_operating_info_maps()
     failures = []
     conflicts = []
 
