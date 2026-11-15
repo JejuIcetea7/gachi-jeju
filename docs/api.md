@@ -44,6 +44,11 @@ npm --prefix frontend run dev
 | 장소 사진 파일 | GET /places/{place_id}/images/{image_id} | GET /api/places/{place_id}/images/{image_id} |
 | 기존 일정 생성 | POST /plan | POST /api/plan |
 
+장소 사진은 CloudFront 주소 목록이 있으면 `url`에 HTTPS 사진 주소를 반환합니다.
+이 경우 `photo_id`와 장소별 `contexts`를 포함하며 원본 파일 경로는 공개하지 않습니다.
+기존 사진 파일 API는 CloudFront 사진에 대해 307로 이동합니다.
+자세한 설정은 [사진 클라우드 연결](place-photo-cloud.md)을 참고합니다.
+
 정상 상태 확인 응답은 `{"status":"ok"}`입니다.
 
 Vite 개발 서버는 `/api` 접두사를 제거하여 8000 포트로 전달합니다.

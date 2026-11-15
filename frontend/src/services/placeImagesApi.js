@@ -8,16 +8,39 @@ function imageError(message, code, status = null) {
   return error
 }
 
+function isCloudPhoto(image) {
+  if (typeof image.photo_id !== 'string' || !/^P[0-9]{3}_[0-9]{4}$/.test(image.photo_id)) {
+    return false
+  }
+  try {
+    const url = new URL(image.url)
+    const expectedPath = `/photos_web/${image.photo_id.slice(0, 4)}/${image.photo_id}.webp`
+    return /^d[a-z0-9]+\.cloudfront\.net$/.test(url.hostname)
+      && image.url === `https://${url.hostname}${expectedPath}`
+      && Array.isArray(image.contexts)
+      && image.contexts.length > 0
+  } catch {
+    return false
+  }
+}
+
 function isImageResponse(data, placeId) {
   return data?.place_id === placeId
     && typeof data.name === 'string'
     && data.name.trim().length > 0
     && Array.isArray(data.images)
+    && new Set(data.images.map((image) => image?.image_id)).size === data.images.length
     && data.images.every((image) => (
       /^[0-9a-f]{64}$/.test(image?.image_id)
       && typeof image?.url === 'string'
       && typeof image?.caption === 'string'
       && typeof image?.alt === 'string'
+      && (image.photo_id == null || isCloudPhoto(image))
+      && (image.contexts == null || (Array.isArray(image.contexts) && image.contexts.every((context) => (
+        typeof context?.spot_name === 'string'
+        && typeof context?.description === 'string'
+        && typeof context?.mapping_confirmed === 'boolean'
+      ))))
     ))
 }
 
@@ -65,7 +88,9 @@ export async function requestPlaceImages(placeId, { signal } = {}) {
         image_id: image.image_id,
         caption: image.caption,
         alt: image.alt,
-        src: `${endpoint}/${image.image_id}`,
+        src: image.photo_id == null ? `${endpoint}/${image.image_id}` : image.url,
+        ...(image.photo_id == null ? {} : { photo_id: image.photo_id }),
+        contexts: (image.contexts ?? []).map((context) => ({ ...context })),
       })),
     }
   } catch (error) {

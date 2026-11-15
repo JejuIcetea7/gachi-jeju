@@ -2,6 +2,7 @@ import hashlib
 from pathlib import Path
 
 from ..tools.places import read_rows
+from .cloud_photos import list_cloud_images
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 IMAGE_ROOT = PROJECT_ROOT / "data" / "raw" / "jeju_datahub"
@@ -41,7 +42,7 @@ def resolve_image_path(source_file: str, image_file: str) -> Path | None:
 
 
 def list_place_images(place_id: str) -> dict | None:
-    """DB에 기록된 원본 폴더에 실제로 있는 사진만 반환합니다."""
+    """CloudFront 연결 목록이 있으면 통합 사진을, 없으면 기존 원본 사진을 반환합니다."""
     places = read_rows(
         "SELECT place_id, name FROM places WHERE place_id = ?",
         (place_id,),
@@ -50,6 +51,10 @@ def list_place_images(place_id: str) -> dict | None:
         return None
 
     place = places[0]
+    cloud_images = list_cloud_images(PROJECT_ROOT, place["place_id"], place["name"])
+    if cloud_images is not None:
+        return {"place_id": place["place_id"], "name": place["name"], "images": cloud_images}
+
     rows = read_rows(
         'SELECT name, image_file, source_file FROM place_spots '
         'WHERE place_id = ? ORDER BY "order", source_file, image_file',
