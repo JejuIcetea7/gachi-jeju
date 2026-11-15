@@ -110,8 +110,8 @@ class PlaceDetailsTests(unittest.TestCase):
         self.assertEqual(result["accessibility_facts"], [])
 
     def test_blank_closed_days_is_unknown(self):
-        # P012 생각하는정원: 휴무일 확인필요(빈칸)
-        result = get_place_details(place_id="P012", visit_dates=["2026-12-14"])
+        # P019 플레이케이팝: 휴무일 조사값 없음
+        result = get_place_details(place_id="P019", visit_dates=["2026-12-14"])
 
         self.assertEqual(result["closed_days"], "확인 안 됨")
         self.assertEqual(result["closed_day_checks"], {"2026-12-14": "확인 안 됨"})
@@ -128,11 +128,32 @@ class PlaceDetailsTests(unittest.TestCase):
         self.assertIn("어른 5,000원", get_place_details(place_id="P040")["admission_fee"])
 
     def test_blank_opening_hours_is_unknown(self):
-        # P100 동문시장: 운영시간 원문이 '점포별로 상이함'이라 정리 값 없음
-        result = get_place_details(place_id="P100")
+        # P133 도두봉: 출입 통제 안내만 있고 운영 시각 없음
+        result = get_place_details(place_id="P133")
 
         self.assertEqual(result["opening_hours"], "확인 안 됨")
-        self.assertEqual(result["opening_hours_raw"], "점포별로 상이함")
+        self.assertIn("출입이 통제", result["opening_hours_raw"])
+
+    def test_manual_survey_closed_days_and_fees(self):
+        result = get_place_details(place_id="P012", visit_dates=["2026-12-14"])
+
+        self.assertEqual(result["closed_days"], "연중무휴")
+        self.assertEqual(result["closed_day_checks"], {"2026-12-14": "영업"})
+        self.assertIn("성인 15,000원", result["admission_fee"])
+
+    def test_last_order_does_not_become_last_entry(self):
+        result = get_place_details(place_id="P014")
+
+        self.assertEqual(result["opening_hours"], "10:00-18:00")
+        self.assertIn("라스트오더 17:30", result["opening_hours_raw"])
+        self.assertEqual(result["admission_fee"], "확인 안 됨")
+
+    def test_performance_times_do_not_become_opening_hours(self):
+        result = get_place_details(place_id="P045")
+
+        self.assertEqual(result["closed_days"], "연중무휴")
+        self.assertEqual(result["opening_hours"], "확인 안 됨")
+        self.assertIn("성인 27,000원", result["admission_fee"])
 
 if __name__ == "__main__":
     unittest.main()
