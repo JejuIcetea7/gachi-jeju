@@ -1205,3 +1205,57 @@ fieldset.option-group legend {
 .itinerary-map-marker.is-lodging {
   background: #655487;
 }
+
+
+.place-photo-context + .place-photo-context {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #d9e4da;
+}
+
+.place-photo-context strong {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.place-photo-context p {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.place-photo-unconfirmed {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: #fff2d8;
+  color: #78540e;
+  font-size: 0.8rem;
+}
+
+
+.place-detail-photo-note {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: #52695d;
+}
+
+.place-detail-photo-note p {
+  margin: 0;
+}
+
+.place-description-photo-link {
+  min-height: 44px;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: #1f644f;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

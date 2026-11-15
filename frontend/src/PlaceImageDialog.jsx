@@ -2,12 +2,13 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { requestPlaceDetails } from './services/placeDetailsApi.js'
 import { requestPlaceImages } from './services/placeImagesApi.js'
 import { groupAccessibilityFacts } from './services/placeDetails.js'
+import { selectDetailDescriptions } from './services/placeDescriptionVisibility.js'
 
 function displayText(value, fallback) {
   return typeof value === 'string' && value.trim() ? value : fallback
 }
 
-function PlaceDetailsContent({ state, onRetry }) {
+function PlaceDetailsContent({ state, photos, failedImages, onRetry, onShowPhotos }) {
   if (state.status === 'loading') {
     return <p className="place-image-message" role="status">장소 상세 정보를 불러오는 중입니다.</p>
   }
@@ -32,7 +33,9 @@ function PlaceDetailsContent({ state, onRetry }) {
   }
 
   const detail = state.data
-  const groups = groupAccessibilityFacts(detail.accessibility_facts)
+  const visible = selectDetailDescriptions(detail, photos, failedImages)
+  const groups = groupAccessibilityFacts(visible.accessibility_facts)
+  const hasPhotoDescriptions = visible.hidden_spots + visible.hidden_facts > 0
 
   return (
     <div className="place-details-content">
@@ -40,6 +43,15 @@ function PlaceDetailsContent({ state, onRetry }) {
         등록된 조사 원문과 지점별 설명입니다.
         시설·지점별 내용을 확인해 주세요. 추천 문구와 기호는 원문대로 표시합니다.
       </p>
+
+      {hasPhotoDescriptions && (
+        <div className="place-detail-photo-note">
+          <p>사진과 함께 제공되는 설명은 사진에서 확인할 수 있습니다.</p>
+          <button type="button" className="place-description-photo-link" onClick={onShowPhotos}>
+            사진 보기
+          </button>
+        </div>
+      )}
 
       <section className="place-detail-section">
         <h3>기본 정보</h3>
@@ -55,53 +67,57 @@ function PlaceDetailsContent({ state, onRetry }) {
         </dl>
       </section>
 
-      <section className="place-detail-section">
-        <h3>시설·이동약자 추천 정보</h3>
-        <p className="place-detail-note">
-          ‘미설치’는 조사 원문의 표기이며, 자료 미등록과 구분합니다.
-        </p>
-        {groups.length === 0 ? (
-          <p className="place-image-message">등록된 시설·추천 원문이 없습니다.</p>
-        ) : (
-          <div className="place-detail-groups">
-            {groups.map((group) => (
-              <section
-                className="place-detail-fact-group"
-                key={JSON.stringify([group.section, group.facility_name])}
-              >
-                <h4>{displayText(group.section, '분류 미등록')}</h4>
-                <p className="place-detail-facility">
-                  {displayText(group.facility_name, '시설명 미등록')}
-                </p>
-                <dl className="place-detail-fields">
-                  {group.facts.map((fact, index) => (
-                    <div key={index}>
-                      <dt>{displayText(fact.description, '항목명 미등록')}</dt>
-                      <dd>{displayText(fact.raw_value, '값 미등록')}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </section>
-            ))}
-          </div>
-        )}
-      </section>
+      {(groups.length > 0 || visible.hidden_facts === 0) && (
+        <section className="place-detail-section">
+          <h3>시설·이동약자 추천 정보</h3>
+          <p className="place-detail-note">
+            ‘미설치’는 조사 원문의 표기이며, 자료 미등록과 구분합니다.
+          </p>
+          {groups.length === 0 ? (
+            <p className="place-image-message">등록된 시설·추천 원문이 없습니다.</p>
+          ) : (
+            <div className="place-detail-groups">
+              {groups.map((group) => (
+                <section
+                  className="place-detail-fact-group"
+                  key={JSON.stringify([group.section, group.facility_name])}
+                >
+                  <h4>{displayText(group.section, '분류 미등록')}</h4>
+                  <p className="place-detail-facility">
+                    {displayText(group.facility_name, '시설명 미등록')}
+                  </p>
+                  <dl className="place-detail-fields">
+                    {group.facts.map((fact, index) => (
+                      <div key={index}>
+                        <dt>{displayText(fact.description, '항목명 미등록')}</dt>
+                        <dd>{displayText(fact.raw_value, '값 미등록')}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
-      <section className="place-detail-section">
-        <h3>관람 동선·지점별 접근성</h3>
-        {detail.spots.length === 0 ? (
-          <p className="place-image-message">등록된 지점별 설명이 없습니다.</p>
-        ) : (
-          <div className="place-detail-spots">
-            {detail.spots.map((spot, index) => (
-              <details key={index} className="place-detail-spot">
-                <summary>{displayText(spot.name, '지점명 미등록')}</summary>
-                <p>{spot.description}</p>
-              </details>
-            ))}
-          </div>
-        )}
-      </section>
+      {(visible.spots.length > 0 || visible.hidden_spots === 0) && (
+        <section className="place-detail-section">
+          <h3>관람 동선·지점별 접근성</h3>
+          {visible.spots.length === 0 ? (
+            <p className="place-image-message">등록된 지점별 설명이 없습니다.</p>
+          ) : (
+            <div className="place-detail-spots">
+              {visible.spots.map((spot, index) => (
+                <details key={index} className="place-detail-spot">
+                  <summary>{displayText(spot.name, '지점명 미등록')}</summary>
+                  <p>{spot.description}</p>
+                </details>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   )
 }
@@ -148,7 +164,17 @@ function PlacePhotosContent({ state, failedImages, onRetry, onImageError }) {
                   onError={() => onImageError(image.image_id)}
                 />
               )}
-              <figcaption>{image.caption}</figcaption>
+              <figcaption>
+                {image.contexts?.length > 0 ? image.contexts.map((context, index) => (
+                  <div className="place-photo-context" key={index}>
+                    <strong>{displayText(context.spot_name, '시설·지점명 미등록')}</strong>
+                    {!context.mapping_confirmed && (
+                      <span className="place-photo-unconfirmed">장소 연결 미확인</span>
+                    )}
+                    <p>{displayText(context.description, '설명 없음')}</p>
+                  </div>
+                )) : image.caption}
+              </figcaption>
             </figure>
           ))}
         </div>
@@ -159,6 +185,7 @@ function PlacePhotosContent({ state, failedImages, onRetry, onImageError }) {
 
 function PlaceImageDialog({ place, onClose }) {
   const dialogRef = useRef(null)
+  const photoViewButtonRef = useRef(null)
   const titleId = useId()
   const canLoad = place.verified === true
     && typeof place.place_id === 'string'
@@ -296,6 +323,7 @@ function PlaceImageDialog({ place, onClose }) {
         </button>
         <button
           type="button"
+          ref={photoViewButtonRef}
           aria-pressed={activeView === 'photos'}
           onClick={() => setActiveView('photos')}
         >
@@ -317,7 +345,16 @@ function PlaceImageDialog({ place, onClose }) {
                 </ul>
               </section>
             )}
-            <PlaceDetailsContent state={details} onRetry={retryDetails} />
+            <PlaceDetailsContent
+              state={details}
+              photos={photos}
+              failedImages={failedImages}
+              onRetry={retryDetails}
+              onShowPhotos={() => {
+                setActiveView('photos')
+                photoViewButtonRef.current?.focus({ preventScroll: true })
+              }}
+            />
           </div>
         ) : (
           <PlacePhotosContent

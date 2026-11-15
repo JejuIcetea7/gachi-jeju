@@ -3,10 +3,11 @@ from stat import S_ISREG
 from urllib.parse import quote
 
 from fastapi import APIRouter
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel
 
 from ..services.place_images import list_place_images
+from ..services.cloud_photos import PhotoCatalogError, validate_cdn_photo_url
 from .plan import ErrorResponse, build_error_response
 
 router = APIRouter(prefix="/places", tags=["장소 사진"])
@@ -17,11 +18,19 @@ ERROR_RESPONSES = {
 }
 
 
+class PlaceImageContext(BaseModel):
+    spot_name: str
+    description: str
+    mapping_confirmed: bool
+
+
 class PlaceImageResponse(BaseModel):
     image_id: str
     url: str
     caption: str
     alt: str
+    photo_id: str | None = None
+    contexts: list[PlaceImageContext] | None = None
 
 
 class PlaceImagesResponse(BaseModel):
@@ -33,7 +42,7 @@ class PlaceImagesResponse(BaseModel):
 def _read_images(place_id: str):
     try:
         result = list_place_images(place_id)
-    except sqlite3.Error:
+    except (sqlite3.Error, PhotoCatalogError):
         return build_error_response(
             500, "internal_error", "사진 정보를 불러오지 못했습니다."
         )
@@ -49,6 +58,7 @@ def _read_images(place_id: str):
 @router.get(
     "/{place_id}/images",
     response_model=PlaceImagesResponse,
+    response_model_exclude_none=True,
     responses=ERROR_RESPONSES,
 )
 def get_place_images(place_id: str):
@@ -64,9 +74,11 @@ def get_place_images(place_id: str):
         "images": [
             {
                 "image_id": image["image_id"],
-                "url": f'/places/{encoded_id}/images/{image["image_id"]}',
+                "url": image.get("cdn_url") or f'/places/{encoded_id}/images/{image["image_id"]}',
                 "caption": image["caption"],
                 "alt": image["alt"],
+                **({"photo_id": image["photo_id"], "contexts": image["contexts"]}
+                   if "cdn_url" in image else {}),
             }
             for image in result["images"]
         ],
@@ -86,6 +98,13 @@ def get_place_image(place_id: str, image_id: str):
     for image in result["images"]:
         if image["image_id"] != image_id:
             continue
+
+        if "cdn_url" in image:
+            try:
+                url = validate_cdn_photo_url(image["cdn_url"], image["photo_id"])
+            except PhotoCatalogError:
+                return build_error_response(500, "internal_error", "사진 정보를 불러오지 못했습니다.")
+            return RedirectResponse(url, status_code=307, headers={"X-Content-Type-Options": "nosniff"})
 
         try:
             image_stat = image["path"].stat()
