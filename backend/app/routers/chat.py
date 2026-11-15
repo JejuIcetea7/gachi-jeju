@@ -23,7 +23,12 @@ from ..services.plan_validation import (
     validate_plan_opening_hours,
     validate_plan_times,
 )
-from ..tools.places import read_closed_days_by_place_id, read_opening_hours_by_place_id
+from ..tools.places import (
+    get_place_details as read_place_details,
+    read_closed_days_by_place_id,
+    read_opening_hours_by_place_id,
+)
+from ..services.plan_accessibility import validate_plan_accessibility
 from .plan import (
     ErrorResponse,
     PlanBodyResponse,
@@ -404,6 +409,57 @@ def _build_chat_result(
                 ),
             )
 
+        if (
+            chat_reply.options.requirements
+            or chat_reply.options.mobility_aid in ("wheelchair", "stroller")
+        ):
+            places_by_id = {}
+            place_ids = dict.fromkeys(
+                item["place_id"]
+                for day in plan["days"]
+                for item in day["items"]
+                if item["item_type"] == "visit"
+                and item.get("verified") is True
+                and item.get("place_id")
+            )
+            try:
+                for place_id in place_ids:
+                    details = read_place_details(place_id=place_id)
+                    if (
+                        not isinstance(details, dict)
+                        or details.get("status") not in ("ok", "not_found")
+                        or (
+                            details.get("status") == "ok"
+                            and details.get("place_id") != place_id
+                        )
+                    ):
+                        return build_error_response(
+                            500, "internal_error",
+                            "장소 접근성 정보를 읽지 못했습니다.",
+                        )
+                    if details["status"] == "ok":
+                        places_by_id[place_id] = details
+            except sqlite3.Error:
+                return build_error_response(
+                    500, "internal_error",
+                    "장소 접근성 정보를 읽지 못했습니다.",
+                )
+
+            access_errors, access_warnings = validate_plan_accessibility(
+                plan,
+                places_by_id,
+                requirements=chat_reply.options.requirements,
+                mobility_aid=chat_reply.options.mobility_aid,
+            )
+            if access_errors:
+                raise PlanValidationFailure(
+                    access_errors,
+                    message=(
+                        "생성된 일정에 필수 접근 조건을 충족하지 못하는 "
+                        "장소가 있습니다. 다시 시도해 주세요."
+                    ),
+                )
+            warnings.extend(access_warnings)
         map_routes, route_warnings = select_plan_routes(
             plan,
             agent_result.get("route_calls") or [],
@@ -481,6 +537,22 @@ def create_chat(chat_request: ChatRequest):
             chat_reply.options = ChatOptions.model_validate(retain_lodging_state(
                 chat_reply.options.model_dump(), chat_request.options.model_dump(),
             ))
+
+        if locked_options is None and chat_reply.plan is not None:
+            selected_requirements = list(dict.fromkeys([
+                *chat_request.options.requirements,
+                *chat_reply.options.requirements,
+            ]))
+            selected_aid = chat_request.options.mobility_aid
+            chat_reply = chat_reply.model_copy(update={
+                "options": chat_reply.options.model_copy(update={
+                    "requirements": selected_requirements,
+                    "mobility_aid": (
+                        selected_aid if selected_aid is not None
+                        else chat_reply.options.mobility_aid
+                    ),
+                }),
+            })
 
         if locked_options is not None:
             option_errors = validate_retry_options(
