@@ -6,3 +6,5 @@ uvicorn==0.54.0
 langchain-openai==1.7.4
 Pillow==12.0.0
 boto3[crt]==1.44.3
+openai==3.46.0
+httpx2==2.16.0

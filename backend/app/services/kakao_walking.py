@@ -7,6 +7,8 @@ from urllib.request import Request, urlopen
 
 import truststore
 
+from .chat_request_transport import open_chat_url
+
 NO_ROUTE_STATUSES = {
     "SAME_POINT",
     "START_LINK_NOT_FOUND",
@@ -91,7 +93,7 @@ def get_walking_route(
     context = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 
     try:
-        with urlopen(request, context=context, timeout=20) as response:
+        with open_chat_url(urlopen, request, context=context, timeout=20) as response:
             data = json.load(response)
     except HTTPError as error:
         with error:

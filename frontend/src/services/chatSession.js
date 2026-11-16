@@ -23,6 +23,17 @@ export function createEmptyChatSession() {
   }
 }
 
+export function markChatMessageCancelled(state, messageId) {
+  return {
+    ...state,
+    messages: state.messages.map((message) => (
+      message.id === messageId && message.role === 'user' && message.status === 'pending'
+        ? { ...message, status: 'cancelled' }
+        : message
+    )),
+  }
+}
+
 function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
@@ -48,7 +59,7 @@ function isMessage(value) {
     && typeof value.content === 'string'
     && value.content.trim().length > 0
     && value.content.length <= (value.role === 'user' ? 1000 : 4000)
-    && ['sent', 'pending', 'failed'].includes(value.status)
+    && ['sent', 'pending', 'failed', 'cancelled'].includes(value.status)
 }
 
 function isSessionState(value) {

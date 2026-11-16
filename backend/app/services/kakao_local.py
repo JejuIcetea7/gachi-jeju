@@ -6,6 +6,8 @@ from urllib.request import Request, urlopen
 
 import truststore
 
+from .chat_request_transport import open_chat_url
+
 # 제주도 범위 (경도 최소, 위도 최소, 경도 최대, 위도 최대). 추자도는 빠진다.
 JEJU_RECT = "126.08,33.10,127.00,33.60"
 
@@ -51,7 +53,7 @@ def search_keyword_place(*, keyword: str, api_key: str) -> dict:
     context = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 
     try:
-        with urlopen(request, context=context, timeout=20) as response:
+        with open_chat_url(urlopen, request, context=context, timeout=20) as response:
             data = json.load(response)
     except HTTPError as error:
         if error.code == 429:
