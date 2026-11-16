@@ -6,6 +6,8 @@ from urllib.request import urlopen
 
 import truststore
 
+from .chat_request_transport import open_chat_url
+
 BASE_URL = "https://bus.jeju.go.kr/api"
 
 class JejuBusAPIError(RuntimeError):
@@ -19,7 +21,7 @@ def _get_rows(endpoint: str, **params: int | str) -> list[dict]:
     context = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 
     try:
-        with urlopen(url, context=context, timeout=20) as response:
+        with open_chat_url(urlopen, url, context=context, timeout=20) as response:
             rows = json.load(response)
     except (OSError, ValueError, HTTPException) as error:
         raise JejuBusAPIError(f"제주 BIS 조회 실패 : {endpoint}") from error

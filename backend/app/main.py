@@ -4,14 +4,24 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import chat, lodgings, place_details, place_images, plan
+from .routers import chat_requests, lodgings, place_details, place_images, plan
+from .services.chat_request_runtime import shutdown_chat_request_runtime
 from .routers.plan import build_error_response
+from contextlib import asynccontextmanager
 
 ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:5173"]
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="같이 가는 제주 API")
+@asynccontextmanager
+async def lifespan(app):
+    try:
+        yield
+    finally:
+        shutdown_chat_request_runtime()
+
+
+app = FastAPI(title="같이 가는 제주 API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -19,7 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(plan.router)
-app.include_router(chat.router)
+app.include_router(chat_requests.router)
 app.include_router(place_images.router)
 app.include_router(place_details.router)
 app.include_router(lodgings.router)

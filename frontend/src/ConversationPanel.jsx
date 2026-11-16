@@ -34,7 +34,9 @@ function ConversationPanel({
   onSend,
   isSending = false,
   error = null,
+  notice = null,
   onRetry,
+  onCancel,
 }) {
   const [draft, setDraft] = useState('')
   const inputRef = useRef(null)
@@ -53,6 +55,20 @@ function ConversationPanel({
       && typeof item?.reason === 'string'
     ))
     : []
+
+  const retryButton = typeof onRetry === 'function' ? (
+    <button
+      type="button"
+      className="secondary-button"
+      disabled={isSending}
+      onClick={() => {
+        followLatestRef.current = true
+        onRetry()
+      }}
+    >
+      이 요청 다시 보내기
+    </button>
+  ) : null
 
   useEffect(() => {
     const log = logRef.current
@@ -150,6 +166,9 @@ function ConversationPanel({
                 {message.status === 'failed' && (
                   <p className="conversation-failed">답변 확인 실패</p>
                 )}
+                {message.status === 'cancelled' && (
+                  <p className="conversation-cancelled">요청 취소</p>
+                )}
               </li>
             ))}
           </ol>
@@ -157,9 +176,21 @@ function ConversationPanel({
       </div>
 
       {isSending && (
-        <p className="conversation-progress" role="status">
-          여행 정보를 확인하고 답변을 준비하고 있습니다.
-        </p>
+        <div className="conversation-progress">
+          <p role="status">여행 정보를 확인하고 답변을 준비하고 있습니다.</p>
+          {typeof onCancel === 'function' && (
+            <button type="button" className="secondary-button" onClick={onCancel}>
+              요청 취소
+            </button>
+          )}
+        </div>
+      )}
+
+      {!isSending && !error && notice && (
+        <div className="conversation-notice" role="status">
+          <p>{notice}</p>
+          {retryButton}
+        </div>
       )}
 
       {error && (
@@ -172,19 +203,7 @@ function ConversationPanel({
               ))}
             </ul>
           )}
-          {typeof onRetry === 'function' && (
-            <button
-              type="button"
-              className="secondary-button"
-              disabled={isSending}
-              onClick={() => {
-                followLatestRef.current = true
-                onRetry()
-              }}
-            >
-              이 요청 다시 보내기
-            </button>
-          )}
+          {retryButton}
         </div>
       )}
 

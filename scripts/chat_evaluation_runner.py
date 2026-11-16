@@ -43,11 +43,11 @@ def _capture_result(result):
 
 
 def run_chat_request(request_body, *, agent_runner, reference_date=None):
-    """실제 라우터를 순차 실행합니다. 외부 호출 여부는 전달한 agent_runner가 결정합니다.
+    """실제 라우터를 순차 실행하고 HTTP 응답 시점의 관찰 기록을 복사합니다.
 
     기존 개발 서버에 접속하지 않고 동일한 FastAPI 앱을 프로세스 안에서 실행합니다.
     관찰 실패는 capture_error에 남기며 실제 서버 응답을 변경하지 않습니다.
-    경로 기록에서는 도로선 좌표를 제외하고, 예외는 유형만 기록합니다.
+    시간 초과 뒤 늦게 끝난 관찰 작업은 이미 반환한 기록에 추가하지 않습니다.
     """
     if not isinstance(request_body, dict):
         raise ValueError("평가 요청은 객체여야 합니다.")
@@ -62,36 +62,43 @@ def run_chat_request(request_body, *, agent_runner, reference_date=None):
 
     saved_request = deepcopy(request_body)
     attempts = []
+    attempts_lock = Lock()
 
     def observe_agent(messages, response_format):
-        attempt = {
-            "attempt": len(attempts) + 1,
-            "status": "running",
-            "error_type": None,
-            "capture_error": None,
-            "retry_feedback": [],
-        }
-        attempts.append(attempt)
+        feedback = []
+        capture_error = None
         try:
             payload = json.loads(messages[-1]["content"])
-            attempt["retry_feedback"] = deepcopy(
+            feedback = deepcopy(
                 payload.get("plan_retry", {}).get("validation_errors", [])
             )
         except (IndexError, KeyError, TypeError, ValueError, AttributeError):
-            attempt["capture_error"] = "invalid_retry_payload"
+            capture_error = "invalid_retry_payload"
+
+        with attempts_lock:
+            attempt = {
+                "attempt": len(attempts) + 1,
+                "status": "running",
+                "error_type": None,
+                "capture_error": capture_error,
+                "retry_feedback": feedback,
+            }
+            attempts.append(attempt)
 
         try:
             result = agent_runner(messages, response_format)
         except Exception as error:
-            attempt["status"] = "error"
-            attempt["error_type"] = type(error).__name__
+            with attempts_lock:
+                attempt.update(status="error", error_type=type(error).__name__)
             raise
 
-        attempt["status"] = "returned"
         try:
-            attempt.update(_capture_result(result))
+            captured = dict(_capture_result(result))
         except Exception as error:
-            attempt["capture_error"] = type(error).__name__
+            captured = {"capture_error": type(error).__name__}
+        with attempts_lock:
+            attempt.update(captured)
+            attempt["status"] = "returned"
         return result
 
     started_at = perf_counter()
@@ -109,6 +116,8 @@ def run_chat_request(request_body, *, agent_runner, reference_date=None):
         ):
             response = client.post("/chat", json=deepcopy(saved_request))
             body = response.json()
+            with attempts_lock:
+                saved_attempts = deepcopy(attempts)
 
     return {
         "request": saved_request,
@@ -117,6 +126,6 @@ def run_chat_request(request_body, *, agent_runner, reference_date=None):
         ),
         "http_status": response.status_code,
         "response": body,
-        "attempts": deepcopy(attempts),
+        "attempts": saved_attempts,
         "elapsed_seconds": round(perf_counter() - started_at, 3),
     }

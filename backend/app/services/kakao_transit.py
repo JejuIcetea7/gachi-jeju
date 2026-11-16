@@ -7,6 +7,7 @@ from urllib.request import Request, urlopen
 import truststore
 
 from .transit_geometry import extract_transit_geometry
+from .chat_request_transport import open_chat_url
 
 def parse_transit_response(
     data: dict,
@@ -93,7 +94,7 @@ def get_transit_routes(
     context = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 
     try:
-        with urlopen(request, context=context, timeout=20) as response:
+        with open_chat_url(urlopen, request, context=context, timeout=20) as response:
             data = json.load(response)
     except HTTPError as error:
         with error:

@@ -15,6 +15,15 @@ from ..tools.places import (
     search_places_by_name,
 )
 from .planner import SYSTEM_PROMPT, count_model_calls, count_tool_calls
+from ..services.chat_request_agent import (
+    chat_model_http_client,
+    guard_chat_tool,
+)
+from ..services.chat_request_control import (
+    check_chat_request_control,
+    get_chat_request_control,
+    get_chat_request_timeout,
+)
 
 
 CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
@@ -132,13 +141,28 @@ def build_chat_agent(
     response_format: type[BaseModel],
     *,
     route_calls: list[dict] | None = None,
+    http_client=None,
 ):
+    check_chat_request_control()
+    control = get_chat_request_control()
+    if control is not None and http_client is None:
+        raise ValueError("제어된 대화 요청에는 전용 모델 HTTP 클라이언트가 필요합니다.")
     if route_calls is None:
         route_calls = []
 
-    driving_tool = create_driving_map_tool(route_calls)
-    walking_tool = create_walking_map_tool(route_calls)
-    bus_tool = create_bus_map_tool(route_calls)
+    tools = [
+        find_location,
+        search_places,
+        search_places_by_name,
+        get_place_details,
+        get_place_details,
+        create_driving_map_tool(route_calls),
+        create_bus_map_tool(route_calls),
+        create_walking_map_tool(route_calls),
+    ]
+    model_options = {}
+    if http_client is not None:
+        model_options["http_client"] = http_client
 
     model = ChatOpenAI(
         model=LLM_MODEL,
@@ -146,35 +170,33 @@ def build_chat_agent(
         use_responses_api=True,
         reasoning={"effort": LLM_REASONING_EFFORT},
         max_retries=2,
-        timeout=120,
+        timeout=get_chat_request_timeout(120),
+        **model_options,
     )
     return create_agent(
         model=model,
-        tools=[
-            find_location,
-            search_places,
-            search_places_by_name,
-            get_place_details,
-            get_place_details,
-            driving_tool,
-            bus_tool,
-            walking_tool,
-        ],
+        tools=[guard_chat_tool(function, control) for function in tools],
         system_prompt=CHAT_SYSTEM_PROMPT,
         response_format=response_format,
     )
+
 
 def run_chat_agent(
     messages: list[dict[str, str]],
     response_format: type[BaseModel],
 ) -> dict:
     """답변과 이번 실행의 호출 횟수·지도 경로 기록을 반환합니다."""
+    check_chat_request_control()
     route_calls = []
-    agent = build_chat_agent(
-        response_format,
-        route_calls=route_calls,
-    )
-    result = agent.invoke({"messages": messages})
+    try:
+        with chat_model_http_client() as http_client:
+            arguments = {"route_calls": route_calls}
+            if http_client is not None:
+                arguments["http_client"] = http_client
+            agent = build_chat_agent(response_format, **arguments)
+            result = agent.invoke({"messages": messages})
+    finally:
+        check_chat_request_control()
 
     new_messages = result["messages"][len(messages):]
     return {

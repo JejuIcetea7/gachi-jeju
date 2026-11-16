@@ -3,6 +3,8 @@ import { isPlanResponse } from './planApi.js'
 import { getTripEndDate } from './travelOptions.js'
 
 const REQUEST_TIMEOUT_MS = 180_000
+const CANCEL_TIMEOUT_MS = 5_000
+const REQUEST_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
 
 function createChatError(message, code, status = null, details = []) {
   const error = new Error(message)
@@ -130,23 +132,80 @@ function buildChatBody({
   }
 }
 
-export async function requestTravelChat(input) {
-  const body = JSON.stringify(buildChatBody(input))
+async function notifyChatCancellation(requestId) {
   const controller = new AbortController()
-  let timedOut = false
-
-  const timeoutId = setTimeout(() => {
-    timedOut = true
-    controller.abort()
-  }, REQUEST_TIMEOUT_MS)
+  const timeoutId = setTimeout(() => controller.abort(), CANCEL_TIMEOUT_MS)
 
   try {
-    const response = await fetch('/api/chat', {
+    const response = await fetch('/api/chat/cancel', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ request_id: requestId }),
+      signal: controller.signal,
+      keepalive: true,
+    })
+    await response.body?.cancel()
+  } catch {
+    // 취소 통지 실패가 원래 요청의 취소 결과를 바꾸지 않도록 합니다.
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+export async function requestTravelChat(
+  input,
+  { signal, requestId = crypto.randomUUID() } = {},
+) {
+  const body = JSON.stringify(buildChatBody(input))
+  if (
+    typeof requestId !== 'string'
+    || !REQUEST_ID_PATTERN.test(requestId)
+    || (signal != null && (
+      typeof signal.aborted !== 'boolean'
+      || typeof signal.addEventListener !== 'function'
+      || typeof signal.removeEventListener !== 'function'
+    ))
+  ) {
+    throw createChatError(
+      '요청 식별자와 취소 신호를 확인해 주세요.',
+      'invalid_request',
+    )
+  }
+
+  const controller = new AbortController()
+  let started = false
+  let settled = false
+  let rejectStopped
+  const stopped = new Promise((_, reject) => { rejectStopped = reject })
+
+  function stop(code) {
+    if (settled || controller.signal.aborted) return
+
+    const message = code === 'client_timeout'
+      ? '답변 대기 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.'
+      : '요청이 취소되었습니다.'
+    controller.abort(createChatError(message, code))
+    rejectStopped(controller.signal.reason)
+    if (started) void notifyChatCancellation(requestId)
+  }
+
+  const onAbort = () => stop('request_cancelled')
+  signal?.addEventListener('abort', onAbort, { once: true })
+  const timeoutId = setTimeout(() => stop('client_timeout'), REQUEST_TIMEOUT_MS)
+
+  async function fetchReply() {
+    controller.signal.throwIfAborted()
+    started = true
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Chat-Request-ID': requestId,
+      },
       body,
       signal: controller.signal,
     })
+    controller.signal.throwIfAborted()
 
     let data
     try {
@@ -158,6 +217,7 @@ export async function requestTravelChat(input) {
         response.status,
       )
     }
+    controller.signal.throwIfAborted()
 
     if (!response.ok) {
       const apiError = data?.error
@@ -187,14 +247,15 @@ export async function requestTravelChat(input) {
     }
 
     return data
-  } catch (error) {
-    if (timedOut) {
-      throw createChatError(
-        '답변 대기 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.',
-        'client_timeout',
-      )
-    }
+  }
 
+  try {
+    if (signal?.aborted) onAbort()
+    const response = await Promise.race([fetchReply(), stopped])
+    controller.signal.throwIfAborted()
+    return response
+  } catch (error) {
+    if (controller.signal.aborted) throw controller.signal.reason
     if (error?.name === 'ChatApiError') throw error
 
     throw createChatError(
@@ -202,6 +263,8 @@ export async function requestTravelChat(input) {
       'network_error',
     )
   } finally {
+    settled = true
     clearTimeout(timeoutId)
+    signal?.removeEventListener('abort', onAbort)
   }
 }

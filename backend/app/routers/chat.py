@@ -61,6 +61,10 @@ from ..services.plan_retry import (
     validate_retry_options,
 )
 from ..services.plan_reply_consistency import validate_plan_reply_consistency
+from ..services.chat_request_control import (
+    ChatRequestStopped,
+    check_chat_request_control,
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -502,20 +506,9 @@ def _build_chat_result(
     }
 
 
-@router.post(
-    "/chat",
-    response_model=ChatResponse,
-    responses={
-        400: {"model": ErrorResponse, "description": "입력 오류"},
-        429: {"model": ErrorResponse, "description": "AI 호출 한도 초과"},
-        500: {"model": ErrorResponse, "description": "내부 처리 오류"},
-        502: {"model": ErrorResponse, "description": "AI 응답 또는 생성 일정 오류"},
-        503: {"model": ErrorResponse, "description": "AI 서버 오류 또는 잔액 부족"},
-        504: {"model": ErrorResponse, "description": "AI 시간 초과"},
-    },
-)
 def create_chat(chat_request: ChatRequest):
     """검증에 실패한 일정은 조건을 유지하며 최대 한 번 다시 생성합니다."""
+    check_chat_request_control()
     started_at = time.perf_counter()
     original_messages = build_chat_messages(chat_request)
     messages = original_messages
@@ -523,17 +516,22 @@ def create_chat(chat_request: ChatRequest):
     locked_options = None
 
     for attempt in range(MAX_PLAN_RETRIES + 1):
+        check_chat_request_control()
         try:
             agent_result = run_chat_agent(messages, ChatAgentReply)
+        except ChatRequestStopped:
+            raise
         except StructuredOutputError:
             return build_error_response(
                 502, "llm_invalid_response", "AI 답변 형식이 올바르지 않습니다."
             )
         except Exception as error:
+            check_chat_request_control()
             logger.exception("대화 처리 중 오류")
             status_code, provider_code = read_llm_error(error)
             return build_llm_error_response(status_code, provider_code)
 
+        check_chat_request_control()
         attempt_results.append(agent_result)
         try:
             chat_reply = ChatAgentReply.model_validate(
@@ -587,6 +585,7 @@ def create_chat(chat_request: ChatRequest):
                 request_options=chat_request.options.model_dump(), user_message=chat_request.message,
             )
         except PlanValidationFailure as failure:
+            check_chat_request_control()
             if attempt >= MAX_PLAN_RETRIES:
                 return build_error_response(
                     502,
@@ -612,4 +611,5 @@ def create_chat(chat_request: ChatRequest):
                 **merge_agent_metrics(attempt_results),
                 "elapsed_seconds": round(time.perf_counter() - started_at, 1),
             }
+        check_chat_request_control()
         return body

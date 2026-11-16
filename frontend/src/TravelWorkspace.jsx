@@ -9,9 +9,11 @@ import {
 } from './services/lodgingPlanning.js'
 import ItineraryMap from './ItineraryMap.jsx'
 import { isChatOptions, requestTravelChat } from './services/chatApi.js'
+import { createChatRequestTracker } from './services/chatRequestTracker.js'
 import {
   createEmptyChatSession,
   loadChatSession,
+  markChatMessageCancelled,
   saveChatSession,
 } from './services/chatSession.js'
 import { getCenterOrigin } from './services/originLocation.js'
@@ -22,9 +24,12 @@ import {
 import logoImage from './assets/gachi-jeju-logo.png'
 import ResizableWorkspace from './ResizableWorkspace.jsx'
 
+const CANCELLED_NOTICE = '요청을 취소했습니다. 내용을 바꾸어 보내거나 이 요청을 다시 보낼 수 있습니다.'
+
 function getRetryMessage(messages) {
   const last = messages.at(-1)
-  return last?.role === 'user' && last.status === 'failed' ? last : null
+  return last?.role === 'user' && ['failed', 'cancelled'].includes(last.status)
+    ? last : null
 }
 
 function reconcileOrigin(place, options) {
@@ -52,18 +57,23 @@ function reconcileOrigin(place, options) {
 
 function TravelWorkspace() {
   const [session, setSession] = useState(loadChatSession)
-  const [requestState, setRequestState] = useState(() => ({
-    isSending: false,
-    error: getRetryMessage(session.messages)
-      ? { message: '이전 요청의 답변을 확인하지 못했습니다. 다시 보낼 수 있습니다.' }
-      : null,
-  }))
+  const [requestTracker] = useState(createChatRequestTracker)
+  const [requestState, setRequestState] = useState(() => {
+    const previous = getRetryMessage(session.messages)
+    return {
+      isSending: false,
+      error: previous?.status === 'failed'
+        ? { message: '이전 요청의 답변을 확인하지 못했습니다. 다시 보낼 수 있습니다.' }
+        : null,
+      notice: previous?.status === 'cancelled' ? CANCELLED_NOTICE : null,
+    }
+  })
   const [viewKey, setViewKey] = useState(0)
   const [optionsOpen, setOptionsOpen] = useState(true)
   const busyRef = useRef(false)
 
   const { options, originPlace, messages, planResult, selectedDay } = session
-  const { isSending, error } = requestState
+  const { isSending, error, notice } = requestState
   const retryMessage = getRetryMessage(messages)
   const days = planResult?.plan.days ?? []
   const planOptions = planResult?.options
@@ -84,6 +94,11 @@ function TravelWorkspace() {
   useEffect(() => {
     saveChatSession(session)
   }, [session])
+
+  useEffect(() => () => {
+    requestTracker.reset()
+    busyRef.current = false
+  }, [requestTracker])
 
   useEffect(() => {
     if (
@@ -166,14 +181,19 @@ function TravelWorkspace() {
     })
   }
 
-  async function receiveReply(messageId, content, requestOptions = options) {
+  async function receiveReply(ticket, content, requestOptions = options) {
+    const messageId = ticket.messageId
     try {
       const response = await requestTravelChat({
         message: content,
         history: messages.filter((item) => item.status === 'sent'),
         options: requestOptions,
         currentPlan: planResult?.plan ?? null,
+      }, {
+        signal: ticket.controller.signal,
+        requestId: ticket.requestId,
       })
+      if (!requestTracker.isCurrent(ticket)) return
 
       const assistantMessage = {
         id: crypto.randomUUID(),
@@ -183,6 +203,7 @@ function TravelWorkspace() {
       }
 
       setSession((previous) => {
+        if (!requestTracker.isLatest(ticket)) return previous
         const nextResult = response.plan === null ? previous.planResult : response
         const nextDays = nextResult?.plan.days ?? []
 
@@ -203,24 +224,34 @@ function TravelWorkspace() {
         }
       })
 
-      setRequestState({ isSending: false, error: null })
+      setRequestState((previous) => requestTracker.isLatest(ticket)
+        ? { isSending: false, error: null, notice: null }
+        : previous)
     } catch (cause) {
-      setSession((previous) => ({
-        ...previous,
-        messages: previous.messages.map((item) => (
-          item.id === messageId ? { ...item, status: 'failed' } : item
-        )),
-      }))
+      if (!requestTracker.isCurrent(ticket)) return
+      const cancelled = cause?.code === 'request_cancelled'
 
-      setRequestState({
+      setSession((previous) => {
+        if (!requestTracker.isLatest(ticket)) return previous
+        if (cancelled) return markChatMessageCancelled(previous, messageId)
+        return {
+          ...previous,
+          messages: previous.messages.map((item) => (
+            item.id === messageId ? { ...item, status: 'failed' } : item
+          )),
+        }
+      })
+
+      setRequestState((previous) => requestTracker.isLatest(ticket) ? {
         isSending: false,
-        error: {
+        error: cancelled ? null : {
           message: cause?.message || '답변을 받지 못했습니다. 다시 시도해 주세요.',
           details: cause?.details ?? [],
         },
-      })
+        notice: cancelled ? CANCELLED_NOTICE : null,
+      } : previous)
     } finally {
-      busyRef.current = false
+      if (requestTracker.finish(ticket)) busyRef.current = false
     }
   }
 
@@ -229,9 +260,11 @@ function TravelWorkspace() {
     if (busyRef.current || !text || text.length > 1000 || !isChatOptions(requestOptions)) return false
 
     const messageId = crypto.randomUUID()
+    const ticket = requestTracker.begin(messageId)
+    if (!ticket) return false
     busyRef.current = true
 
-    setRequestState({ isSending: true, error: null })
+    setRequestState({ isSending: true, error: null, notice: null })
     setSession((previous) => ({
       ...previous,
       options: requestOptions,
@@ -242,7 +275,7 @@ function TravelWorkspace() {
       ],
     }))
 
-    void receiveReply(messageId, text, requestOptions)
+    void receiveReply(ticket, text, requestOptions)
     return true
   }
 
@@ -267,9 +300,11 @@ function TravelWorkspace() {
 
   function handleRetry() {
     if (busyRef.current || !retryMessage) return
+    const ticket = requestTracker.begin(retryMessage.id)
+    if (!ticket) return
 
     busyRef.current = true
-    setRequestState({ isSending: true, error: null })
+    setRequestState({ isSending: true, error: null, notice: null })
 
     setSession((previous) => ({
       ...previous,
@@ -278,12 +313,21 @@ function TravelWorkspace() {
       )),
     }))
 
-    void receiveReply(retryMessage.id, retryMessage.content)
+    void receiveReply(ticket, retryMessage.content)
+  }
+
+  function handleCancel() {
+    const ticket = requestTracker.cancel()
+    if (!ticket) return
+    busyRef.current = false
+    setSession((previous) => markChatMessageCancelled(previous, ticket.messageId))
+    setRequestState({ isSending: false, error: null, notice: CANCELLED_NOTICE })
   }
 
   function handleNewTrip() {
     if (busyRef.current) return
 
+    requestTracker.reset()
     setSession(createEmptyChatSession())
     setRequestState({ isSending: false, error: null })
     setViewKey((previous) => previous + 1)
@@ -327,6 +371,8 @@ function TravelWorkspace() {
           onSend={handleSend}
           isSending={isSending}
           error={error}
+          notice={notice}
+          onCancel={handleCancel}
           onRetry={retryMessage ? handleRetry : undefined}
         />
 
