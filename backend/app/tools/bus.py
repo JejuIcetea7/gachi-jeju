@@ -3,6 +3,7 @@ from ..db.bus_static import load_bus_data
 from ..services.bus_matching import match_bus_segment
 from ..services.kakao_transit import get_transit_routes
 from datetime import datetime, timezone
+from ..services.transit_guidance import build_transit_segments
 
 from ..services.jeju_bus import (
     JejuBusAPIError,
@@ -185,23 +186,20 @@ def _summarize_segment(segment: dict) -> dict:
     if segment["type"] != "BUS":
         return summary
 
-    stop_names = segment.get("stop_names") or []
     info = segment.get("bus_info") or {}
-
     arriving_buses = []
     for vehicle in info.get("vehicles") or []:
-        arriving_bus = {
+        arriving_buses.append({
             "route_number": vehicle["route_number"],
             "low_floor": vehicle["low_floor"],
             "arrival_minutes": vehicle["arrival_minutes"],
             "remaining_stops": vehicle["remaining_stops"],
-        }
-        arriving_buses.append(arriving_bus)
+        })
 
     summary["route_numbers"] = segment.get("route_numbers")
     summary["boarding_stop"] = segment.get("boarding_stop")
     summary["alighting_stop"] = segment.get("alighting_stop")
-    summary["stop_count"] = len(stop_names)
+    summary["ride_stop_count"] = build_transit_segments([segment])[0]["ride_stop_count"]
     summary["realtime_status"] = info.get("realtime_status", "not_requested")
     summary["arriving_buses"] = arriving_buses
     return summary
