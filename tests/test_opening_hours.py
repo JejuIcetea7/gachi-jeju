@@ -37,7 +37,10 @@ class ValidatePlanOpeningHoursTests(unittest.TestCase):
 
         errors = validate_plan_opening_hours(plan, date(2026, 12, 1), {"P_TEST": SEASONAL_HOURS})
 
-        self.assertEqual(errors, ["1일차 1번째 일정: 테스트 장소은(는) 2026-12-01 17:00에 닫는데 17:30에 끝납니다."])
+        self.assertEqual(errors, [
+            "1일차 1번째 일정: 테스트 장소은(는) 2026-12-01 입장 마감은 16:00인데 16:30에 방문을 시작합니다.",
+            "1일차 1번째 일정: 테스트 장소은(는) 2026-12-01 17:00에 닫는데 17:30에 끝납니다.",
+        ])
 
     def test_visit_ending_at_closing_time_is_allowed(self):
         plan = make_visit_plan("P_TEST", "16:00", "17:00")

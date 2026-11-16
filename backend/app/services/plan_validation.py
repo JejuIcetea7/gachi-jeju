@@ -2,7 +2,7 @@ import re
 from datetime import date, timedelta
 
 from .closed_days import STATUS_CLOSED, WEEKDAY_NAMES, judge_closed_on_date
-from .opening_hours import find_closing_time
+from .opening_hours import find_opening_hours
 
 
 def _to_minutes(value: str) -> int:
@@ -132,9 +132,11 @@ def validate_plan_opening_hours(
     start_date: date,
     opening_hours_by_place_id: dict,
 ) -> list[str]:
-    """일정을 수정하지 않고 닫는 시각보다 늦게 끝나는 방문을 찾아 반환합니다.
-    N일차 날짜는 start_date + (N - 1)일이고, 계절별 운영시간은 그 날짜의 달로 고릅니다.
-    운영시간이 없거나 상시 개방이면 검사하지 않습니다."""
+    """개장 전 방문·입장 마감 이후 도착·폐장 이후 종료를 검사합니다.
+
+    N일차 날짜의 달로 운영시간을 선택하며 입력 일정은 변경하지 않습니다.
+    개장·입장 마감·폐장 정각은 허용하고, 미확인·상시 개방은 검사하지 않습니다.
+    """
     errors = []
 
     for day in plan["days"]:
@@ -144,27 +146,40 @@ def validate_plan_opening_hours(
             if item.get("item_type") != "visit":
                 continue
             place_id = item.get("place_id")
-            if place_id not in opening_hours_by_place_id:
+            hours = find_opening_hours(
+                opening_hours_by_place_id.get(place_id), visit_date
+            )
+            if hours is None:
                 continue
 
-            closing_time = find_closing_time(opening_hours_by_place_id[place_id], visit_date)
-            if closing_time is None:
-                continue
-
+            start_time = item.get("start_time")
             end_time = item.get("end_time")
             try:
-                end_minutes = _to_minutes(end_time)
+                _to_minutes(start_time)
+                _to_minutes(end_time)
             except ValueError:
                 continue
-            closing_hour, closing_minute = closing_time.split(":")
-            closing_minutes = int(closing_hour) * 60 + int(closing_minute)
-            if end_minutes <= closing_minutes:
-                continue
 
-            label = f"{day['day']}일차 {index}번째 일정"
-            errors.append(
-                f"{label}: {item.get('title')}은(는) {visit_date.isoformat()} "
-                f"{closing_time}에 닫는데 {end_time}에 끝납니다."
+            opening_time = hours["opening_time"]
+            closing_time = hours["closing_time"]
+            last_entry_time = hours["last_entry_time"]
+            label = (
+                f"{day['day']}일차 {index}번째 일정: "
+                f"{item.get('title')}은(는) {visit_date.isoformat()}"
             )
+            if start_time < opening_time:
+                errors.append(
+                    f"{label} {opening_time}에 여는데 "
+                    f"{start_time}에 방문을 시작합니다."
+                )
+            if last_entry_time is not None and start_time > last_entry_time:
+                errors.append(
+                    f"{label} 입장 마감은 {last_entry_time}인데 "
+                    f"{start_time}에 방문을 시작합니다."
+                )
+            if end_time > closing_time:
+                errors.append(
+                    f"{label} {closing_time}에 닫는데 {end_time}에 끝납니다."
+                )
 
     return errors

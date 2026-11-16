@@ -121,6 +121,11 @@ class ChatPlaceVerificationTests(unittest.TestCase):
                 return_value={},
             )
         )
+        self.enterContext(patch.object(
+            chat_router,
+            "read_opening_hours_by_place_id",
+            return_value={},
+        ))
 
     def run_request(self, plan, messages, **extra):
         self.agent.return_value = {
