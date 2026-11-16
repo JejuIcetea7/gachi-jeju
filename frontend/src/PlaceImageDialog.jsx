@@ -4,6 +4,8 @@ import { requestPlaceImages } from './services/placeImagesApi.js'
 import { groupAccessibilityFacts } from './services/placeDetails.js'
 import { selectDetailDescriptions } from './services/placeDescriptionVisibility.js'
 
+import PlacePhotoGallery from './PlacePhotoGallery.jsx'
+
 function displayText(value, fallback) {
   return typeof value === 'string' && value.trim() ? value : fallback
 }
@@ -122,64 +124,47 @@ function PlaceDetailsContent({ state, photos, failedImages, onRetry, onShowPhoto
   )
 }
 
-function PlacePhotosContent({ state, failedImages, onRetry, onImageError }) {
-  const isEmpty = state.status === 'empty'
-    || (state.status === 'ready' && state.images.length === 0)
+function PlacePhotosContent({
+  state, failedImages, onRetry, onImageError, view, onViewChange,
+}) {
+  if (state.status === 'loading') {
+    return (
+      <p className="place-image-message" role="status">
+        사진을 불러오는 중입니다.
+      </p>
+    )
+  }
+
+  if (state.status === 'error') {
+    return (
+      <div className="place-image-message is-error" role="alert">
+        <p>{state.error}</p>
+        <button type="button" className="secondary-button" onClick={onRetry}>
+          사진 다시 불러오기
+        </button>
+      </div>
+    )
+  }
+
+  if (state.status === 'empty'
+    || (state.status === 'ready' && state.images.length === 0)) {
+    return (
+      <p className="place-image-message" role="status">
+        현재 표시할 수 있는 사진이 없습니다.
+      </p>
+    )
+  }
+
+  if (state.status !== 'ready') return null
 
   return (
-    <>
-      {state.status === 'loading' && (
-        <p className="place-image-message" role="status">
-          사진을 불러오는 중입니다.
-        </p>
-      )}
-
-      {isEmpty && (
-        <p className="place-image-message" role="status">
-          현재 표시할 수 있는 사진이 없습니다.
-        </p>
-      )}
-
-      {state.status === 'error' && (
-        <div className="place-image-message is-error" role="alert">
-          <p>{state.error}</p>
-          <button type="button" className="secondary-button" onClick={onRetry}>
-            사진 다시 불러오기
-          </button>
-        </div>
-      )}
-
-      {state.status === 'ready' && state.images.length > 0 && (
-        <div className="place-image-gallery">
-          {state.images.map((image) => (
-            <figure key={image.image_id}>
-              {failedImages.has(image.image_id) ? (
-                <p className="place-image-message">이 사진을 불러오지 못했습니다.</p>
-              ) : (
-                <img
-                  src={image.src}
-                  alt={image.alt}
-                  loading="lazy"
-                  decoding="async"
-                  onError={() => onImageError(image.image_id)}
-                />
-              )}
-              <figcaption>
-                {image.contexts?.length > 0 ? image.contexts.map((context, index) => (
-                  <div className="place-photo-context" key={index}>
-                    <strong>{displayText(context.spot_name, '시설·지점명 미등록')}</strong>
-                    {!context.mapping_confirmed && (
-                      <span className="place-photo-unconfirmed">장소 연결 미확인</span>
-                    )}
-                    <p>{displayText(context.description, '설명 없음')}</p>
-                  </div>
-                )) : image.caption}
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-      )}
-    </>
+    <PlacePhotoGallery
+      images={state.images}
+      failedImages={failedImages}
+      onImageError={onImageError}
+      view={view}
+      onViewChange={onViewChange}
+    />
   )
 }
 
@@ -196,6 +181,9 @@ function PlaceImageDialog({ place, onClose }) {
     ))
     : []
   const [activeView, setActiveView] = useState('details')
+  const [galleryView, setGalleryView] = useState({
+    category: 'all', query: '', page: 1, selectedId: null,
+  })
   const [detailAttempt, setDetailAttempt] = useState(0)
   const [photoAttempt, setPhotoAttempt] = useState(0)
   const [failedImages, setFailedImages] = useState(() => new Set())
@@ -287,6 +275,9 @@ function PlaceImageDialog({ place, onClose }) {
   function retryPhotos() {
     setPhotos({ status: 'loading', name: place.title, images: [], error: '' })
     setFailedImages(new Set())
+    setGalleryView({
+      category: 'all', query: '', page: 1, selectedId: null,
+    })
     setPhotoAttempt((previous) => previous + 1)
   }
 
@@ -327,7 +318,7 @@ function PlaceImageDialog({ place, onClose }) {
           aria-pressed={activeView === 'photos'}
           onClick={() => setActiveView('photos')}
         >
-          사진
+          사진{photos.status === 'ready' ? ' (' + photos.images.length + ')' : ''}
         </button>
       </div>
 
@@ -359,6 +350,8 @@ function PlaceImageDialog({ place, onClose }) {
         ) : (
           <PlacePhotosContent
             state={photos}
+            view={galleryView}
+            onViewChange={setGalleryView}
             failedImages={failedImages}
             onRetry={retryPhotos}
             onImageError={(imageId) => setFailedImages((previous) => (

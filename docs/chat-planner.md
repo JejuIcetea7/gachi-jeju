@@ -1,7 +1,7 @@
 # 대화형 여행 플래너와 이동 경로 지도
 
 최종 자동 검증일: 2026-11-16
-최종 UI 수동 검증일: 2026-11-16 (개장·입장 마감 검증)
+최종 UI 수동 검증일: 2026-11-16 (개장·입장 마감 검증, 장소 사진 갤러리)
 기존 이동 API·경로 지도 수동 검증일: 2026-11-11
 
 자연어 대화와 선택 옵션으로 제주 여행 일정을 생성·수정합니다.
@@ -694,7 +694,7 @@ data/raw/jeju_datahub/hub_1/001_DSC00236.jpg
 
 ```cmd
 .venv\Scripts\python.exe -B -m unittest discover -s tests -p "test_*.py" -v
-node --test tests/frontend/test_itinerary_routes.mjs tests/frontend/test_place_images_api.mjs tests/frontend/test_travel_dates.mjs tests/frontend/test_workspace_panels.mjs tests/frontend/test_place_details_api.mjs tests/frontend/test_place_details_groups.mjs tests/frontend/test_plan_transit.mjs tests/frontend/test_lodging_planning.mjs tests/frontend/test_lodgings_api.mjs
+node --test tests/frontend/test_*.mjs
 npm --prefix frontend run lint && npm --prefix frontend run build
 ```
 
@@ -909,6 +909,26 @@ DB 등록 확인은 장소 전체의 접근성이나 운영시간을 보장하�
 실제 브라우저 요청에서 자동 재생성이 발동했는지는 구분해 관찰하지 않았습니다.
 재생성·재실패 중단·날짜 유지·DB 오류 처리는 모의 응답 통합 테스트로 확인했습니다.
 자연어 설명 전체의 정합성을 서버 코드로 검증하는 기능은 아닙니다.
+
+**2026-11-16 장소 사진 갤러리**
+
+`codex/place-photo-gallery`의 사용자 실행 출력과 화면 확인 답변을 기준으로 기록합니다.
+
+| 항목 | 결과 |
+|---|---|
+| 프론트 전체 테스트 | 사진 분류·검색·페이지 선택 테스트 12개를 포함해 120개 통과, 실패 0개 |
+| 프론트 lint·프로덕션 빌드 | 모두 통과 |
+| `git diff --check` | 출력 없음 |
+| 화면 확인 | 한림공원 일정을 다시 생성한 뒤 사진 갤러리 화면을 사용자에게 확인받았습니다. |
+
+사진은 주제별 분류와 검색으로 찾고, 한 페이지에 최대 16장씩 표시합니다.
+사진을 선택하면 큰 사진과 설명 전체를 읽으며 이전·다음 사진으로 이동합니다.
+목록으로 돌아오면 마지막으로 본 사진의 페이지와 기존 분류·검색어를 유지합니다.
+시설·동선 정보와 사진 보기를 전환해도 같은 창 안에서는 탐색 상태를 유지합니다.
+
+작은 사진도 기존 CloudFront 파일 주소를 사용하며 별도 축소 파일을 생성하지 않습니다.
+분류 기준과 미확인 연결 처리는 [사진 클라우드 연결](place-photo-cloud.md)에 정리했습니다.
+이번 갤러리 변경에서는 Python 전체 검사를 다시 실행하지 않았습니다.
 
 ────────────────────────────────────────
 
