@@ -13,7 +13,7 @@ from .plan_evaluation import (
 )
 from .plan_retry import MAX_PLAN_RETRIES
 from .route_endpoints import validate_route_endpoints
-
+from .plan_reply_consistency import validate_plan_reply_consistency
 
 def _record_errors(case, record):
     errors = []
@@ -159,7 +159,7 @@ def evaluate_chat_record(case, record):
     checks["response_contract"] = make_check_result(
         schema_ok, [] if schema_ok else ["최종 응답이 API 응답 모델과 일치하지 않습니다."],
     )
-    for name in ("H2", "H3", "H4", "H5", "H6", "H7", "H8", "endpoints"):
+    for name in ("H2", "H3", "H4", "H5", "H6", "H7", "H8", "endpoints", "reply_consistency"):
         checks[name] = make_check_result(None, [])
 
     evaluation_errors = list(record_errors)
@@ -194,6 +194,13 @@ def evaluate_chat_record(case, record):
                 visit_metrics = calculate_visit_metrics(plan)
                 checks["H2"] = check_day_count(working_case, body, plan)
                 checks["H3"] = check_times(working_case, plan)
+                reply_errors = validate_plan_reply_consistency(
+                    body["reply"], plan,
+                    options=body["options"], user_message=case["request"]["message"],
+                )
+                checks["reply_consistency"] = make_check_result(
+                    not reply_errors, reply_errors,
+                )
                 checks["H7"] = check_transport_tools(working_case, last["tool_trace"])
                 selected_ids = {
                     item.get("route_id") for day in plan["days"] for item in day["items"]

@@ -60,6 +60,7 @@ from ..services.plan_retry import (
     merge_agent_metrics,
     validate_retry_options,
 )
+from ..services.plan_reply_consistency import validate_plan_reply_consistency
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -480,6 +481,16 @@ def _build_chat_result(
             plan,
             agent_result.get("route_calls") or [],
         )
+        reply_errors = validate_plan_reply_consistency(
+            reply_text, plan,
+            options=chat_reply.options.model_dump(mode="json"),
+            user_message=user_message,
+        )
+        if reply_errors:
+            raise PlanValidationFailure(
+                reply_errors,
+                message="생성된 일정과 답변의 설명이 일치하지 않습니다. 다시 시도해 주세요.",
+            )
 
     return {
         "reply": reply_text,

@@ -45,9 +45,11 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
   시각을 정하지 않았다면 활동 시간을 제안하고 assumptions에 적는다.
 - 여러 날의 일정은 1일차부터 요청한 일수까지 구분한다.
   숙소 미정은 관광 일정 생성의 필수 조건 누락으로 취급하지 않는다.
-- 숙소를 말하지 않았거나 아직 정하지 않았으면 lodging_status를 undecided로 두고
+- 여러 날 여행에서 숙소를 말하지 않았거나 아직 정하지 않았으면 lodging_status를 undecided로 두고
   관광 일정을 먼저 만든다. 숙소가 정해질 때까지 같은 숙소 질문을 반복하지 않는다.
   undecided는 후속 대화에서도 유지하고, 사용자가 숙소를 제공하거나 불필요하다고 말하면 변경한다.
+- 당일 일정에서 사용자가 숙소를 요청하지 않았다면 숙소 질문이나 미정 메모를 reply와 assumptions에 넣지 않는다.
+  숙박 불필요(not_needed)를 선택한 경우에도 숙소 미정 안내를 추가하지 않는다.
 - 이미 정한 숙소를 사용자가 제공하면 lodging_status는 provided이며, find_location으로 위치를 확인한다.
   확인한 이름·주소·좌표와 N번째 숙박일을 lodging_stays에 저장한다.
   한 숙소에 계속 머문다고 하면 각 숙박일에 같은 위치를 넣고, 숙소를 옮긴다면 숙박일별로 구분한다.
@@ -95,6 +97,8 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
 - 하나의 route_id는 하나의 move 항목에만 사용한다.
 - get_bus_route_summary의 route_id는 환승과 도보를 포함한 출발지부터 도착지까지의 전체 경로다.
   이 조회 결과는 move 하나로 작성하고, 구간별 move로 나누거나 같은 route_id를 재사용하지 않는다.
+- 버스 이동 정거장 수는 segments의 ride_stop_count를 그대로 안내한다. null이면 미확인으로 설명한다.
+  arriving_buses의 remaining_stops는 현재 차량의 도착 정보이며 이용자가 이동할 정거장 수로 사용하지 않는다.
 
 검증 실패 후 자동 재생성:
 - 마지막 사용자 JSON에 plan_retry가 있으면 같은 요청의 검증 오류를 수정하는 단계다.
@@ -110,6 +114,11 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
 
 대화 응답 형식:
 - reply에는 사용자에게 보여 줄 간단한 답변, 질문 또는 변경 요약을 쓴다.
+- reply와 assumptions에 시각을 안내하면 최종 plan 항목의 시각을 그대로 사용한다.
+  출발지에서 이동을 시작하는 시각과 방문지에서 방문을 시작하는 시각을 구분한다.
+  방문 시작을 안내할 때는 해당 visit의 start_time을 사용한다.
+  귀환 시각은 귀환 move의 end_time을 기준으로 하며 이동시간을 별도로 다시 더하지 않는다.
+  여러 날의 귀환 시각을 설명할 때는 해당 일차를 함께 적는다.
 - options에는 이번 요청까지 반영한 현재 조건 전체를 넣는다.
   알 수 없는 값은 null, 선택하지 않은 목록은 빈 배열로 둔다.
 - 정보 확인 질문이나 일반 답변이면 plan은 null이다.
