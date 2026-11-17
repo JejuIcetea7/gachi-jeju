@@ -31,6 +31,22 @@ _UNDECIDED_LODGING = re.compile(
 )
 
 
+def _origin_return_pattern(options):
+    names = ["출발지"]
+    departure = options.get("departure")
+    if isinstance(departure, str) and departure.strip():
+        departure = departure.strip()
+        names.append(departure)
+        if departure.endswith("센터"):
+            names.append("센터")
+    target = "|".join(re.escape(name) for name in sorted(set(names), key=len, reverse=True))
+    return re.compile(
+        rf"(?<!\d)(?P<clock>{_CLOCK})\s*(?:에|경|쯤)?\s*"
+        rf"(?:같은\s*)?(?:{target})\s*(?:으로|로|에(?:는)?)\s*"
+        r"돌아(?:옵니다|와요|오겠습니다|올\s*예정(?:입니다)?)"
+    )
+
+
 def _clock(value):
     match = re.fullmatch(
         r"\s*(?:(오전|오후)\s*)?(\d{1,2})\s*"
@@ -63,7 +79,7 @@ def _day_context(text, position, last_day):
 def validate_plan_reply_consistency(reply, plan, *, options, user_message=""):
     """확실히 해석할 수 있는 표현만 검사하며 원본 일정·문구를 변경하지 않습니다.
 
-    귀환·복귀와 방문 시작에 연결된 HH:MM 또는 시·분 표기를 검사합니다.
+    귀환·복귀·출발지로 돌아오는 안내와 방문 시작의 HH:MM 또는 시·분 표기를 검사합니다.
     귀환 범위는 종료 시각을 사용하고, 이전·이후 같은 경계 표현은 추정하지 않습니다.
     일차·방문 대상이 불분명하고 시각이 여럿이면 판정하지 않습니다.
     """
@@ -95,6 +111,7 @@ def validate_plan_reply_consistency(reply, plan, *, options, user_message=""):
         for index, text in enumerate(plan.get("assumptions", []))
     ]]
     errors = []
+    origin_return = _origin_return_pattern(options)
     check_lodging = options.get("lodging_status") == "not_needed" or (
         options.get("trip_days") == 1
         and re.search(r"숙소|숙박", user_message) is None
@@ -131,7 +148,7 @@ def validate_plan_reply_consistency(reply, plan, *, options, user_message=""):
                 )
         if options.get("return_to_origin") is not True:
             continue
-        for pattern in (_RETURN_AFTER, _RETURN_BEFORE):
+        for pattern in (_RETURN_AFTER, _RETURN_BEFORE, origin_return):
             for match in pattern.finditer(text):
                 if _NON_EXACT.match(text[match.end():]):
                     continue

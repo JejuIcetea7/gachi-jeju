@@ -85,10 +85,26 @@ def validate_plan_times(
             duration = item.get("duration_minutes")
 
             if type(duration) is not int or duration != item_end - item_start:
-                errors.append(
+                reason = (
                     f"{label}: 소요시간은 시작·종료 시각의 차이인 "
                     f"{item_end - item_start}분과 일치해야 합니다."
                 )
+                if type(duration) is int and duration > 0:
+                    reason += (
+                        f" 현재 {item['start_time']}~{item['end_time']}에 "
+                        f"duration_minutes={duration}를 적었습니다."
+                    )
+                    calculated_end = item_start + duration
+                    if calculated_end < 24 * 60:
+                        clock = f"{calculated_end // 60:02d}:{calculated_end % 60:02d}"
+                        reason += (
+                            f" 계산 참고: {item['start_time']} + {duration}분 = {clock}."
+                        )
+                    reason += (
+                        " 사용자 고정 시각과 이번에 조회한 이동시간을 지키면서 "
+                        "시작·종료 시각과 소요시간을 다시 계산하세요."
+                    )
+                errors.append(reason)
 
     return errors
 

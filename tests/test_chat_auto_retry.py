@@ -171,6 +171,10 @@ class ChatAutoRetryTests(unittest.TestCase):
         locked = first["chat_reply"].options.model_dump(mode="json")
         self.assertEqual(retry["plan_retry"]["locked_options"], locked)
         self.assertTrue(retry["plan_retry"]["validation_errors"])
+        feedback = " ".join(retry["plan_retry"]["validation_errors"])
+        self.assertIn("09:00~09:10", feedback)
+        self.assertIn("duration_minutes=9", feedback)
+        self.assertIn("09:00 + 9분 = 09:09", feedback)
         for item in retry["plan_retry"]["failed_plan"]["days"][0]["items"]:
             self.assertIsNone(item["route_id"])
         self.assertEqual(self.request.model_dump(mode="json"), before)

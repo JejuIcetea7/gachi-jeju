@@ -198,6 +198,32 @@ class ChatReplyConsistencyTests(unittest.TestCase):
         self.assertIsNone(body["plan"])
         self.assertEqual(self.agent.call_count, 2)
 
+    def test_origin_return_phrase_retries_with_new_routes(self):
+        self.agent.side_effect = [
+            make_result("old-", "10:10에 출발지로 돌아옵니다."),
+            make_result("new-", "10:20에 출발지로 돌아옵니다."),
+        ]
+        status, body = self.post()
+        self.assertEqual(status, 200)
+        self.assertEqual(self.agent.call_count, 2)
+        payload = json.loads(self.agent.call_args_list[1].args[0][-1]["content"])
+        self.assertTrue(any("귀환" in reason for reason in payload["plan_retry"]["validation_errors"]))
+        self.assertEqual(body["reply"], "10:20에 출발지로 돌아옵니다.")
+        self.assertEqual({r["route_id"] for r in body["map_routes"]}, {"new-out", "new-back"})
+        self.assertEqual(body["meta"]["model_call_count"], 2)
+        self.assertEqual(body["meta"]["tool_call_counts"]["get_driving_time"], 4)
+
+    def test_second_origin_return_phrase_failure_stops_after_two_attempts(self):
+        self.agent.side_effect = [
+            make_result("old-", "10:10에 출발지로 돌아옵니다."),
+            make_result("new-", "10:10에 출발지로 돌아옵니다."),
+        ]
+        status, body = self.post()
+        self.assertEqual(status, 502)
+        self.assertEqual(body["error"]["code"], "plan_validation_failed")
+        self.assertEqual(self.agent.call_count, 2)
+        self.assertNotIn("plan", body)
+
 
 class ReplyConsistencyEvaluationTests(unittest.TestCase):
     def setUp(self):
@@ -210,6 +236,8 @@ class ReplyConsistencyEvaluationTests(unittest.TestCase):
         for reply, notes, passed in (
             ("귀환은 10:20입니다.", [], True),
             ("귀환은 14:30입니다.", [], False),
+            ("10:20에 출발지로 돌아옵니다.", [], True),
+            ("10:10에 출발지로 돌아옵니다.", [], False),
             ("귀환은 10:20입니다.", ["숙소는 미정입니다."], False),
             ("귀환은 10:20입니다.", ["방문 시작 시각은 09:10입니다."], True),
             ("귀환은 10:20입니다.", ["방문 시작 시각은 09:00입니다."], False),
