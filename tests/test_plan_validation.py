@@ -179,6 +179,54 @@ class PlanTimeValidationTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     validate_plan_times(make_plan(), **window)
 
+    def test_duration_error_has_calculation_context_and_preserves_plan(self):
+        plan = {"days": [{"day": 2, "items": [
+            make_item("11:27", "11:50", 24),
+        ]}]}
+        original = deepcopy(plan)
+        errors = validate_plan_times(plan)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("2일차 1번째 일정", errors[0])
+        self.assertIn("23분과 일치", errors[0])
+        self.assertIn("11:27~11:50", errors[0])
+        self.assertIn("duration_minutes=24", errors[0])
+        self.assertIn("11:27 + 24분 = 11:51", errors[0])
+        self.assertIn("사용자 고정 시각", errors[0])
+        self.assertEqual(plan, original)
+        plan["days"][0]["items"][0]["end_time"] = "11:51"
+        self.assertEqual(validate_plan_times(plan), [])
+
+    def test_duration_calculation_handles_hour_carry_without_wrapping_midnight(self):
+        for start, end, duration, expected in (
+            ("11:50", "12:13", 24, "12:14"),
+            ("23:50", "23:58", 9, "23:59"),
+            ("23:50", "23:59", 10, None),
+        ):
+            with self.subTest(start=start, duration=duration):
+                errors = validate_plan_times(make_plan(make_item(start, end, duration)))
+                self.assertEqual(len(errors), 1)
+                if expected is None:
+                    self.assertNotIn("계산 참고:", errors[0])
+                else:
+                    self.assertIn(f"{start} + {duration}분 = {expected}", errors[0])
+
+    def test_invalid_duration_does_not_produce_a_calculated_end(self):
+        for duration in (None, True, 0, -1, "24"):
+            with self.subTest(duration=duration):
+                errors = validate_plan_times(make_plan(make_item("11:27", "11:50", duration)))
+                self.assertEqual(len(errors), 1)
+                self.assertNotIn("계산 참고:", errors[0])
+
+    def test_calculation_context_does_not_relax_the_time_window(self):
+        plan = make_plan(make_item("16:50", "17:00", 20))
+        errors = validate_plan_times(plan, **self.window)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("16:50 + 20분 = 17:10", errors[0])
+        plan["days"][0]["items"][0]["end_time"] = "17:10"
+        errors = validate_plan_times(plan, **self.window)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("여행 가능 시간", errors[0])
+
 
 if __name__ == "__main__":
     unittest.main()

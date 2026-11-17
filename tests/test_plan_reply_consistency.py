@@ -170,6 +170,92 @@ class PlanReplyConsistencyTests(unittest.TestCase):
             "방문 시작 시각은 17:40이지만 입장 마감 이후라 제외했습니다.", plan,
         ), [])
 
+    def test_origin_return_phrase_uses_arrival_not_departure(self):
+        plan = {"assumptions": [], "days": [
+            {"day": 1, "items": [{"item_type": "visit", "start_time": "09:21",
+                                 "end_time": "10:21"}]},
+            {"day": 2, "items": [
+                {"item_type": "visit", "start_time": "10:00", "end_time": "11:00"},
+                {"item_type": "move", "start_time": "11:00", "end_time": "11:24"},
+            ]},
+        ]}
+        options = {**OPTIONS, "departure": "제주빅데이터센터", "trip_days": 2,
+                   "lodging_status": "undecided"}
+        reply = "2일차에는 10:00에 박물관 관람을 시작해 11:00에 센터로 돌아옵니다."
+        errors = check(reply, plan, options)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("11:00", errors[0])
+        self.assertIn("11:24", errors[0])
+        self.assertEqual(check(reply.replace("11:00에", "11:24에"), plan, options), [])
+
+    def test_origin_return_phrase_checks_explicit_names_and_korean_clocks(self):
+        options = {**OPTIONS, "departure": "제주빅데이터센터"}
+        for reply in (
+            "12:56에 제주빅데이터센터로 돌아옵니다.",
+            "12:56에 같은 센터로 돌아와요.",
+            "오후 12시 56분에 출발지로 돌아오겠습니다.",
+            "12:56경 센터로 돌아올 예정입니다.",
+        ):
+            with self.subTest(reply=reply):
+                self.assertEqual(check(reply, options=options), [])
+                wrong = reply.replace("12:56", "14:30").replace("12시 56분", "2시 30분")
+                self.assertTrue(check(wrong, options=options))
+
+    def test_origin_return_phrase_does_not_guess_boundaries_negatives_or_departures(self):
+        options = {**OPTIONS, "departure": "제주빅데이터센터"}
+        for reply in (
+            "14:30 이전에 센터로 돌아옵니다.",
+            "14:30 이후에 센터로 돌아옵니다.",
+            "14:30에 센터로 돌아오지 않습니다.",
+            "14:30에 센터로 돌아올 예정이 아닙니다.",
+            "14:30에 센터로 돌아오기 위해 출발합니다.",
+            "14:30에 센터로 돌아오는 이동을 시작합니다.",
+            "박물관에 14:30에 도착합니다.",
+        ):
+            with self.subTest(reply=reply):
+                self.assertEqual(check(reply, options=options), [])
+
+    def test_origin_return_phrase_ignores_other_destinations_and_center_shorthand(self):
+        options = {**OPTIONS, "departure": "제주버스터미널"}
+        for reply in (
+            "14:30에 숙소로 돌아옵니다.",
+            "14:30에 다른 센터로 돌아옵니다.",
+            "14:30에 센터로 돌아옵니다.",
+        ):
+            with self.subTest(reply=reply):
+                self.assertEqual(check(reply, options=options), [])
+        self.assertTrue(check("14:30에 제주버스터미널로 돌아옵니다.", options=options))
+        self.assertTrue(check("14:30에 출발지로 돌아옵니다.", options=options))
+
+    def test_origin_return_phrase_escapes_special_characters_in_place_name(self):
+        options = {**OPTIONS, "departure": "제주센터(본관)"}
+        self.assertEqual(check("12:56에 제주센터(본관)으로 돌아옵니다.", options=options), [])
+        self.assertTrue(check("14:30에 제주센터(본관)으로 돌아옵니다.", options=options))
+        self.assertEqual(check("14:30에 제주센터본관으로 돌아옵니다.", options=options), [])
+
+    def test_origin_return_phrase_respects_explicit_days_and_ambiguity(self):
+        plan = make_plan()
+        plan["days"].append({"day": 2, "items": [
+            {"item_type": "move", "start_time": "14:00", "end_time": "14:30"},
+        ]})
+        options = {**OPTIONS, "trip_days": 2, "lodging_status": "not_needed"}
+        self.assertEqual(check(
+            "1일차 12:56에 출발지로 돌아옵니다.\n2일차 14:30에 출발지로 돌아옵니다.",
+            plan, options,
+        ), [])
+        self.assertTrue(check("1일차 14:30에 출발지로 돌아옵니다.", plan, options))
+        self.assertEqual(check("14:00에 출발지로 돌아옵니다.", plan, options), [])
+
+    def test_origin_return_phrase_checks_assumptions_without_changing_inputs(self):
+        plan = make_plan(assumptions=["14:30에 출발지로 돌아옵니다."])
+        options = copy.deepcopy(OPTIONS)
+        before = copy.deepcopy((plan, options))
+        errors = check("일정입니다.", plan, options)
+        self.assertTrue(errors)
+        self.assertIn("assumptions[0]", errors[0])
+        self.assertEqual((plan, options), before)
+        self.assertEqual(check("일정입니다.", plan, {**options, "return_to_origin": False}), [])
+
 
 if __name__ == "__main__":
     unittest.main()
