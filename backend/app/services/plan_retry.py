@@ -22,6 +22,18 @@ OPTION_LABELS = {
 }
 
 
+def _checked_recheck_nights(value):
+    if value is None:
+        return ()
+    if (
+        not isinstance(value, (list, tuple))
+        or any(type(night) is not int or night < 1 for night in value)
+        or len(value) != len(set(value))
+    ):
+        raise ValueError("재확인 숙박일은 중복 없는 양의 정수 목록이어야 합니다.")
+    return tuple(sorted(value))
+
+
 class PlanValidationFailure(Exception):
     def __init__(
         self,
@@ -43,6 +55,7 @@ def build_plan_retry_messages(
     failed_plan: dict,
     options: dict,
     errors: list[str],
+    lodging_recheck_nights: list[int] | None = None,
 ) -> list[dict[str, str]]:
     """원래 요청을 유지하면서 검증 실패 정보를 추가합니다."""
     if (
@@ -63,6 +76,7 @@ def build_plan_retry_messages(
     ):
         raise ValueError("재생성에는 검증 실패 이유가 필요합니다.")
 
+    recheck = _checked_recheck_nights(lodging_recheck_nights)
     retry_messages = deepcopy(messages)
     try:
         payload = json.loads(retry_messages[-1]["content"])
@@ -88,14 +102,21 @@ def build_plan_retry_messages(
         ],
         "failed_plan": failed_copy,
     }
+    if recheck:
+        payload["plan_retry"]["lodging_recheck_nights"] = list(recheck)
     retry_messages[-1]["content"] = json.dumps(payload, ensure_ascii=False)
     return retry_messages
 
 
-def validate_retry_options(expected: dict, actual: dict) -> list[str]:
+def validate_retry_options(
+    expected: dict, actual: dict, *, lodging_recheck_nights=None,
+) -> list[str]:
     """첫 시도에서 정리한 조건을 재생성 결과가 유지하는지 검사합니다."""
     errors = []
+    recheck = set(_checked_recheck_nights(lodging_recheck_nights))
     for field, label in OPTION_LABELS.items():
+        if field == "lodging_status" and recheck:
+            continue
         expected_value = expected.get(field)
         actual_value = actual.get(field)
         if field in ("travel_styles", "requirements"):
@@ -104,6 +125,8 @@ def validate_retry_options(expected: dict, actual: dict) -> list[str]:
                 actual_value = sorted(actual_value)
         if field == "lodging_stays":
             if isinstance(expected_value, list) and isinstance(actual_value, list):
+                expected_value = [stay for stay in expected_value if stay.get("night") not in recheck]
+                actual_value = [stay for stay in actual_value if stay.get("night") not in recheck]
                 expected_value = sorted(json.dumps(stay, sort_keys=True) for stay in expected_value)
                 actual_value = sorted(json.dumps(stay, sort_keys=True) for stay in actual_value)
         if expected_value != actual_value:

@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 import math
+import re
 from typing import Annotated, Literal
 import unicodedata
 
@@ -11,6 +12,7 @@ from .lodging_models import LodgingCoordinate
 
 
 LodgingStatus = Literal["undecided", "provided", "not_needed"]
+SELECTED_LODGING_SOURCE = "selected_lodging"
 
 
 class LodgingStay(LodgingCoordinate):
@@ -63,6 +65,34 @@ def _normalized_name(value):
     return unicodedata.normalize("NFC", "".join(value.split())).casefold()
 
 
+def _matches_region_name_alias(name, user_message, keyword):
+    """지역명만 생략한 구체적 숙소명을 이번 조회 키워드와 함께 대조합니다."""
+    if not isinstance(user_message, str) or not isinstance(keyword, str):
+        return False
+    regions = ("제주특별자치도", "서귀포시", "제주시", "서귀포", "제주도", "제주")
+    region = next((value for value in regions if name.startswith(value)), None)
+    if region is None:
+        return False
+    alias = name[len(region):]
+    generic = {
+        "호텔", "모텔", "펜션", "민박", "리조트", "숙소", "게스트하우스",
+        "관광호텔", "비즈니스호텔", "숙박시설",
+        "hotel", "motel", "resort", "guesthouse", "pension", "accommodation",
+    }
+    if len(alias) < 4 or alias in generic:
+        return False
+    if _normalized_name(keyword) not in (alias, name, alias + region):
+        return False
+    literal = r"\s*".join(re.escape(character) for character in alias)
+    start = r"(?:^|(?<=\W)|(?<=숙소를)|(?<=숙소는)|(?<=숙박을))"
+    end = (
+        r"(?=$|\W|(?:으로|로|에서|을|를|은|는|이|가|에)"
+        r"(?:$|\W|변경|바꾸|바꿔|정정|묵|숙박))"
+    )
+    text = unicodedata.normalize("NFC", user_message).casefold()
+    return re.search(start + literal + end, text) is not None
+
+
 def _same_coordinate(first, second):
     for field in ("latitude", "longitude"):
         values = (first.get(field), second.get(field))
@@ -95,7 +125,10 @@ def validate_lodging_selections(previous, current, *, user_message, tool_trace):
             if not isinstance(record, dict) or record.get("tool") != "find_location":
                 continue
             output = record.get("output")
-            if not isinstance(output, dict) or output.get("status") != "ok":
+            if (
+                not isinstance(output, dict) or output.get("status") != "ok"
+                or output.get("source") == SELECTED_LODGING_SOURCE
+            ):
                 continue
             name = _normalized_name(output.get("name"))
             address = _normalized_name(output.get("address"))
@@ -106,8 +139,12 @@ def validate_lodging_selections(previous, current, *, user_message, tool_trace):
                 or not _same_coordinate(stay, output)
             ):
                 continue
-            # 이름 또는 확인한 전체 주소가 현재 사용자 메시지에 있어야 합니다.
-            if name in user_text or (address and address in user_text):
+            tool_input = record.get("input")
+            keyword = tool_input.get("keyword") if isinstance(tool_input, dict) else None
+            if (
+                name in user_text or (address and address in user_text)
+                or _matches_region_name_alias(name, user_message, keyword)
+            ):
                 confirmed = True
                 break
         if not confirmed:
@@ -116,6 +153,32 @@ def validate_lodging_selections(previous, current, *, user_message, tool_trace):
                 "이번 요청에서 확인한 위치 조회 근거가 없습니다. 미정 숙소를 임의로 선택하지 마세요."
             )
     return errors
+
+
+def prepare_lodging_retry_options(previous, current, *, user_message, tool_trace):
+    """거절된 숙소만 재확인 대상으로 두고 나머지 선택과 조건을 고정합니다."""
+    locked = deepcopy(current)
+    recheck = sorted({
+        stay["night"] for stay in current.get("lodging_stays") or []
+        if validate_lodging_selections(
+            previous, {"lodging_stays": [stay]},
+            user_message=user_message, tool_trace=tool_trace,
+        )
+    })
+    if not recheck:
+        return locked, []
+    days = current.get("trip_days")
+    retained = {
+        stay["night"]: deepcopy(stay) for stay in previous.get("lodging_stays") or []
+        if stay["night"] not in recheck and (days is None or stay["night"] < days)
+    }
+    retained.update({
+        stay["night"]: deepcopy(stay) for stay in current.get("lodging_stays") or []
+        if stay["night"] not in recheck
+    })
+    locked["lodging_stays"] = [retained[night] for night in sorted(retained)]
+    locked.pop("lodging_status", None)
+    return locked, recheck
 
 
 def _night_choices(stays):
