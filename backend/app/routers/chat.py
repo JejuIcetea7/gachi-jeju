@@ -50,6 +50,7 @@ from ..services.lodging_planning import (
     LodgingStatus, LodgingStay, build_lodging_warnings, retain_lodging_state,
     UNDECIDED_LODGING_NOTE, prepare_undecided_lodging_plan,
     validate_lodging_boundaries, validate_lodging_options, validate_lodging_selections,
+    prepare_lodging_retry_options,
 )
 from ..services.plan_evaluation import extract_tool_trace
 from ..services.place_verification import restore_missing_place_ids
@@ -514,6 +515,7 @@ def create_chat(chat_request: ChatRequest):
     messages = original_messages
     attempt_results = []
     locked_options = None
+    lodging_recheck_nights = []
 
     for attempt in range(MAX_PLAN_RETRIES + 1):
         check_chat_request_control()
@@ -567,6 +569,7 @@ def create_chat(chat_request: ChatRequest):
             option_errors = validate_retry_options(
                 locked_options,
                 chat_reply.options.model_dump(mode="json"),
+                lodging_recheck_nights=lodging_recheck_nights,
             )
             if option_errors:
                 return build_error_response(
@@ -597,12 +600,18 @@ def create_chat(chat_request: ChatRequest):
                     ],
                 )
 
-            locked_options = chat_reply.options.model_dump(mode="json")
+            locked_options, lodging_recheck_nights = prepare_lodging_retry_options(
+                chat_request.options.model_dump(mode="json"),
+                chat_reply.options.model_dump(mode="json"),
+                user_message=chat_request.message,
+                tool_trace=extract_tool_trace(agent_result.get("messages") or []),
+            )
             messages = build_plan_retry_messages(
                 original_messages,
                 failed_plan=chat_reply.plan.model_dump(mode="json"),
                 options=locked_options,
                 errors=failure.errors,
+                lodging_recheck_nights=lodging_recheck_nights,
             )
             continue
 

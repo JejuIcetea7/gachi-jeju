@@ -9,6 +9,7 @@ from ..tools.map_transport import (
     create_bus_map_tool,
 )
 from ..tools.location import find_location
+from ..services.selected_lodging_location import bind_selected_lodging_location
 from ..tools.places import (
     get_place_details,
     search_places,
@@ -59,11 +60,21 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
   undecided는 후속 대화에서도 유지하고, 사용자가 숙소를 제공하거나 불필요하다고 말하면 변경한다.
 - 당일 일정에서 사용자가 숙소를 요청하지 않았다면 숙소 질문이나 미정 메모를 reply와 assumptions에 넣지 않는다.
   숙박 불필요(not_needed)를 선택한 경우에도 숙소 미정 안내를 추가하지 않는다.
-- 이미 정한 숙소를 사용자가 제공하면 lodging_status는 provided이며, find_location으로 위치를 확인한다.
-  확인한 이름·주소·좌표와 N번째 숙박일을 lodging_stays에 저장한다.
+- options.lodging_stays에는 사용자가 선택하거나 제공한 숙박일별 숙소 위치가 들어 있다.
+  현재 message에서 해당 숙소나 주소를 변경·취소하지 않았다면 전달된 night·name·address·위도·경도·provider_place_id·place_url을 유지한다.
+  선택한 숙소의 위치를 다시 확인하기 위해 find_location을 호출하지 말고 전달된 좌표로 필요한 이동을 조회한다.
+  find_location 응답의 source가 selected_lodging이면 선택 정보를 재사용한 것이며 새 위치 조회 근거가 아니다.
+  다른 숙소·주소 정정·새 숙박일 추가에 새 위치 조회가 필요하고 도구에 refresh 인자가 제공된 경우 refresh=true로 조회한다.
+  일부 숙박일만 선택했다면 다른 숙박일을 임의로 채우거나 lodging_status를 provided로 바꾸지 않는다.
+  reply와 assumptions에는 선택한 숙소 위치를 반영해 이동과 시간을 계산했다는 점을 안내한다.
+  선택 좌표로 이동을 조회한 경우 별도 이름 검색을 하지 않았다는 이유로 '숙소 위치를 확인하지 못했다'는 안내를 붙이지 않는다.
+  선택 좌표 사용을 숙소의 현장 위치·영업·가격·잔여 객실·접근성을 별도로 검증한 것으로 설명하지 않는다.
+- 사용자가 이름·주소로 새 숙소를 지정하거나 기존 숙소의 위치를 변경·정정하면 find_location으로 새 위치를 확인한다.
+  기존 숙소 좌표를 새 숙소나 정정한 주소의 좌표로 재사용하지 않는다.
+  확인한 이름·주소·좌표와 N번째 숙박일을 lodging_stays에 저장하고, 변경하지 않은 다른 숙박일 선택은 유지한다.
   한 숙소에 계속 머문다고 하면 각 숙박일에 같은 위치를 넣고, 숙소를 옮긴다면 숙박일별로 구분한다.
-  이름이나 위치가 모호하면 해당 숙소의 위치만 확인한다. 검색 후보를 임의로 골라 확정하지 않는다.
-  find_location 응답에 없는 provider_place_id와 place_url은 null로 둔다.
+  새 위치의 이름이나 주소가 모호하거나 조회하지 못하면 해당 숙소의 위치만 질문한다. 검색 후보를 임의로 골라 확정하지 않는다.
+  새 위치 조회의 find_location 응답에 없는 provider_place_id와 place_url은 null로 둔다.
   숙소 추천 후보는 관광 일정 생성 후 별도로 조회하므로 조회하지 않은 숙소 이름·가격·접근성은 지어내지 않는다.
 - lodging_stays의 night=N은 N일차 관광 후 머무는 숙소다.
   선택한 숙소까지의 이동은 N일차 마지막 move, 다음 날 숙소 출발은 N+1일차 첫 move로 넣는다.
@@ -111,7 +122,12 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
 
 검증 실패 후 자동 재생성:
 - 마지막 사용자 JSON에 plan_retry가 있으면 같은 요청의 검증 오류를 수정하는 단계다.
-- plan_retry.locked_options를 응답 options에 그대로 유지한다.
+- plan_retry.locked_options에 들어 있는 조건을 응답 options에 유지한다.
+  lodging_recheck_nights가 있으면 해당 숙박일의 숙소와 숙소 상태는 재확인 대상이다.
+  첫 시도에서 거절된 숙소를 확정한 것으로 취급하지 않는다.
+  해당 숙박일은 원래 options의 선택을 유지하거나 이번 실행에서 확인한 사용자 지목 숙소로 수정한다.
+  새 숙소의 정확한 이름·주소를 확인할 수 없으면 원래 선택을 유지하고 plan=null로 질문한다.
+  재확인 대상 이외의 숙박일과 다른 여행 조건은 변경하지 않는다.
   날짜·여행 기간·출발지·이동수단·보조기구·필수 조건을 임의로 변경하지 않는다.
 - 원래 message에 있는 시간과 추가 요청도 유지한다.
   휴무일 문제를 해결하려고 여행 날짜나 필수 조건을 바꾸지 않는다.
@@ -142,6 +158,7 @@ def build_chat_agent(
     *,
     route_calls: list[dict] | None = None,
     http_client=None,
+    location_tool=None,
 ):
     check_chat_request_control()
     control = get_chat_request_control()
@@ -151,7 +168,7 @@ def build_chat_agent(
         route_calls = []
 
     tools = [
-        find_location,
+        find_location if location_tool is None else location_tool,
         search_places,
         search_places_by_name,
         get_place_details,
@@ -191,6 +208,9 @@ def run_chat_agent(
     try:
         with chat_model_http_client() as http_client:
             arguments = {"route_calls": route_calls}
+            location_tool = bind_selected_lodging_location(find_location, messages)
+            if location_tool is not find_location:
+                arguments["location_tool"] = location_tool
             if http_client is not None:
                 arguments["http_client"] = http_client
             agent = build_chat_agent(response_format, **arguments)
