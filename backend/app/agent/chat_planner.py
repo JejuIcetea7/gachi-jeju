@@ -9,6 +9,7 @@ from ..tools.map_transport import (
     create_bus_map_tool,
 )
 from ..tools.location import find_location
+from ..tools.visit_order import suggest_visit_order
 from ..services.selected_lodging_location import bind_selected_lodging_location
 from ..tools.places import (
     get_place_details,
@@ -91,6 +92,23 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
 - 후속 수정은 기존 일정과 조건을 참고하고, 요청하지 않은 부분은 가능한 한 유지한다.
   수정 결과도 변경 부분만이 아닌 전체 일정으로 반환한다.
 
+방문 순서와 동선 효율:
+- 사용자가 장소를 나열한 순서만으로 방문 순서를 고정하지 않는다. 명시한 방문일·시각·순서는 우선 유지한다.
+- 순서를 조정할 수 있는 여행지가 2곳 이상이면 suggest_visit_order로 직선거리 기준 순서 후보를 비교한다.
+  이번 검색·상세 조회에서 확인한 place_ids만 전달하며 고정 시각·순서가 있는 장소는 fixed_place_ids로 보호한다.
+  고정 장소 사이의 구간을 나눠 비교하고, 도구 결과를 이유로 고정 시각이나 지정한 방문일을 변경하지 않는다.
+- 날짜가 미정인 장소는 가까운 권역끼리 같은 날에 묶고, 각 날짜의 실제 출발·도착 위치로 순서를 다시 비교한다.
+  1일차 출발은 확인된 출발지, 다음 날 출발은 선택한 전날 숙소, 종료는 당일 숙소 또는 요청한 마지막 날 귀환지다.
+  숙소가 미정인 경계는 좌표를 생략하며 센터·전날 관광지·가상의 숙소를 대신 넣지 않는다.
+  12곳이 넘으면 고정된 경계를 유지한 작은 구간으로 나누고 전체 최적 경로를 계산했다고 설명하지 않는다.
+- 순서 후보는 직선거리 비교이며 실제 자동차·도보·버스 이동시간이나 접근성의 최적해가 아니다.
+  기존과 같은 이동수단으로 필요한 모든 구간을 조회하고 운영시간·휴무일·필수 접근 조건·체류시간을 지킨다.
+  버스는 직선거리만으로 순서를 확정하지 말고 환승·도보와 조회된 총 이동시간을 함께 고려한다.
+- 숙소 선택·변경 뒤에도 새 숙소의 출발·도착 위치를 반영해 조정 가능한 순서를 다시 비교한다.
+  후속 수정에서 요청하지 않은 관광지·방문일·체류시간을 임의로 삭제하거나 변경하지 않는다.
+- 실제 조회 경로로 조건을 충족하는 후보를 채택한다. 거리 비교만으로 최단시간이나 이용 가능을 보장하지 않는다.
+  비교에 실패하거나 고정 조건 때문에 후보를 채택하지 못하면 확인된 기존 순서와 조건을 유지한다.
+
 휴무일:
 - 일정에 넣을 장소는 get_place_details의 visit_dates에 여행 날짜(start_date부터 여행 일수만큼, YYYY-MM-DD)를 넣어 확인한다.
 - closed_day_checks에서 그 일차 날짜가 '휴무'인 장소는 그 일차에 넣지 않는다.
@@ -171,6 +189,7 @@ def build_chat_agent(
         find_location if location_tool is None else location_tool,
         search_places,
         search_places_by_name,
+        suggest_visit_order,
         get_place_details,
         get_place_details,
         create_driving_map_tool(route_calls),
