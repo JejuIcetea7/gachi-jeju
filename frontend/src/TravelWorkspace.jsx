@@ -25,6 +25,82 @@ import logoImage from './assets/gachi-jeju-logo.png'
 import ResizableWorkspace from './ResizableWorkspace.jsx'
 
 const CANCELLED_NOTICE = '요청을 취소했습니다. 내용을 바꾸어 보내거나 이 요청을 다시 보낼 수 있습니다.'
+const SIDEBAR_ID = 'workspace-sidebar'
+const SIDEBAR_TITLE_ID = 'workspace-results-title'
+
+function SvgIcon({ size = 20, children }) {
+  return (
+    <svg
+      className="workspace-icon"
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {children}
+    </svg>
+  )
+}
+
+function MapIcon({ size }) {
+  return (
+    <SvgIcon size={size}>
+      <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
+      <path d="M9 4v14M15 6v14" />
+    </SvgIcon>
+  )
+}
+
+function CloseIcon() {
+  return (
+    <SvgIcon size={18}>
+      <path d="M6 6l12 12M18 6 6 18" />
+    </SvgIcon>
+  )
+}
+
+function RestartIcon() {
+  return (
+    <SvgIcon size={18}>
+      <path d="M4 12a8 8 0 1 0 2.3-5.6" />
+      <path d="M4 4v4h4" />
+    </SvgIcon>
+  )
+}
+
+function InfoIcon() {
+  return (
+    <SvgIcon>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5M12 8h.01" />
+    </SvgIcon>
+  )
+}
+
+function getVisitSummaries(day) {
+  const visitSummaries = []
+  if (!day) return visitSummaries
+
+  let visitNumber = 0
+  for (const item of day.items) {
+    if (item.item_type !== 'visit') continue
+
+    visitNumber += 1
+    visitSummaries.push({
+      number: visitNumber,
+      startTime: item.start_time,
+      title: item.title,
+    })
+  }
+
+  return visitSummaries
+}
 
 function getRetryMessage(messages) {
   const last = messages.at(-1)
@@ -70,9 +146,19 @@ function TravelWorkspace() {
   })
   const [viewKey, setViewKey] = useState(0)
   const [optionsOpen, setOptionsOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const busyRef = useRef(false)
 
   const { options, originPlace, messages, planResult, selectedDay } = session
+
+  // 일정이 새로 만들어지거나 바뀌면 사이드바를 엽니다. 새로고침으로 복원한 일정은 열지 않습니다.
+  const [shownPlanResult, setShownPlanResult] = useState(planResult)
+  if (shownPlanResult !== planResult) {
+    setShownPlanResult(planResult)
+    if (planResult) {
+      setSidebarOpen(true)
+    }
+  }
   const { isSending, error, notice } = requestState
   const retryMessage = getRetryMessage(messages)
   const days = planResult?.plan.days ?? []
@@ -332,162 +418,235 @@ function TravelWorkspace() {
     setRequestState({ isSending: false, error: null })
     setViewKey((previous) => previous + 1)
     setOptionsOpen(true)
+    setSidebarOpen(false)
   }
 
-  return (
-    <div className="travel-workspace">
-      <header className="workspace-header">
-        <div>
-          <h1>
-            <img className="brand-logo" src={logoImage} alt="같이 가는 제주" />
-          </h1>
+  const visibleDay = visiblePlan?.days[0] ?? null
+  const visitSummaries = getVisitSummaries(visibleDay)
+
+  let sidebarTitle = '아직 만든 일정이 없습니다'
+  if (planResult && visibleDay) {
+    sidebarTitle = `${visibleDay.day}일차 일정`
+  } else if (planResult) {
+    sidebarTitle = '추천 여행 일정'
+  }
+
+  let planBannerLabel = ''
+  if (planResult) {
+    planBannerLabel = `${formatTripDuration(planOptions.trip_days)} · 날짜별 지도와 일정표`
+  }
+
+  let sidebarToggleLabel = '지도·일정 보기'
+  if (sidebarOpen) {
+    sidebarToggleLabel = '지도·일정 닫기'
+  }
+
+  const mainContent = (
+    <>
+      <TravelOptions
+        options={options}
+        originPlace={originPlace}
+        onChange={handleOptionsChange}
+        onOriginConfirm={handleOriginConfirm}
+        disabled={isSending}
+        isOpen={optionsOpen}
+        onToggleOpen={() => setOptionsOpen((previous) => !previous)}
+      />
+
+      <ConversationPanel
+        messages={messages}
+        onSend={handleSend}
+        isSending={isSending}
+        error={error}
+        notice={notice}
+        onCancel={handleCancel}
+        onRetry={retryMessage ? handleRetry : undefined}
+        onOpenPlan={planResult ? () => setSidebarOpen(true) : undefined}
+        planLabel={planBannerLabel}
+        headerAction={(
+          <button
+            type="button"
+            className="secondary-button"
+            disabled={isSending}
+            onClick={handleNewTrip}
+          >
+            <RestartIcon />
+            새 여행 시작
+          </button>
+        )}
+      />
+    </>
+  )
+
+  const sidebarContent = (
+    <section className="workspace-results" aria-labelledby={SIDEBAR_TITLE_ID}>
+      <div className="workspace-card-heading">
+        <div className="workspace-heading-text">
+          <p className="workspace-eyebrow">
+            <MapIcon size={16} />
+            여행 지도와 일정
+          </p>
+          <h2 id={SIDEBAR_TITLE_ID} tabIndex={-1}>{sidebarTitle}</h2>
+          {planResult && (
+            <p className="workspace-plan-summary">
+              {planOptions.start_date || '출발일 확인 필요'}
+              {' · '}
+              {formatTripDuration(planOptions.trip_days)}
+            </p>
+          )}
         </div>
 
         <button
           type="button"
           className="secondary-button"
-          disabled={isSending}
-          onClick={handleNewTrip}
+          onClick={() => setSidebarOpen(false)}
         >
-          새 여행 시작
+          <CloseIcon />
+          접기
         </button>
+      </div>
+
+      {planResult ? (
+        <>
+          {hasChangedOptions && (
+            <p className="workspace-result-notice" role="status">
+              <InfoIcon />
+              <span>
+                변경한 옵션은 다음 메시지에 함께 반영합니다.
+                아래에는 이전에 만든 지도와 일정을 표시합니다.
+              </span>
+            </p>
+          )}
+
+          {days.length > 1 && (
+            <div
+              className="workspace-day-buttons"
+              role="group"
+              aria-label="확인할 여행 날짜"
+            >
+              {days.map((day) => (
+                <button
+                  key={day.day}
+                  type="button"
+                  aria-pressed={selectedDay === day.day}
+                  onClick={() => setSession((previous) => ({
+                    ...previous,
+                    selectedDay: day.day,
+                  }))}
+                >
+                  {day.day}일차
+                </button>
+              ))}
+            </div>
+          )}
+
+          {visitSummaries.length > 0 && (
+            <ol
+              className="workspace-visit-summary"
+              aria-label={`${visibleDay.day}일차 방문지 요약`}
+            >
+              {visitSummaries.map((summary) => (
+                <li key={summary.number}>
+                  <span className="workspace-visit-number">{summary.number}</span>
+                  <span className="workspace-visit-text">
+                    <span>{summary.startTime} 방문</span>
+                    <strong>{summary.title}</strong>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+
+          <ItineraryMap
+            day={visibleDay}
+            options={planOptions}
+            mapRoutes={planResult.map_routes}
+          />
+
+          <div key={visibleDay?.day ?? 0} className="workspace-schedule">
+            {planResult.warnings.length > 0 && (
+              <div className="plan-notice">
+                <h3>
+                  <InfoIcon />
+                  확인할 사항
+                </h3>
+                <ul>
+                  {planResult.warnings.map((warning, index) => (
+                    <li key={index}>{warning}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <LodgingPanel
+              key={JSON.stringify([selectedDay, getLodgingSearchCenter(visibleDay)])}
+              day={visibleDay}
+              options={planOptions}
+              disabled={Boolean(isSending || hasChangedOptions)}
+              onSelect={handleLodgingSelect}
+              onRemove={handleLodgingRemove}
+            />
+
+            <TravelPlan
+              plan={visiblePlan}
+              autoFocus={false}
+              transitRoutes={planResult.transit_routes}
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="workspace-result-empty" role="status">
+            <span className="workspace-result-empty-icon">
+              <MapIcon size={26} />
+            </span>
+            <div>
+              <p className="workspace-result-empty-title">
+                대화로 일정을 먼저 만들어 주세요.
+              </p>
+              <p>
+                가고 싶은 곳과 필요한 조건을 대화로 알려주시면,
+                일정이 만들어진 뒤 이곳에 날짜별 지도와 일정표를 표시합니다.
+              </p>
+            </div>
+          </div>
+
+          <ItineraryMap options={options} />
+        </>
+      )}
+    </section>
+  )
+
+  return (
+    <div className="travel-workspace">
+      <header className="workspace-header">
+        <div className="workspace-header-inner">
+          <h1>
+            <img className="brand-logo" src={logoImage} alt="같이 가는 제주" />
+          </h1>
+
+          <button
+            type="button"
+            className="secondary-button workspace-sidebar-toggle"
+            aria-expanded={sidebarOpen}
+            aria-controls={SIDEBAR_ID}
+            onClick={() => setSidebarOpen((previous) => !previous)}
+          >
+            <MapIcon />
+            {sidebarToggleLabel}
+          </button>
+        </div>
       </header>
 
       <ResizableWorkspace
         key={viewKey}
-        optionsOpen={optionsOpen}
-        onToggleOptions={() => setOptionsOpen((previous) => !previous)}
-      >
-        <TravelOptions
-          options={options}
-          originPlace={originPlace}
-          onChange={handleOptionsChange}
-          onOriginConfirm={handleOriginConfirm}
-          disabled={isSending}
-        />
-
-        <ConversationPanel
-          messages={messages}
-          onSend={handleSend}
-          isSending={isSending}
-          error={error}
-          notice={notice}
-          onCancel={handleCancel}
-          onRetry={retryMessage ? handleRetry : undefined}
-        />
-
-        <section
-          className="workspace-results"
-          aria-labelledby="workspace-results-title"
-        >
-          <div className="workspace-panel-heading">
-            <h2 id="workspace-results-title">여행 지도와 일정</h2>
-            <p>지도에서 장소를 확인하고 날짜별 일정을 살펴보세요.</p>
-          </div>
-
-          <div className="workspace-results-content">
-            {planResult ? (
-              <>
-                <p className="workspace-plan-summary">
-                  {planOptions.start_date || '출발일 확인 필요'}
-                  {' · '}
-                  {formatTripDuration(planOptions.trip_days)}
-                </p>
-
-                {hasChangedOptions && (
-                  <p className="workspace-result-notice">
-                    변경한 옵션은 다음 메시지에 함께 반영합니다.
-                    아래에는 이전에 만든 지도와 일정을 표시합니다.
-                  </p>
-                )}
-
-                {days.length > 1 && (
-                  <div
-                    className="workspace-day-buttons"
-                    role="group"
-                    aria-label="확인할 여행 날짜"
-                  >
-                    {days.map((day) => (
-                      <button
-                        key={day.day}
-                        type="button"
-                        aria-pressed={selectedDay === day.day}
-                        onClick={() => setSession((previous) => ({
-                          ...previous,
-                          selectedDay: day.day,
-                        }))}
-                      >
-                        {day.day}일차
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                <p className="workspace-overview-help">
-                  공간이 좁으면 아래 지도와 일정표 영역을 좌우로 스크롤해 주세요.
-                  옵션을 접으면 더 넓게 볼 수 있습니다.
-                </p>
-
-                <div
-                  className="workspace-day-overview"
-                  role="region"
-                  aria-label="지도와 일정표 좌우 보기"
-                  tabIndex={0}
-                >
-                  <ItineraryMap
-                    day={visiblePlan?.days[0] ?? null}
-                    options={planOptions}
-                    mapRoutes={planResult.map_routes}
-                  />
-
-                  <div
-                    key={visiblePlan?.days[0]?.day ?? 0}
-                    className="workspace-schedule-scroll"
-                    role="region"
-                    aria-label="추천 일정표와 확인사항"
-                    tabIndex={0}
-                  >
-                    {planResult.warnings.length > 0 && (
-                      <div className="plan-notice">
-                        <h3>확인할 사항</h3>
-                        <ul>
-                          {planResult.warnings.map((warning, index) => (
-                            <li key={index}>{warning}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    <LodgingPanel
-                      key={JSON.stringify([selectedDay, getLodgingSearchCenter(visiblePlan?.days[0])])}
-                      day={visiblePlan?.days[0] ?? null}
-                      options={planOptions}
-                      disabled={Boolean(isSending || hasChangedOptions)}
-                      onSelect={handleLodgingSelect}
-                      onRemove={handleLodgingRemove}
-                    />
-
-                    <TravelPlan
-                      plan={visiblePlan}
-                      autoFocus={false}
-                      transitRoutes={planResult.transit_routes}
-                    />
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <ItineraryMap options={options} />
-
-                <p className="workspace-result-empty">
-                  가고 싶은 곳을 대화로 알려주세요.
-                  일정이 만들어지면 이곳에 표시합니다.
-                </p>
-              </>
-            )}
-          </div>
-        </section>
-      </ResizableWorkspace>
+        main={mainContent}
+        sidebar={sidebarContent}
+        sidebarId={SIDEBAR_ID}
+        sidebarTitleId={SIDEBAR_TITLE_ID}
+        sidebarOpen={sidebarOpen}
+        onCloseSidebar={() => setSidebarOpen(false)}
+      />
     </div>
   )
 }

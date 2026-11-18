@@ -29,6 +29,51 @@ function formatDetail(detail) {
   return `${label}: ${detail.reason.replace(/^Value error,\s*/, '')}`
 }
 
+function SvgIcon({ size = 20, strokeWidth = 1.8, children }) {
+  return (
+    <svg
+      className="workspace-icon"
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {children}
+    </svg>
+  )
+}
+
+function ChatIcon({ size }) {
+  return (
+    <SvgIcon size={size}>
+      <path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-8l-5 4v-4H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" />
+    </SvgIcon>
+  )
+}
+
+function UserIcon() {
+  return (
+    <SvgIcon size={18}>
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5 20a7 7 0 0 1 14 0" />
+    </SvgIcon>
+  )
+}
+
+function ArrowIcon() {
+  return (
+    <SvgIcon size={18} strokeWidth={2}>
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </SvgIcon>
+  )
+}
+
 function ConversationPanel({
   messages = [],
   onSend,
@@ -37,6 +82,9 @@ function ConversationPanel({
   notice = null,
   onRetry,
   onCancel,
+  onOpenPlan,
+  planLabel = '',
+  headerAction = null,
 }) {
   const [draft, setDraft] = useState('')
   const inputRef = useRef(null)
@@ -48,6 +96,10 @@ function ConversationPanel({
     && content.length > 0
     && draft.length <= 1000
     && typeof onSend === 'function'
+
+  const lastMessage = messages.at(-1)
+  const showPlanBanner = typeof onOpenPlan === 'function'
+    && lastMessage?.role === 'assistant'
 
   const details = Array.isArray(error?.details)
     ? error.details.filter((item) => (
@@ -119,9 +171,17 @@ function ConversationPanel({
       className="workspace-chat"
       aria-labelledby="conversation-title"
     >
-      <div className="workspace-panel-heading">
-        <h2 id="conversation-title">함께 여행을 계획해요</h2>
-        <p>가고 싶은 곳과 필요한 조건을 편하게 알려주세요.</p>
+      <div className="workspace-card-heading">
+        <div className="conversation-heading">
+          <span className="conversation-heading-icon">
+            <ChatIcon size={24} />
+          </span>
+          <div className="workspace-heading-text">
+            <h2 id="conversation-title">함께 여행을 계획해요</h2>
+            <p>가고 싶은 곳과 필요한 조건을 편하게 알려주세요.</p>
+          </div>
+        </div>
+        {headerAction}
       </div>
 
       <div
@@ -148,7 +208,7 @@ function ConversationPanel({
               “부모님과 2박 3일 여행을 하고 싶어요.
               오래 걷지 않는 곳으로 추천해 주세요.”
             </p>
-            <p>왼쪽 옵션은 필요한 항목만 선택하시면 됩니다.</p>
+            <p>위의 옵션은 필요한 항목만 선택하시면 됩니다.</p>
           </div>
         ) : (
           <ol className="conversation-messages">
@@ -159,24 +219,49 @@ function ConversationPanel({
                   ? 'is-user' : 'is-assistant'}${message.status === 'failed'
                   ? ' is-failed' : ''}`}
               >
-                <p className="conversation-author">
-                  {message.role === 'user' ? '나' : '같이 가는 제주'}
-                </p>
-                <p className="conversation-content">{message.content}</p>
-                {message.status === 'failed' && (
-                  <p className="conversation-failed">답변 확인 실패</p>
-                )}
-                {message.status === 'cancelled' && (
-                  <p className="conversation-cancelled">요청 취소</p>
-                )}
+                <span className="conversation-avatar">
+                  {message.role === 'user' ? <UserIcon /> : <ChatIcon size={18} />}
+                </span>
+                <div className="conversation-bubble">
+                  <p className="conversation-author">
+                    {message.role === 'user' ? '나' : '같이 가는 제주'}
+                  </p>
+                  <p className="conversation-content">{message.content}</p>
+                  {message.status === 'failed' && (
+                    <p className="conversation-failed">답변 확인 실패</p>
+                  )}
+                  {message.status === 'cancelled' && (
+                    <p className="conversation-cancelled">요청 취소</p>
+                  )}
+                </div>
               </li>
             ))}
           </ol>
         )}
       </div>
 
+      {showPlanBanner && (
+        <button
+          type="button"
+          className="conversation-plan-banner"
+          onClick={onOpenPlan}
+        >
+          <SvgIcon size={22}>
+            <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
+            <path d="M9 4v14M15 6v14" />
+          </SvgIcon>
+          <strong>지도·일정 열기</strong>
+          {planLabel && <span>{planLabel}</span>}
+          <span className="conversation-plan-banner-action">
+            열기
+            <ArrowIcon />
+          </span>
+        </button>
+      )}
+
       {isSending && (
         <div className="conversation-progress">
+          <span className="conversation-progress-dot" aria-hidden="true" />
           <p role="status">여행 정보를 확인하고 답변을 준비하고 있습니다.</p>
           {typeof onCancel === 'function' && (
             <button type="button" className="secondary-button" onClick={onCancel}>
@@ -238,6 +323,7 @@ function ConversationPanel({
             disabled={!canSend}
           >
             {isSending ? '답변 대기 중' : '보내기'}
+            {!isSending && <ArrowIcon />}
           </button>
         </div>
       </form>

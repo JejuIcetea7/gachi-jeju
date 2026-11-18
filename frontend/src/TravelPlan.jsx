@@ -77,6 +77,50 @@ function TransitMoveGuide({ guidance }) {
   )
 }
 
+function SvgIcon({ size = 16, strokeWidth = 1.8, children }) {
+  return (
+    <svg
+      className="workspace-icon"
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {children}
+    </svg>
+  )
+}
+
+function formatDuration(item) {
+  let durationText = '시간 확인 필요'
+  if (Number.isFinite(item.duration_minutes) && item.duration_minutes >= 0) {
+    durationText = `${item.duration_minutes}분`
+  }
+  return durationText
+}
+
+function getVisitNumbers(items) {
+  const visitNumbers = []
+  let visitNumber = 0
+
+  for (const item of items) {
+    if (item.item_type === 'visit') {
+      visitNumber += 1
+      visitNumbers.push(visitNumber)
+    } else {
+      visitNumbers.push(null)
+    }
+  }
+
+  return visitNumbers
+}
+
 function TravelPlan({ plan, autoFocus = true, transitRoutes = [] }) {
   const headingRef = useRef(null)
   const [photoPlace, setPhotoPlace] = useState(null)
@@ -108,104 +152,126 @@ function TravelPlan({ plan, autoFocus = true, transitRoutes = [] }) {
         </p>
       )}
 
-      {plan.days.map((day, dayIndex) => (
-        <div className="plan-day" key={`${day.day}-${dayIndex}`}>
-          <h3>{day.day}일차</h3>
-          {day.items.length === 0 ? (
-            <p className="plan-empty" role="status">
-              이 날짜에 조건을 충족하는 일정을 찾지 못했습니다.
-              {plan.assumptions.length > 0
-                && ' 아래의 확인사항을 참고해 주세요.'}
-            </p>
-          ) : (
-            <div
-              className="plan-table-scroll"
-              role="region"
-              aria-label={`${day.day}일차 일정표`}
-              tabIndex={0}
-            >
-              <table className="plan-table plan-table-compact">
-                <caption>방문·이동 시간표</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">시간</th>
-                    <th scope="col">일정</th>
-                    <th scope="col">소요시간</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {day.items.map((item, index) => (
-                    <tr key={index}>
-                      <td className="plan-time">
-                        {item.start_time} ~ {item.end_time}
-                      </td>
-                      <td>
-                        <span className="plan-type">
-                          {item.item_type === 'visit' ? '방문' : '이동'}
+      {plan.days.map((day, dayIndex) => {
+        const visitNumbers = getVisitNumbers(day.items)
+
+        return (
+          <div className="plan-day" key={`${day.day}-${dayIndex}`}>
+            <h3>{day.day}일차</h3>
+            {day.items.length === 0 ? (
+              <p className="plan-empty" role="status">
+                이 날짜에 조건을 충족하는 일정을 찾지 못했습니다.
+                {plan.assumptions.length > 0
+                  && ' 아래의 확인사항을 참고해 주세요.'}
+              </p>
+            ) : (
+              <ol
+                className="plan-timeline"
+                aria-label={`${day.day}일차 방문·이동 시간표`}
+              >
+                {day.items.map((item, index) => (
+                  item.item_type === 'visit' ? (
+                    <li key={index} className="plan-timeline-item is-visit">
+                      <div className="plan-timeline-marker">
+                        <span className="plan-visit-number">{visitNumbers[index]}</span>
+                        <span className="plan-time">
+                          <span>{item.start_time}</span>
+                          <span>~ {item.end_time}</span>
                         </span>
-                        {item.item_type === 'visit' ? (
-                          <>
-                            <button
-                              type="button"
-                              className="plan-item-title plan-place-button"
-                              aria-haspopup="dialog"
-                              aria-label={`${item.title} 상세 정보 및 사진 보기`}
-                              onClick={() => setPhotoPlace(item)}
-                            >
-                              {item.title}
-                            </button>
-                            <span className="plan-source">
-                              {item.verified === true
-                                ? '여행지 자료 등록'
-                                : '여행지 정보 확인 필요'}
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <strong className="plan-item-title">{item.title}</strong>
-                            {isTransitMove(item) && (
-                              <TransitMoveGuide guidance={guidanceById.get(item.route_id)} />
+                      </div>
+                      <div className="plan-timeline-card">
+                        <div className="plan-timeline-title-row">
+                          <button
+                            type="button"
+                            className="plan-item-title plan-place-button"
+                            aria-haspopup="dialog"
+                            aria-label={`${item.title} 상세 정보 및 사진 보기`}
+                            onClick={() => setPhotoPlace(item)}
+                          >
+                            {item.title}
+                            <SvgIcon size={18} strokeWidth={2}>
+                              <path d="m9 6 6 6-6 6" />
+                            </SvgIcon>
+                          </button>
+                          <span
+                            className={item.verified === true
+                              ? 'plan-source is-verified'
+                              : 'plan-source'}
+                          >
+                            {item.verified === true ? (
+                              <SvgIcon size={14} strokeWidth={2.4}>
+                                <path d="m5 12 5 5 9-10" />
+                              </SvgIcon>
+                            ) : (
+                              <SvgIcon size={14} strokeWidth={2}>
+                                <circle cx="12" cy="12" r="9" />
+                                <path d="M12 8v5M12 16h.01" />
+                              </SvgIcon>
                             )}
-                            {item.accessibility_notes.length > 0 && (
-                              <details className="plan-move-notes">
-                                <summary>이동 시 확인사항</summary>
-                                <ul className="plan-notes">
-                                  {item.accessibility_notes.map((text, noteIndex) => (
-                                    <li key={noteIndex}>{text}</li>
-                                  ))}
-                                </ul>
-                              </details>
-                            )}
-                          </>
+                            {item.verified === true
+                              ? '여행지 자료 등록'
+                              : '여행지 정보 확인 필요'}
+                          </span>
+                        </div>
+                        <p className="plan-timeline-meta">
+                          <SvgIcon>
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M12 7v5l3 2" />
+                          </SvgIcon>
+                          <span className="plan-type">방문</span>
+                          {' · '}
+                          {formatDuration(item)}
+                        </p>
+                      </div>
+                    </li>
+                  ) : (
+                    <li key={index} className="plan-timeline-item is-move">
+                      <div className="plan-timeline-marker">
+                        <span className="plan-time">
+                          <span>{item.start_time}</span>
+                          <span>~ {item.end_time}</span>
+                        </span>
+                      </div>
+                      <div className="plan-timeline-move">
+                        <p className="plan-timeline-title-row">
+                          <span className="plan-type">이동</span>
+                          <strong className="plan-item-title">{item.title}</strong>
+                        </p>
+                        <p className="plan-move-detail">
+                          {item.transport || '이동수단 확인 필요'}
+                          {' · '}
+                          {formatDistance(item.distance_km)}
+                          {' · '}
+                          {formatDuration(item)}
+                        </p>
+                        {isTransitMove(item) && (
+                          <TransitMoveGuide guidance={guidanceById.get(item.route_id)} />
                         )}
-                      </td>
-                      <td>
-                        {Number.isFinite(item.duration_minutes)
-                          && item.duration_minutes >= 0
-                          ? `${item.duration_minutes}분`
-                          : '시간 확인 필요'}
-                        {item.item_type === 'move' && (
-                          <small className="plan-move-detail">
-                            {item.transport || '이동수단 확인 필요'}
-                            {' · '}
-                            {formatDistance(item.distance_km)}
-                          </small>
+                        {item.accessibility_notes.length > 0 && (
+                          <details className="plan-move-notes">
+                            <summary>이동 시 확인사항</summary>
+                            <ul className="plan-notes">
+                              {item.accessibility_notes.map((text, noteIndex) => (
+                                <li key={noteIndex}>{text}</li>
+                              ))}
+                            </ul>
+                          </details>
                         )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {day.items.some(isTransitMove) && (
-            <p className="plan-transit-footnote">
-              정거장 수는 승차지를 제외하고 하차지를 포함합니다.
-              조회 시점의 경로이므로 여행 당일 운행을 확인해 주세요.
-            </p>
-          )}
-        </div>
-      ))}
+                      </div>
+                    </li>
+                  )
+                ))}
+              </ol>
+            )}
+            {day.items.some(isTransitMove) && (
+              <p className="plan-transit-footnote">
+                정거장 수는 승차지를 제외하고 하차지를 포함합니다.
+                조회 시점의 경로이므로 여행 당일 운행을 확인해 주세요.
+              </p>
+            )}
+          </div>
+        )
+      })}
 
       {plan.assumptions.length > 0 && (
         <div className="plan-notice">
