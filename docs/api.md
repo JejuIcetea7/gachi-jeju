@@ -6,6 +6,8 @@
 > `/chat`의 요청 식별자 헤더, 취소 API와 전체 시간 제한도 위 최신 문서를 기준으로 확인합니다.
 > 아래 상세 요청·응답 설명은 단계형 UI와 기존 POST /plan 연동을 기준으로 작성되었습니다.
 
+PDF 다운로드 준비·요청 형식은 [여행 일정 PDF 다운로드](itinerary-pdf.md)를 참고합니다.
+
 최종 검증일(기존 /plan): 2026-11-10
 
 여행 조건과 추가 요청을 받아 추천 일정을 JSON으로 반환합니다.
@@ -40,6 +42,7 @@ npm --prefix frontend run dev
 | 상태 확인 | GET /health | GET /api/health |
 | 대화형 일정 생성·수정 | POST /chat | POST /api/chat |
 | 대화 요청 취소 | POST /chat/cancel | POST /api/chat/cancel |
+| 전체 일정 PDF 다운로드 | POST /itineraries/pdf | POST /api/itineraries/pdf |
 | 주변 숙소 후보 | GET /lodgings/nearby | GET /api/lodgings/nearby |
 | 장소 상세 조회 | GET /places/{place_id}/details | GET /api/places/{place_id}/details |
 | 장소 사진 목록 | GET /places/{place_id}/images | GET /api/places/{place_id}/images |

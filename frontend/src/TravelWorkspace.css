@@ -1512,3 +1512,77 @@ fieldset.option-group legend {
   color: #52695d;
   font-size: 13px;
 }
+
+/* 전체 일정 PDF 다운로드 */
+.itinerary-pdf-download {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+
+.itinerary-pdf-description,
+.itinerary-pdf-status,
+.itinerary-pdf-error {
+  color: #52695d;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.itinerary-pdf-status,
+.itinerary-pdf-error {
+  flex-basis: 100%;
+}
+
+.itinerary-pdf-error {
+  color: #b42318;
+}
+
+.workspace-results-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px 16px;
+}
+
+.workspace-results-heading-copy {
+  min-width: 0;
+}
+
+.workspace-results-heading .itinerary-pdf-download {
+  display: contents;
+}
+
+.workspace-results-heading .itinerary-pdf-download > button {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  white-space: nowrap;
+}
+
+.workspace-results-heading .itinerary-pdf-description {
+  display: none;
+}
+
+.workspace-results-heading .itinerary-pdf-status,
+.workspace-results-heading .itinerary-pdf-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 13px;
+}
+
+.workspace-results-heading .itinerary-pdf-error {
+  color: #b42318;
+}
+
+@container travel-results (max-width: 560px) {
+  .workspace-results-heading {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .workspace-results-heading .itinerary-pdf-download > button {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: end;
+  }
+}
