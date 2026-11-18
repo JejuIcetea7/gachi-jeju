@@ -1512,6 +1512,46 @@
   box-shadow: var(--shadow-card);
 }
 
+.plan-visit-details {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px 16px;
+  min-width: 0;
+}
+
+.plan-visit-notes {
+  flex: 1 1 180px;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--color-surface-warm);
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.plan-visit-notes ul {
+  margin: 4px 0 0;
+  padding-inline-start: 18px;
+}
+
+.plan-visit-notes li + li {
+  margin-top: 4px;
+}
+
+.plan-visit-notes-more {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  color: var(--color-primary-text);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+}
+
 .plan-representative-image {
   display: block;
   width: min(100%, 224px);
