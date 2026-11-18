@@ -195,11 +195,56 @@
     cursor: col-resize !important;
     user-select: none;
   }
+
+  /* 사이드바가 열리면 옵션을 숨기고, 대화창을 사이드바 왼쪽 남은 폭과 높이에 맞춥니다 */
+  .workspace-main {
+    width: 100%;
+    transition: width 240ms ease;
+  }
+
+  .workspace-body[data-sidebar-state="open"] .workspace-main {
+    width: calc(100% - var(--workspace-sidebar-width, 0px));
+  }
+
+  .workspace-body.is-resizing .workspace-main {
+    transition: none;
+  }
+
+  .workspace-body[data-sidebar-state="open"] .workspace-main-inner {
+    box-sizing: border-box;
+    height: 100%;
+    max-width: none;
+    padding: 20px clamp(20px, 2.4vw, 32px);
+  }
+
+  .workspace-body[data-sidebar-state="open"] .workspace-options {
+    display: none;
+  }
+
+  .workspace-body[data-sidebar-state="open"] .workspace-chat {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .workspace-body[data-sidebar-state="open"] .conversation-log {
+    flex: 1;
+    max-height: none;
+  }
+
+  .workspace-body[data-sidebar-state="open"] .conversation-plan-banner {
+    display: none;
+  }
+
+  .workspace-body[data-sidebar-state="open"] .workspace-sidebar {
+    border-left: 1px solid var(--color-border);
+    box-shadow: -4px 0 16px rgba(92, 75, 64, 0.06);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .workspace-sidebar,
-  .workspace-sidebar[data-state="open"] {
+  .workspace-sidebar[data-state="open"],
+  .workspace-main {
     transition: none;
   }
 }
@@ -988,6 +1033,24 @@
   color: var(--color-primary);
 }
 
+/* 전체 일정 보기 안내 */
+.workspace-all-days-notice {
+  display: flex;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text-soft);
+  background: var(--color-surface-warm);
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.workspace-all-days-notice .workspace-icon {
+  margin-top: 2px;
+  color: var(--color-primary);
+}
+
 .workspace-result-empty {
   display: flex;
   flex-wrap: wrap;
@@ -1269,6 +1332,13 @@
 .workspace-results .plan-day > h3 {
   margin: 0 0 8px;
   font-size: 17px;
+}
+
+/* 전체 일정 보기: 일차 사이 구분선 */
+.workspace-results .plan-day + .plan-day {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border);
 }
 
 .plan-timeline {

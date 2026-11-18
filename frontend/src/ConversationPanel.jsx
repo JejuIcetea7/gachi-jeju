@@ -122,6 +122,21 @@ function ConversationPanel({
     </button>
   ) : null
 
+  // 사이드바가 열리고 닫혀 대화 영역 크기가 바뀌어도 최신 메시지를 계속 보여 줍니다.
+  useEffect(() => {
+    const log = logRef.current
+    if (!log) return
+
+    const observer = new ResizeObserver(() => {
+      if (followLatestRef.current) {
+        log.scrollTop = log.scrollHeight
+      }
+    })
+
+    observer.observe(log)
+    return () => observer.disconnect()
+  }, [])
+
   useEffect(() => {
     const log = logRef.current
     if (log && followLatestRef.current) {

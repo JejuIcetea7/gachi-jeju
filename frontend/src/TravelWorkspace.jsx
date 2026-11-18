@@ -149,6 +149,7 @@ function TravelWorkspace() {
   const [viewKey, setViewKey] = useState(0)
   const [optionsOpen, setOptionsOpen] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showAllDays, setShowAllDays] = useState(false)
   const busyRef = useRef(false)
 
   const { options, originPlace, messages, planResult, selectedDay } = session
@@ -421,13 +422,30 @@ function TravelWorkspace() {
     setViewKey((previous) => previous + 1)
     setOptionsOpen(true)
     setSidebarOpen(false)
+    setShowAllDays(false)
+  }
+
+  function handleDaySelect(dayNumber) {
+    setShowAllDays(false)
+    setSession((previous) => ({
+      ...previous,
+      selectedDay: dayNumber,
+    }))
   }
 
   const visibleDay = visiblePlan?.days[0] ?? null
   const visitSummaries = getVisitSummaries(visibleDay)
 
+  // 전체 일정 보기는 날짜가 2일 이상일 때만 씁니다. 세션에는 저장하지 않습니다.
+  let isAllDaysView = false
+  if (showAllDays && days.length > 1) {
+    isAllDaysView = true
+  }
+
   let sidebarTitle = '아직 만든 일정이 없습니다'
-  if (planResult && visibleDay) {
+  if (planResult && isAllDaysView) {
+    sidebarTitle = '전체 일정'
+  } else if (planResult && visibleDay) {
     sidebarTitle = `${visibleDay.day}일차 일정`
   } else if (planResult) {
     sidebarTitle = '추천 여행 일정'
@@ -541,15 +559,19 @@ function TravelWorkspace() {
               role="group"
               aria-label="확인할 여행 날짜"
             >
+              <button
+                type="button"
+                aria-pressed={isAllDaysView}
+                onClick={() => setShowAllDays(true)}
+              >
+                전체 일정
+              </button>
               {days.map((day) => (
                 <button
                   key={day.day}
                   type="button"
-                  aria-pressed={selectedDay === day.day}
-                  onClick={() => setSession((previous) => ({
-                    ...previous,
-                    selectedDay: day.day,
-                  }))}
+                  aria-pressed={!isAllDaysView && selectedDay === day.day}
+                  onClick={() => handleDaySelect(day.day)}
                 >
                   {day.day}일차
                 </button>
@@ -557,7 +579,42 @@ function TravelWorkspace() {
             </div>
           )}
 
-          {visitSummaries.length > 0 && (
+          {isAllDaysView && (
+            <>
+              <p className="workspace-all-days-notice">
+                <InfoIcon />
+                <span>
+                  모든 날짜의 일정을 이어서 표시합니다.
+                  일차를 고르면 지도에서 장소와 경로를 볼 수 있습니다.
+                  숙소 선택도 일차별 보기에서 할 수 있습니다.
+                </span>
+              </p>
+
+              <div key="all-days" className="workspace-schedule">
+                {planResult.warnings.length > 0 && (
+                  <div className="plan-notice">
+                    <h3>
+                      <InfoIcon />
+                      확인할 사항
+                    </h3>
+                    <ul>
+                      {planResult.warnings.map((warning, index) => (
+                        <li key={index}>{warning}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <TravelPlan
+                  plan={planResult.plan}
+                  autoFocus={false}
+                  transitRoutes={planResult.transit_routes}
+                />
+              </div>
+            </>
+          )}
+
+          {!isAllDaysView && visitSummaries.length > 0 && (
             <ol
               className="workspace-visit-summary"
               aria-label={`${visibleDay.day}일차 방문지 요약`}
@@ -574,42 +631,46 @@ function TravelWorkspace() {
             </ol>
           )}
 
-          <ItineraryMap
-            day={visibleDay}
-            options={planOptions}
-            mapRoutes={planResult.map_routes}
-          />
-
-          <div key={visibleDay?.day ?? 0} className="workspace-schedule">
-            {planResult.warnings.length > 0 && (
-              <div className="plan-notice">
-                <h3>
-                  <InfoIcon />
-                  확인할 사항
-                </h3>
-                <ul>
-                  {planResult.warnings.map((warning, index) => (
-                    <li key={index}>{warning}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <LodgingPanel
-              key={JSON.stringify([selectedDay, getLodgingSearchCenter(visibleDay)])}
+          {!isAllDaysView && (
+            <ItineraryMap
               day={visibleDay}
               options={planOptions}
-              disabled={Boolean(isSending || hasChangedOptions)}
-              onSelect={handleLodgingSelect}
-              onRemove={handleLodgingRemove}
+              mapRoutes={planResult.map_routes}
             />
+          )}
 
-            <TravelPlan
-              plan={visiblePlan}
-              autoFocus={false}
-              transitRoutes={planResult.transit_routes}
-            />
-          </div>
+          {!isAllDaysView && (
+            <div key={visibleDay?.day ?? 0} className="workspace-schedule">
+              {planResult.warnings.length > 0 && (
+                <div className="plan-notice">
+                  <h3>
+                    <InfoIcon />
+                    확인할 사항
+                  </h3>
+                  <ul>
+                    {planResult.warnings.map((warning, index) => (
+                      <li key={index}>{warning}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <LodgingPanel
+                key={JSON.stringify([selectedDay, getLodgingSearchCenter(visibleDay)])}
+                day={visibleDay}
+                options={planOptions}
+                disabled={Boolean(isSending || hasChangedOptions)}
+                onSelect={handleLodgingSelect}
+                onRemove={handleLodgingRemove}
+              />
+
+              <TravelPlan
+                plan={visiblePlan}
+                autoFocus={false}
+                transitRoutes={planResult.transit_routes}
+              />
+            </div>
+          )}
         </>
       ) : (
         <>
