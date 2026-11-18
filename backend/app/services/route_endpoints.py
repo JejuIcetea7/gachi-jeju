@@ -89,6 +89,19 @@ def validate_route_endpoints(
 
     for day_index, day in enumerate(days):
         items = day["items"]
+        if (
+            return_to_origin is True and departure_coordinate is not None
+            and day_index == len(days) - 1 and day_index > 0
+            and _coordinate(stay_choices.get(day["day"] - 1)) is not None
+            and days[day_index - 1].get("day") == day["day"] - 1
+            and days[day_index - 1].get("items")
+            and (not items or items[-1].get("item_type") != "move")
+        ):
+            errors.append(
+                f"{day['day']}일차: 전날 선택한 숙소와 원래 출발지가 확인돼 있고 귀환이 요청됐습니다. "
+                "관광지 방문이 없어도 숙소에서 원래 출발지로 가는 귀환 이동을 포함해 주세요. "
+                "이번 시도의 이동 조회 결과를 사용하고 관광지를 임의로 추가하지 마세요."
+            )
         for index, item in enumerate(items):
             if item.get("item_type") != "move":
                 continue

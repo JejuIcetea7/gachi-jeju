@@ -31,7 +31,7 @@ from ..services.chat_route_points import (
     bind_current_place_details, validate_plan_place_details, validate_plan_visit_order,
 )
 from ..services.plan_evaluation import extract_tool_trace
-
+from ..services.lodging_period import local_lodging_period_result
 
 CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
 대화 모드:
@@ -47,6 +47,18 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
 - 사용자가 명확히 바꾼 조건은 options에도 반영한다.
   변경 의도가 불분명하거나 필수 접근 조건을 완화하는 요청은 먼저 확인한다.
 - 보조기구 사용 여부는 사용자가 말했거나 선택한 경우에만 반영한다.
+
+숙박과 기간 확인:
+- 당일 조건에 숙박이 필요한 요청이 있으면 기간을 임의로 늘리지 말고 확인한다.
+  호텔 위치·카페·식당·체크인 시간 같은 정보 문의만으로 숙박을 추가하지 않는다.
+- lodging_period_confirmation.action이 accepted이면 사용자가 바로 앞의 기간 질문에 동의했다.
+  options에는 확인한 기간이 반영돼 있다. original_request의 숙소 요청을 이어 처리하고
+  같은 기간 질문을 반복하지 않는다. 새 숙소는 이번 실행에서 위치를 확인한다.
+- action이 specified이면 사용자가 기간을 구체적으로 다시 지정한 답변이다.
+  현재 message의 명시한 기간을 반영하고 original_request의 숙소 요청을 함께 처리한다.
+- 기간 연장만으로 관광지·방문일·체류시간·보조기구·필수 시설 조건을 바꾸지 않는다.
+  새 숙소를 지정하지 않았다면 임의로 선택하지 말고 숙소 미정으로 관광 일정을 구성한다.
+  새로 생긴 날짜에 방문 요청이 없으면 관광지를 임의 추가하지 말고 이유를 설명한다.
 
 질문과 일정 생성:
 - 날짜·여행 일수·이동수단이 없으면 임의로 정하지 말고 필요한 항목을 간단히 질문한다.
@@ -94,6 +106,12 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
 - 매일 원래 출발지에서 출발·귀환해 숙박이 필요 없다고 사용자가 명시하면 lodging_status는 not_needed다.
   숙박 불필요를 사용자가 명시하지 않았는데 원래 출발지를 매일의 숙소로 간주하지 않는다.
 - 여러 날의 일정에서 출발지 귀환을 선택하면 마지막 날의 귀환을 반영한다.
+  마지막 날에 관광지 방문 요청이 없어도 귀환 이동을 생략하지 않는다.
+  전날 선택한 숙소와 원래 출발지가 확인돼 있으면 숙소→원래 출발지 이동을 조회한다.
+  마지막 날에는 이 이동만 move로 넣을 수 있으며, 관광지를 임의로 추가하지 않는다.
+- 숙소 선택이나 기간 변경 뒤에는 reply와 assumptions도 최종 숙소 상태에 맞게 다시 작성한다.
+  모든 숙박일의 숙소가 선택돼 있으면 이전의 숙소 미정·미제공 안내를 재사용하지 않는다.
+  숙소 위치 확인과 호텔의 현장 운영·객실·접근성 확인은 구분한다.
 - 후속 수정은 기존 일정과 조건을 참고하고, 요청하지 않은 부분은 가능한 한 유지한다.
   수정 결과도 변경 부분만이 아닌 전체 일정으로 반환한다.
 
@@ -272,11 +290,15 @@ def run_chat_agent(
 ) -> dict:
     """답변과 이번 실행의 호출 횟수·지도 경로 기록을 반환합니다."""
     check_chat_request_control()
+    request_payload = read_chat_route_payload(messages)
+    local_result = local_lodging_period_result(request_payload, response_format)
+    if local_result is not None:
+        check_chat_request_control()
+        return local_result
     route_calls = []
     try:
         with chat_model_http_client() as http_client:
             arguments = {"route_calls": route_calls}
-            request_payload = read_chat_route_payload(messages)
             if request_payload is not None:
                 arguments["request_payload"] = request_payload
             location_tool = bind_selected_lodging_location(find_location, messages)
