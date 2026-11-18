@@ -50,6 +50,7 @@ npm --prefix frontend run dev
 | 장소 사진 목록 | GET /places/{place_id}/images | GET /api/places/{place_id}/images |
 | 장소 사진 파일 | GET /places/{place_id}/images/{image_id} | GET /api/places/{place_id}/images/{image_id} |
 | 기존 일정 생성 | POST /plan | POST /api/plan |
+| 장소 대표 사진 | GET /places/{place_id}/representative-image | GET /api/places/{place_id}/representative-image |
 
 장소 사진은 CloudFront 주소 목록이 있으면 `url`에 HTTPS 사진 주소를 반환합니다.
 이 경우 `photo_id`와 장소별 `contexts`를 포함하며 원본 파일 경로는 공개하지 않습니다.
