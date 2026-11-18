@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import ConversationPanel from './ConversationPanel.jsx'
 import TravelOptions from './TravelOptions.jsx'
 import TravelPlan from './TravelPlan.jsx'
+import ItineraryPdfDownload from './ItineraryPdfDownload.jsx'
 import LodgingPanel from './LodgingPanel.jsx'
 import {
   chooseLodging, getLodgingSearchCenter, getLodgingSelectionMessage, getLodgingStay,
@@ -496,14 +497,23 @@ function TravelWorkspace() {
           )}
         </div>
 
-        <button
-          type="button"
-          className="secondary-button"
-          onClick={() => setSidebarOpen(false)}
-        >
-          <CloseIcon />
-          접기
-        </button>
+        <div className="workspace-results-actions">
+          {planResult && (
+            <ItineraryPdfDownload
+              planResult={planResult}
+              disabled={isSending}
+            />
+          )}
+
+          <button
+            type="button"
+            className="secondary-button workspace-sidebar-close"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <CloseIcon />
+            접기
+          </button>
+        </div>
       </div>
 
       {planResult ? (

@@ -2,6 +2,7 @@
 
 import re
 
+from .lodging_planning import UNDECIDED_LODGING_NOTE, _night_choices
 
 _CLOCK = r"(?:오전|오후)?\s*\d{1,2}\s*(?::\s*\d{2}|시\s*\d{1,2}\s*분)"
 _RETURN_AFTER = re.compile(
@@ -21,6 +22,11 @@ _VISIT_START = re.compile(
     rf"(?P<clock>{_CLOCK})(?!\d)"
 )
 _DAY = re.compile(r"(?P<day>\d+)\s*일차|(?P<last>마지막\s*날)")
+_REMOVED_DAY = re.compile(
+    r"\s*(?:일정\s*)?(?:을|를|은|는|도|만)?\s*(?:모두\s*)?"
+    r"(?:(?:제거|삭제|제외|취소)(?:했습니다|하였습니다|했어요|했으며|했고|합니다)"
+    r"|없앴(?:습니다|어요|으며|고))"
+)
 _NON_EXACT = re.compile(
     r"\s*(?:이전|이후|까지|부터|보다|사이|전후|"
     r"(?:이|가|은|는)?\s*(?:아니|아닙|아닌|불가능|불가|미확인))"
@@ -29,9 +35,26 @@ _UNDECIDED_LODGING = re.compile(
     r"(?:숙소|숙박)[^.!?\n]{0,80}(?:미정|정하지\s*않|정해지지\s*않)"
     r"|미정(?:인)?\s*(?:숙소|숙박)"
 )
+_MISSING_LODGING_CLAIM = re.compile(
+    r"(?:숙소|숙박지)(?:\s*(?:정보|위치))?(?:가|는|이|은)?\s*"
+    r"(?:제공되지\s*않(?:은|아)|제공하지\s*않(?:은|아)|"
+    r"없(?:어|으므로|습니다)|미정(?:입니다|이라|이므로|으로))"
+)
 
 
-def _origin_return_pattern(options):
+def _missing_lodging_claim(text):
+    if text.strip() == UNDECIDED_LODGING_NOTE:
+        return True
+    for match in _MISSING_LODGING_CLAIM.finditer(text):
+        if re.match(
+            r"\s*(?:경우|상황|때|도|면|고|것(?:은|이)?\s*아(?:니|닙|닌))",
+            text[match.end():],
+        ):
+            continue
+        return True
+    return False
+
+def _origin_name_pattern(options):
     names = ["출발지"]
     departure = options.get("departure")
     if isinstance(departure, str) and departure.strip():
@@ -39,13 +62,30 @@ def _origin_return_pattern(options):
         names.append(departure)
         if departure.endswith("센터"):
             names.append("센터")
-    target = "|".join(re.escape(name) for name in sorted(set(names), key=len, reverse=True))
+    return "|".join(re.escape(name) for name in sorted(set(names), key=len, reverse=True))
+
+
+def _origin_return_pattern(options):
+    target = _origin_name_pattern(options)
     return re.compile(
         rf"(?<!\d)(?P<clock>{_CLOCK})\s*(?:에|경|쯤)?\s*"
         rf"(?:같은\s*)?(?:{target})\s*(?:으로|로|에(?:는)?)\s*"
         r"돌아(?:옵니다|와요|오겠습니다|올\s*예정(?:입니다)?)"
     )
 
+
+def _origin_arrival_patterns(options):
+    target = _origin_name_pattern(options)
+    clock = (
+        rf"(?P<clock>{_CLOCK})"
+        rf"(?:\s*(?:~|-|부터)\s*(?P<end>{_CLOCK}))?(?!\d)"
+    )
+    place = rf"(?:같은\s*|원래\s*)?(?:{target})\s*(?:에(?:는)?|으로|로)"
+    arrival = r"도착\s*(?:합니다|해요|했습니다|할\s*예정(?:입니다)?|예정(?:입니다)?)"
+    return (
+        re.compile(rf"(?<!\w){place}\s*{clock}\s*(?:에|경|쯤)?\s*{arrival}"),
+        re.compile(rf"(?<!\d){clock}\s*(?:에|경|쯤)?\s*{place}\s*{arrival}"),
+    )
 
 def _clock(value):
     match = re.fullmatch(
@@ -69,7 +109,14 @@ def _clock(value):
 def _day_context(text, position, last_day):
     paragraph = text.rfind("\n\n", 0, position)
     prefix = text[paragraph + 2 if paragraph >= 0 else 0:position]
-    matches = list(_DAY.finditer(prefix))
+    matches = [
+        match for match in _DAY.finditer(prefix)
+        if not (
+            match["day"] is not None
+            and int(match["day"]) > last_day
+            and _REMOVED_DAY.match(prefix[match.end():]) is not None
+        )
+    ]
     if not matches:
         return None
     match = matches[-1]
@@ -112,13 +159,26 @@ def validate_plan_reply_consistency(reply, plan, *, options, user_message=""):
     ]]
     errors = []
     origin_return = _origin_return_pattern(options)
+    origin_arrivals = _origin_arrival_patterns(options)
     check_lodging = options.get("lodging_status") == "not_needed" or (
         options.get("trip_days") == 1
         and re.search(r"숙소|숙박", user_message) is None
     )
+    trip_days = options.get("trip_days")
+    stays = _night_choices(options.get("lodging_stays"))
+    all_lodgings_selected = (
+        type(trip_days) is int and trip_days > 1
+        and len(stays) == trip_days - 1
+        and all(1 <= night < trip_days for night in stays)
+    )
     for field, text in texts:
         if not isinstance(text, str):
             continue
+        if all_lodgings_selected and _missing_lodging_claim(text):
+            errors.append(
+                f"{field}: 모든 숙박일의 숙소가 선택돼 있는데 숙소가 미정이거나 제공되지 않았다고 설명했습니다. "
+                "선택한 숙소와 최종 이동을 반영하고 이전 숙소 미정 안내를 수정하세요."
+            )
         if check_lodging and _UNDECIDED_LODGING.search(text):
             errors.append(
                 f"{field}: 숙박이 필요하지 않은 일정에 숙소 미정 메모가 있습니다. "
@@ -148,8 +208,10 @@ def validate_plan_reply_consistency(reply, plan, *, options, user_message=""):
                 )
         if options.get("return_to_origin") is not True:
             continue
-        for pattern in (_RETURN_AFTER, _RETURN_BEFORE, origin_return):
+        for pattern in (_RETURN_AFTER, _RETURN_BEFORE, origin_return, *origin_arrivals):
             for match in pattern.finditer(text):
+                if pattern in origin_arrivals and re.search(r"다른\s*$", text[:match.start()]):
+                    continue
                 if _NON_EXACT.match(text[match.end():]):
                     continue
                 raw = match.groupdict().get("end") or match["clock"]

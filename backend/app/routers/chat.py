@@ -50,6 +50,7 @@ from ..services.lodging_planning import (
     LodgingStatus, LodgingStay, build_lodging_warnings, retain_lodging_state,
     UNDECIDED_LODGING_NOTE, prepare_undecided_lodging_plan,
     validate_lodging_boundaries, validate_lodging_options, validate_lodging_selections,
+    prepare_lodging_retry_options,
 )
 from ..services.plan_evaluation import extract_tool_trace
 from ..services.place_verification import restore_missing_place_ids
@@ -66,8 +67,43 @@ from ..services.chat_request_control import (
     check_chat_request_control,
 )
 
+from ..services.plan_consistency import validate_plan_moves
+from ..services.route_id_recovery import restore_plan_route_ids
+from ..services.lodging_period import (
+    prepare_lodging_period_payload,
+    lodging_period_user_message,
+)
+
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+def _log_chat_schema_error(error, stage, reply=None):
+    fields = []
+    pending, seen = [error], set()
+    while pending and len(seen) < 10:
+        current = pending.pop()
+        if not isinstance(current, BaseException) or id(current) in seen:
+            continue
+        seen.add(id(current))
+        if isinstance(current, ValidationError):
+            fields.extend({
+                "field": ".".join(map(str, item["loc"])) or "$",
+                "type": item["type"],
+                "reason": item["msg"],
+            } for item in current.errors(include_url=False, include_input=False))
+        pending.extend([
+            getattr(current, "source", None), current.__cause__, current.__context__,
+        ])
+    information = {
+        "stage": stage,
+        "error_type": type(error).__name__,
+        "fields": fields,
+        "tool_name": getattr(error, "tool_name", None),
+        "tool_names": getattr(error, "tool_names", None),
+    }
+    if stage == "response_validation":
+        information["reply_type"] = type(reply).__name__
+    logger.error("CHAT_SCHEMA_ERROR %s", json.dumps(information, ensure_ascii=False))
 
 MAX_CHAT_MESSAGE_LENGTH = 1000
 MAX_HISTORY_MESSAGES = 20
@@ -218,6 +254,11 @@ def build_chat_messages(
         "message": chat_request.message,
     }
 
+    payload = prepare_lodging_period_payload(
+        payload, [message.model_dump() for message in chat_request.history],
+    )
+    payload["options"] = ChatOptions.model_validate(payload["options"]).model_dump(mode="json")
+
     if payload["current_plan"] is not None:
         for day in payload["current_plan"]["days"]:
             for item in day["items"]:
@@ -247,11 +288,18 @@ class ChatAgentReply(BaseModel):
         description="사용자에게 보여 줄 답변, 추가 질문 또는 일정 변경 요약",
     )
     options: ChatOptions = Field(
-        description="이번 요청까지 반영한 현재 조건 전체. 미확정 값은 null 또는 빈 배열",
+        description=(
+            "이번 요청까지 반영한 현재 조건 전체. 조건 충돌 확인 질문에서는 현재 options를 유지. "
+            "미확정 값은 null 또는 빈 배열"
+        ),
     )
     plan: TripPlan | None = Field(
         default=None,
-        description="생성·수정한 전체 일정. 정보 확인 질문이나 일반 답변이면 null",
+        description=(
+            "생성·수정한 새 일정 전체. 정보 확인·조건 충돌 질문이나 일반 답변이면 반드시 null. "
+            "기존 일정을 유지하며 질문할 때도 current_plan을 복사하지 않고 null을 반환하며, "
+            "화면이 이전 일정과 지도를 보존함"
+        ),
     )
 
 class ChatResponse(BaseModel):
@@ -311,6 +359,19 @@ def _build_chat_result(
                 lodging_stays=[stay.model_dump() for stay in chat_reply.options.lodging_stays],
             )
             errors = validate_plan_times(plan_data)
+            errors.extend(agent_result.get("place_detail_errors") or [])
+            errors.extend(agent_result.get("visit_order_errors") or [])
+            if not errors:
+                plan_data = restore_plan_route_ids(
+                    plan_data, agent_result.get("route_calls") or [],
+                    tool_trace=extract_tool_trace(agent_result.get("messages") or []),
+                    departure={
+                        "latitude": chat_reply.options.departure_latitude,
+                        "longitude": chat_reply.options.departure_longitude,
+                    },
+                    return_to_origin=chat_reply.options.return_to_origin is True,
+                    lodging_stays=[stay.model_dump() for stay in chat_reply.options.lodging_stays],
+                )
             errors.extend(
                 validate_plan_moves(
                     plan_data,
@@ -510,10 +571,15 @@ def create_chat(chat_request: ChatRequest):
     """검증에 실패한 일정은 조건을 유지하며 최대 한 번 다시 생성합니다."""
     check_chat_request_control()
     started_at = time.perf_counter()
+    validation_message = lodging_period_user_message(
+        chat_request.message, chat_request.options.model_dump(mode="json"),
+        [message.model_dump() for message in chat_request.history],
+    )
     original_messages = build_chat_messages(chat_request)
     messages = original_messages
     attempt_results = []
     locked_options = None
+    lodging_recheck_nights = []
 
     for attempt in range(MAX_PLAN_RETRIES + 1):
         check_chat_request_control()
@@ -521,7 +587,8 @@ def create_chat(chat_request: ChatRequest):
             agent_result = run_chat_agent(messages, ChatAgentReply)
         except ChatRequestStopped:
             raise
-        except StructuredOutputError:
+        except StructuredOutputError as error:
+            _log_chat_schema_error(error, "agent")
             return build_error_response(
                 502, "llm_invalid_response", "AI 답변 형식이 올바르지 않습니다."
             )
@@ -537,7 +604,10 @@ def create_chat(chat_request: ChatRequest):
             chat_reply = ChatAgentReply.model_validate(
                 agent_result.get("chat_reply")
             )
-        except ValidationError:
+        except ValidationError as error:
+            _log_chat_schema_error(
+                error, "response_validation", agent_result.get("chat_reply"),
+            )
             return build_error_response(
                 502, "llm_invalid_response", "AI 답변 형식이 올바르지 않습니다."
             )
@@ -567,6 +637,7 @@ def create_chat(chat_request: ChatRequest):
             option_errors = validate_retry_options(
                 locked_options,
                 chat_reply.options.model_dump(mode="json"),
+                lodging_recheck_nights=lodging_recheck_nights,
             )
             if option_errors:
                 return build_error_response(
@@ -582,7 +653,7 @@ def create_chat(chat_request: ChatRequest):
         try:
             body = _build_chat_result(
                 chat_reply, agent_result,
-                request_options=chat_request.options.model_dump(), user_message=chat_request.message,
+                request_options=chat_request.options.model_dump(), user_message=validation_message,
             )
         except PlanValidationFailure as failure:
             check_chat_request_control()
@@ -597,12 +668,18 @@ def create_chat(chat_request: ChatRequest):
                     ],
                 )
 
-            locked_options = chat_reply.options.model_dump(mode="json")
+            locked_options, lodging_recheck_nights = prepare_lodging_retry_options(
+                chat_request.options.model_dump(mode="json"),
+                chat_reply.options.model_dump(mode="json"),
+                user_message=validation_message,
+                tool_trace=extract_tool_trace(agent_result.get("messages") or []),
+            )
             messages = build_plan_retry_messages(
                 original_messages,
                 failed_plan=chat_reply.plan.model_dump(mode="json"),
                 options=locked_options,
                 errors=failure.errors,
+                lodging_recheck_nights=lodging_recheck_nights,
             )
             continue
 

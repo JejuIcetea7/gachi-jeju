@@ -1,6 +1,6 @@
 # 연속 대화 /chat 평가
 
-검증일: 2026-11-17
+검증일: 2026-11-18
 
 이전 응답의 대화 기록·선택 조건·일정을 다음 요청으로 이어 실제 `/chat` 응답을 평가합니다.
 단일 요청 평가는 [최종 응답 평가](chat-api-evaluation.md)를 사용합니다.
@@ -109,17 +109,78 @@ Agent·교통·숙소 API를 호출하지 않으며 원본을 수정하지 않�
 자동 통과는 내용 검토 완료를 뜻하지 않습니다.
 출력의 `requires_manual_review`와 검토 항목은 별도로 유지합니다.
 재채점의 호출 수·처리시간은 원래 실행 당시 기록이며 새 API 호출량이 아닙니다.
+`find_location` 도구 호출 수는 외부 위치 검색 횟수와 다를 수 있습니다.
+`source: selected_lodging`·`lookup_performed: false`는 현재 선택 좌표를 재사용한 응답입니다.
+불필요한 숙소 위치 검색이 없었는지는 자동 통과만으로 판정하지 않으며 시도별 도구 기록을 별도로 검토합니다.
 이전 단일 요청 평가 로그와 기록 형식이 다르므로 서로의 CLI로 재채점하지 않습니다.
 
 ────────────────────────────────────────
 
 ## 5. 확인한 범위
 
-Python 전체 899개가 통과했습니다.
+연속 대화 평가 도입과 당시 오류 보완 후 Python 전체 899개가 통과했습니다.
 연속 대화 검사 68개, 귀환 표현 검사 9개, 시간 계산 피드백 검사 4개를 기존 818개에 추가했습니다.
 M01·M02와 마지막 M03의 두 단계 응답을 검토했고, M02·M03의 CLI 재채점과 원본 보존을 확인했습니다.
 
 귀환 설명 누락과 실제 재시도 후 시간 계산 실패도 관찰했습니다.
-통과한 M03에서는 두 단계 모두 첫 Agent 시도에 응답해 새 계산 피드백이 실제로 사용되지 않았습니다.
-반복 성공률, 피드백의 효과와 브라우저 화면은 이번 평가에서 확인하지 않았습니다.
+당시 마지막 M03에서는 두 단계 모두 첫 Agent 시도에 응답해 새 계산 피드백이 실제로 사용되지 않았습니다.
+반복 성공률, 피드백의 효과와 브라우저 화면은 해당 평가에서 확인하지 않았습니다.
 실행 폴더와 검토 내용은 [연속 대화 검증 기록](experiments/0005-chat-multiturn-evaluation.md)을 참고합니다.
+
+이후 숙소 선택 보완에서는 M03의 숙소 외부 위치 검색 0회와 실제 경로 ID 재생성 성공을 확인했습니다.
+관련 회귀 검사 147개가 통과했고 대화로 숙소를 변경하는 화면은 사용자 확인을 받았습니다.
+후속 진단과 확인 범위는 [숙소 선택·변경 검증](experiments/0006-lodging-selection-consistency.md)에 구분해 기록했습니다.
+
+────────────────────────────────────────
+
+## 6. 여러 날의 동선·숙소 검증
+
+별도 사례 파일 [chat_route_multiday_cases.json](../scripts/eval_cases/chat_route_multiday_cases.json)에 RM01을 정의했습니다.
+기본 M01~M03 파일은 유지하며 `--cases`로 선택합니다.
+
+```cmd
+.venv\Scripts\python.exe -B -m scripts.evaluate_chat_multiturn --cases scripts/eval_cases/chat_route_multiday_cases.json
+.venv\Scripts\python.exe -B -m scripts.evaluate_chat_multiturn --run --cases scripts/eval_cases/chat_route_multiday_cases.json --case RM01 --repeat 1 --label route-multiday-check --reference-date 2026-11-17
+```
+
+RM01은 자동차 1박 2일의 권역 배치와 첫 숙박일의 실제 후보 선택을 두 단계로 확인합니다.
+첫 단계의 날짜별 장소는 고정하지 않아 권역 묶기·네 장소 각 60분·누락 여부는 별도 내용 검토 대상입니다.
+두 번째 단계에서는 방문일·장소·횟수·체류시간과 선택 조건을 유지하는지 검사합니다.
+날짜별 순서 비교의 경계와 최종 지도 경로 연결도 저장된 조회 기록으로 검토합니다.
+
+```cmd
+.venv\Scripts\python.exe -B -m scripts.evaluate_chat_multiturn --rescore "outputs\chat_eval\multiturn\20261117-233152-938842_route-multiday-details-check" --label route-multiday-rescore
+```
+
+두 단계의 자동 통과와 원본 보존을 확인했습니다.
+이후 제주신라호텔로 변경한 진단과 사용자 화면 확인은 별도 기록이며 RM01의 세 번째 자동 평가 단계로 집계하지 않습니다.
+상세 조회 선행과 순서 비교 경계 검사는 실제 서버 처리에 포함되지만, 재채점이 서버의 전체 검증 파이프라인을 다시 실행하지는 않습니다.
+실패 기록·후속 보완·검토 범위는 [실험 0008](experiments/0008-route-efficiency-multiday.md)을 참고합니다.
+
+────────────────────────────────────────
+
+## 7. 기간 축소·숙소 선택 취소 검증
+
+별도 정의 파일은 [chat_period_shortening_cases.json](../scripts/eval_cases/chat_period_shortening_cases.json)입니다.
+
+| 사례 | 확인할 흐름 |
+|---|---|
+| PS01 | 숙소가 선택된 1박 2일을 숙박 없는 당일로 줄입니다. |
+| PS02 | 관광 조건과 기간을 유지하며 숙소 선택만 취소합니다. |
+| PS03 | 고정 방문일과의 충돌을 질문하고 동의 후 기간과 숙박일을 줄입니다. |
+
+후속 단계에 `options_patch`를 지정하지 않아 자연어 변경 처리를 평가합니다.
+초기 숙소는 이전 실제 조회 기록의 선택값을 사용합니다.
+
+PS01 첫 단계의 `partial_plan`은 둘째 날에 방문이 없기 때문입니다.
+호텔→센터 귀환 이동은 별도로 유지해야 합니다.
+PS03의 질문은 `plan: null`로 기존 일정을 보존하고 다음 요청으로 이어져야 합니다.
+
+```cmd
+.venv\Scripts\python.exe -B -m scripts.evaluate_chat_multiturn --cases scripts/eval_cases/chat_period_shortening_cases.json
+.venv\Scripts\python.exe -B -m scripts.evaluate_chat_multiturn --run --cases scripts/eval_cases/chat_period_shortening_cases.json --case PS03 --repeat 1 --label period-shortening-check --reference-date 2026-11-18
+```
+
+대표 실행과 마지막 PS03 재채점, 원본 파일 보존을 확인했습니다.
+자동 통과 뒤 내용 검토에서 발견한 도착 설명 오류도 포함해
+[실험 0010](experiments/0010-chat-period-shortening.md)에 기록했습니다.

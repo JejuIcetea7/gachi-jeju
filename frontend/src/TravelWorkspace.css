@@ -2181,3 +2181,61 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* 전체 일정 PDF 다운로드: 사이드바 제목 오른쪽, '접기' 버튼 앞 */
+.itinerary-pdf-download {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+
+.itinerary-pdf-description,
+.itinerary-pdf-status,
+.itinerary-pdf-error {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.itinerary-pdf-status,
+.itinerary-pdf-error {
+  flex-basis: 100%;
+}
+
+.itinerary-pdf-error {
+  color: var(--color-danger-text);
+}
+
+.workspace-results-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.workspace-results-actions .itinerary-pdf-download {
+  display: contents;
+}
+
+.workspace-results-actions .itinerary-pdf-download > button {
+  order: 1;
+  white-space: nowrap;
+}
+
+.workspace-results-actions .workspace-sidebar-close {
+  order: 2;
+}
+
+.workspace-results-actions .itinerary-pdf-description {
+  display: none;
+}
+
+.workspace-results-actions .itinerary-pdf-status,
+.workspace-results-actions .itinerary-pdf-error {
+  order: 3;
+  margin: 0;
+  text-align: right;
+}
