@@ -67,8 +67,39 @@ from ..services.chat_request_control import (
     check_chat_request_control,
 )
 
+from ..services.plan_consistency import validate_plan_moves
+from ..services.route_id_recovery import restore_plan_route_ids
+
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+def _log_chat_schema_error(error, stage, reply=None):
+    fields = []
+    pending, seen = [error], set()
+    while pending and len(seen) < 10:
+        current = pending.pop()
+        if not isinstance(current, BaseException) or id(current) in seen:
+            continue
+        seen.add(id(current))
+        if isinstance(current, ValidationError):
+            fields.extend({
+                "field": ".".join(map(str, item["loc"])) or "$",
+                "type": item["type"],
+                "reason": item["msg"],
+            } for item in current.errors(include_url=False, include_input=False))
+        pending.extend([
+            getattr(current, "source", None), current.__cause__, current.__context__,
+        ])
+    information = {
+        "stage": stage,
+        "error_type": type(error).__name__,
+        "fields": fields,
+        "tool_name": getattr(error, "tool_name", None),
+        "tool_names": getattr(error, "tool_names", None),
+    }
+    if stage == "response_validation":
+        information["reply_type"] = type(reply).__name__
+    logger.error("CHAT_SCHEMA_ERROR %s", json.dumps(information, ensure_ascii=False))
 
 MAX_CHAT_MESSAGE_LENGTH = 1000
 MAX_HISTORY_MESSAGES = 20
@@ -312,6 +343,19 @@ def _build_chat_result(
                 lodging_stays=[stay.model_dump() for stay in chat_reply.options.lodging_stays],
             )
             errors = validate_plan_times(plan_data)
+            errors.extend(agent_result.get("place_detail_errors") or [])
+            errors.extend(agent_result.get("visit_order_errors") or [])
+            if not errors:
+                plan_data = restore_plan_route_ids(
+                    plan_data, agent_result.get("route_calls") or [],
+                    tool_trace=extract_tool_trace(agent_result.get("messages") or []),
+                    departure={
+                        "latitude": chat_reply.options.departure_latitude,
+                        "longitude": chat_reply.options.departure_longitude,
+                    },
+                    return_to_origin=chat_reply.options.return_to_origin is True,
+                    lodging_stays=[stay.model_dump() for stay in chat_reply.options.lodging_stays],
+                )
             errors.extend(
                 validate_plan_moves(
                     plan_data,
@@ -523,7 +567,8 @@ def create_chat(chat_request: ChatRequest):
             agent_result = run_chat_agent(messages, ChatAgentReply)
         except ChatRequestStopped:
             raise
-        except StructuredOutputError:
+        except StructuredOutputError as error:
+            _log_chat_schema_error(error, "agent")
             return build_error_response(
                 502, "llm_invalid_response", "AI 답변 형식이 올바르지 않습니다."
             )
@@ -539,7 +584,10 @@ def create_chat(chat_request: ChatRequest):
             chat_reply = ChatAgentReply.model_validate(
                 agent_result.get("chat_reply")
             )
-        except ValidationError:
+        except ValidationError as error:
+            _log_chat_schema_error(
+                error, "response_validation", agent_result.get("chat_reply"),
+            )
             return build_error_response(
                 502, "llm_invalid_response", "AI 답변 형식이 올바르지 않습니다."
             )

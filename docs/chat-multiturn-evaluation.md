@@ -1,6 +1,6 @@
 # 연속 대화 /chat 평가
 
-검증일: 2026-11-17
+검증일: 2026-11-18
 
 이전 응답의 대화 기록·선택 조건·일정을 다음 요청으로 이어 실제 `/chat` 응답을 평가합니다.
 단일 요청 평가는 [최종 응답 평가](chat-api-evaluation.md)를 사용합니다.
@@ -130,3 +130,29 @@ M01·M02와 마지막 M03의 두 단계 응답을 검토했고, M02·M03의 CLI 
 이후 숙소 선택 보완에서는 M03의 숙소 외부 위치 검색 0회와 실제 경로 ID 재생성 성공을 확인했습니다.
 관련 회귀 검사 147개가 통과했고 대화로 숙소를 변경하는 화면은 사용자 확인을 받았습니다.
 후속 진단과 확인 범위는 [숙소 선택·변경 검증](experiments/0006-lodging-selection-consistency.md)에 구분해 기록했습니다.
+
+────────────────────────────────────────
+
+## 6. 여러 날의 동선·숙소 검증
+
+별도 사례 파일 [chat_route_multiday_cases.json](../scripts/eval_cases/chat_route_multiday_cases.json)에 RM01을 정의했습니다.
+기본 M01~M03 파일은 유지하며 `--cases`로 선택합니다.
+
+```cmd
+.venv\Scripts\python.exe -B -m scripts.evaluate_chat_multiturn --cases scripts/eval_cases/chat_route_multiday_cases.json
+.venv\Scripts\python.exe -B -m scripts.evaluate_chat_multiturn --run --cases scripts/eval_cases/chat_route_multiday_cases.json --case RM01 --repeat 1 --label route-multiday-check --reference-date 2026-11-17
+```
+
+RM01은 자동차 1박 2일의 권역 배치와 첫 숙박일의 실제 후보 선택을 두 단계로 확인합니다.
+첫 단계의 날짜별 장소는 고정하지 않아 권역 묶기·네 장소 각 60분·누락 여부는 별도 내용 검토 대상입니다.
+두 번째 단계에서는 방문일·장소·횟수·체류시간과 선택 조건을 유지하는지 검사합니다.
+날짜별 순서 비교의 경계와 최종 지도 경로 연결도 저장된 조회 기록으로 검토합니다.
+
+```cmd
+.venv\Scripts\python.exe -B -m scripts.evaluate_chat_multiturn --rescore "outputs\chat_eval\multiturn\20261117-233152-938842_route-multiday-details-check" --label route-multiday-rescore
+```
+
+두 단계의 자동 통과와 원본 보존을 확인했습니다.
+이후 제주신라호텔로 변경한 진단과 사용자 화면 확인은 별도 기록이며 RM01의 세 번째 자동 평가 단계로 집계하지 않습니다.
+상세 조회 선행과 순서 비교 경계 검사는 실제 서버 처리에 포함되지만, 재채점이 서버의 전체 검증 파이프라인을 다시 실행하지는 않습니다.
+실패 기록·후속 보완·검토 범위는 [실험 0008](experiments/0008-route-efficiency-multiday.md)을 참고합니다.
