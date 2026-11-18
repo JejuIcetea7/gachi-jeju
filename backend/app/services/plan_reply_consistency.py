@@ -2,6 +2,7 @@
 
 import re
 
+from .lodging_planning import UNDECIDED_LODGING_NOTE, _night_choices
 
 _CLOCK = r"(?:오전|오후)?\s*\d{1,2}\s*(?::\s*\d{2}|시\s*\d{1,2}\s*분)"
 _RETURN_AFTER = re.compile(
@@ -29,7 +30,24 @@ _UNDECIDED_LODGING = re.compile(
     r"(?:숙소|숙박)[^.!?\n]{0,80}(?:미정|정하지\s*않|정해지지\s*않)"
     r"|미정(?:인)?\s*(?:숙소|숙박)"
 )
+_MISSING_LODGING_CLAIM = re.compile(
+    r"(?:숙소|숙박지)(?:\s*(?:정보|위치))?(?:가|는|이|은)?\s*"
+    r"(?:제공되지\s*않(?:은|아)|제공하지\s*않(?:은|아)|"
+    r"없(?:어|으므로|습니다)|미정(?:입니다|이라|이므로|으로))"
+)
 
+
+def _missing_lodging_claim(text):
+    if text.strip() == UNDECIDED_LODGING_NOTE:
+        return True
+    for match in _MISSING_LODGING_CLAIM.finditer(text):
+        if re.match(
+            r"\s*(?:경우|상황|때|도|면|고|것(?:은|이)?\s*아(?:니|닙|닌))",
+            text[match.end():],
+        ):
+            continue
+        return True
+    return False
 
 def _origin_return_pattern(options):
     names = ["출발지"]
@@ -116,9 +134,21 @@ def validate_plan_reply_consistency(reply, plan, *, options, user_message=""):
         options.get("trip_days") == 1
         and re.search(r"숙소|숙박", user_message) is None
     )
+    trip_days = options.get("trip_days")
+    stays = _night_choices(options.get("lodging_stays"))
+    all_lodgings_selected = (
+        type(trip_days) is int and trip_days > 1
+        and len(stays) == trip_days - 1
+        and all(1 <= night < trip_days for night in stays)
+    )
     for field, text in texts:
         if not isinstance(text, str):
             continue
+        if all_lodgings_selected and _missing_lodging_claim(text):
+            errors.append(
+                f"{field}: 모든 숙박일의 숙소가 선택돼 있는데 숙소가 미정이거나 제공되지 않았다고 설명했습니다. "
+                "선택한 숙소와 최종 이동을 반영하고 이전 숙소 미정 안내를 수정하세요."
+            )
         if check_lodging and _UNDECIDED_LODGING.search(text):
             errors.append(
                 f"{field}: 숙박이 필요하지 않은 일정에 숙소 미정 메모가 있습니다. "

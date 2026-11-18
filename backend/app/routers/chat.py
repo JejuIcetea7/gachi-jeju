@@ -69,6 +69,10 @@ from ..services.chat_request_control import (
 
 from ..services.plan_consistency import validate_plan_moves
 from ..services.route_id_recovery import restore_plan_route_ids
+from ..services.lodging_period import (
+    prepare_lodging_period_payload,
+    lodging_period_user_message,
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -249,6 +253,11 @@ def build_chat_messages(
         ),
         "message": chat_request.message,
     }
+
+    payload = prepare_lodging_period_payload(
+        payload, [message.model_dump() for message in chat_request.history],
+    )
+    payload["options"] = ChatOptions.model_validate(payload["options"]).model_dump(mode="json")
 
     if payload["current_plan"] is not None:
         for day in payload["current_plan"]["days"]:
@@ -555,6 +564,10 @@ def create_chat(chat_request: ChatRequest):
     """검증에 실패한 일정은 조건을 유지하며 최대 한 번 다시 생성합니다."""
     check_chat_request_control()
     started_at = time.perf_counter()
+    validation_message = lodging_period_user_message(
+        chat_request.message, chat_request.options.model_dump(mode="json"),
+        [message.model_dump() for message in chat_request.history],
+    )
     original_messages = build_chat_messages(chat_request)
     messages = original_messages
     attempt_results = []
@@ -633,7 +646,7 @@ def create_chat(chat_request: ChatRequest):
         try:
             body = _build_chat_result(
                 chat_reply, agent_result,
-                request_options=chat_request.options.model_dump(), user_message=chat_request.message,
+                request_options=chat_request.options.model_dump(), user_message=validation_message,
             )
         except PlanValidationFailure as failure:
             check_chat_request_control()
@@ -651,7 +664,7 @@ def create_chat(chat_request: ChatRequest):
             locked_options, lodging_recheck_nights = prepare_lodging_retry_options(
                 chat_request.options.model_dump(mode="json"),
                 chat_reply.options.model_dump(mode="json"),
-                user_message=chat_request.message,
+                user_message=validation_message,
                 tool_trace=extract_tool_trace(agent_result.get("messages") or []),
             )
             messages = build_plan_retry_messages(
