@@ -288,11 +288,18 @@ class ChatAgentReply(BaseModel):
         description="사용자에게 보여 줄 답변, 추가 질문 또는 일정 변경 요약",
     )
     options: ChatOptions = Field(
-        description="이번 요청까지 반영한 현재 조건 전체. 미확정 값은 null 또는 빈 배열",
+        description=(
+            "이번 요청까지 반영한 현재 조건 전체. 조건 충돌 확인 질문에서는 현재 options를 유지. "
+            "미확정 값은 null 또는 빈 배열"
+        ),
     )
     plan: TripPlan | None = Field(
         default=None,
-        description="생성·수정한 전체 일정. 정보 확인 질문이나 일반 답변이면 null",
+        description=(
+            "생성·수정한 새 일정 전체. 정보 확인·조건 충돌 질문이나 일반 답변이면 반드시 null. "
+            "기존 일정을 유지하며 질문할 때도 current_plan을 복사하지 않고 null을 반환하며, "
+            "화면이 이전 일정과 지도를 보존함"
+        ),
     )
 
 class ChatResponse(BaseModel):
