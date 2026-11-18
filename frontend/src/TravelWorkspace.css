@@ -2216,26 +2216,149 @@
   max-width: 100%;
 }
 
-.workspace-results-actions .itinerary-pdf-download {
-  display: contents;
+/* PDF 다운로드·이메일로 받기 버튼 묶음 */
+.itinerary-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
 }
 
-.workspace-results-actions .itinerary-pdf-download > button {
-  order: 1;
+.itinerary-export-actions .secondary-button {
   white-space: nowrap;
+}
+
+.workspace-results-actions .itinerary-export-actions {
+  order: 1;
 }
 
 .workspace-results-actions .workspace-sidebar-close {
   order: 2;
 }
 
-.workspace-results-actions .itinerary-pdf-description {
+.itinerary-export-actions .itinerary-pdf-download {
+  display: contents;
+}
+
+.itinerary-export-actions .itinerary-pdf-download > button {
+  order: 1;
+}
+
+.itinerary-export-actions > .secondary-button {
+  order: 2;
+}
+
+.itinerary-export-actions .itinerary-pdf-description {
   display: none;
 }
 
-.workspace-results-actions .itinerary-pdf-status,
-.workspace-results-actions .itinerary-pdf-error {
+.itinerary-export-actions .itinerary-pdf-status,
+.itinerary-export-actions .itinerary-pdf-error {
   order: 3;
   margin: 0;
   text-align: right;
+}
+
+/* 일정 PDF 이메일로 받기 창 */
+.itinerary-email-dialog {
+  box-sizing: border-box;
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 24px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-panel);
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 16px 60px rgba(44, 35, 29, 0.25);
+}
+
+.itinerary-email-dialog::backdrop {
+  background: rgba(44, 35, 29, 0.45);
+}
+
+.itinerary-email-dialog h2 {
+  font-size: 20px;
+  line-height: 30px;
+}
+
+.itinerary-email-dialog > p {
+  margin-top: 6px;
+  color: var(--color-text-muted);
+  font-size: 15px;
+}
+
+.itinerary-email-dialog form {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.itinerary-email-dialog label {
+  color: var(--color-text-soft);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.itinerary-email-dialog input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  color: var(--color-text);
+  background: var(--color-surface-warm);
+  font: inherit;
+}
+
+.itinerary-email-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.travel-workspace .itinerary-email-submit {
+  border-color: var(--color-primary);
+  color: #ffffff;
+  background: var(--color-primary);
+}
+
+.travel-workspace .itinerary-email-submit:hover:not(:disabled) {
+  border-color: var(--color-primary-hover);
+  background: var(--color-primary-hover);
+}
+
+.itinerary-email-feedback {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--color-secondary-border);
+  border-radius: var(--radius-control);
+  color: var(--color-secondary-text);
+  background: var(--color-secondary-soft);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.itinerary-email-feedback.is-error {
+  border-color: var(--color-danger-border);
+  color: var(--color-danger-text);
+  background: var(--color-danger-soft);
+}
+
+@media (max-width: 600px) {
+  .workspace-results-actions,
+  .itinerary-export-actions {
+    justify-content: flex-start;
+  }
+
+  .itinerary-export-actions .itinerary-pdf-status,
+  .itinerary-export-actions .itinerary-pdf-error {
+    text-align: left;
+  }
 }
