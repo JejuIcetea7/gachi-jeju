@@ -275,17 +275,10 @@ function TravelOptions({
       id="workspace-options-pane"
       className="workspace-options"
       aria-labelledby="workspace-options-title"
+      data-tour="options"
     >
       <div className="workspace-card-heading">
         <div className="workspace-heading-text">
-          <p className="workspace-eyebrow">
-            <SvgIcon size={16} strokeWidth={2}>
-              <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
-              <circle cx="16" cy="7" r="2" />
-              <circle cx="10" cy="17" r="2" />
-            </SvgIcon>
-            여행 조건
-          </p>
           <h2 id="workspace-options-title">여행 옵션</h2>
           <p>필요한 항목만 선택하세요. 대화로 알려주셔도 됩니다.</p>
         </div>
@@ -314,160 +307,216 @@ function TravelOptions({
             <section className="option-tile" aria-labelledby="option-origin-title">
               <div className="option-tile-heading">
                 <h3 id="option-origin-title">
-                  <SvgIcon>
-                    <path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" />
-                    <circle cx="12" cy="10" r="2.5" />
-                  </SvgIcon>
+                  <span className="option-tile-icon">
+                    <SvgIcon size={16} strokeWidth={2.2}>
+                      <path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" />
+                      <circle cx="12" cy="10" r="2.5" />
+                    </SvgIcon>
+                  </span>
                   출발지
                 </h3>
               </div>
-              <div className="option-origin-box">
-                <span className="option-origin-icon">
-                  <SvgIcon>
-                    <path d="M4 21V9l8-5 8 5v12" />
-                    <path d="M9 21v-6h6v6" />
-                  </SvgIcon>
-                </span>
-                <div className="option-origin-text">
-                  <p className="option-value">{options.departure || DEFAULT_ORIGIN}</p>
-                  {confirmedOrigin?.address && (
-                    <p className="options-note">{confirmedOrigin.address}</p>
-                  )}
+              <div className="option-tile-body">
+                <div className="option-origin-box">
+                  <span className="option-origin-icon">
+                    <SvgIcon>
+                      <path d="M4 21V9l8-5 8 5v12" />
+                      <path d="M9 21v-6h6v6" />
+                    </SvgIcon>
+                  </span>
+                  <div className="option-origin-text">
+                    <p className="option-value">{options.departure || DEFAULT_ORIGIN}</p>
+                    {confirmedOrigin?.address && (
+                      <p className="options-note">{confirmedOrigin.address}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <details
-                className="option-origin-details"
-                open={originOpen}
-                onToggle={(event) => setOriginOpen(event.currentTarget.open)}
-              >
-                <summary
-                  aria-disabled={disabled}
-                  onClick={(event) => {
-                    if (disabled) event.preventDefault()
-                  }}
+                <details
+                  className="option-origin-details"
+                  open={originOpen}
+                  onToggle={(event) => setOriginOpen(event.currentTarget.open)}
                 >
-                  출발지 변경
-                </summary>
-                {originOpen && (
-                  <OriginPicker
-                    key={originKey}
-                    initialKeyword={options.departure || DEFAULT_ORIGIN}
-                    confirmedPlace={confirmedOrigin}
-                    onConfirm={(place) => {
-                      if (disabled) return
-                      onOriginConfirm(place)
+                  <summary
+                    aria-disabled={disabled}
+                    onClick={(event) => {
+                      if (disabled) event.preventDefault()
                     }}
-                  />
-                )}
-              </details>
+                  >
+                    출발지 변경
+                  </summary>
+                  {originOpen && (
+                    <OriginPicker
+                      key={originKey}
+                      initialKeyword={options.departure || DEFAULT_ORIGIN}
+                      confirmedPlace={confirmedOrigin}
+                      onConfirm={(place) => {
+                        if (disabled) return
+                        onOriginConfirm(place)
+                      }}
+                    />
+                  )}
+                </details>
+              </div>
             </section>
 
             <section className="option-tile" aria-labelledby="option-date-title">
               <div className="option-tile-heading">
                 <h3 id="option-date-title">
-                  <SvgIcon>
-                    <rect x="3.5" y="5" width="17" height="15" rx="2" />
-                    <path d="M3.5 10h17M8 3v4M16 3v4" />
-                  </SvgIcon>
+                  <span className="option-tile-icon">
+                    <SvgIcon size={16} strokeWidth={2.2}>
+                      <rect x="3.5" y="5" width="17" height="15" rx="2" />
+                      <path d="M3.5 10h17M8 3v4M16 3v4" />
+                    </SvgIcon>
+                  </span>
                   여행 날짜와 기간
                 </h3>
                 <span className="option-duration">
                   {formatTripDuration(options.trip_days)}
                 </span>
               </div>
-              <div className="options-date-grid">
-                <label className="option-select" htmlFor="option-start-date">
-                  <span>출발일</span>
-                  <input
-                    id="option-start-date"
-                    type="date"
-                    value={options.start_date ?? ''}
-                    min={today}
-                    aria-invalid={Boolean(dateError)}
-                    onChange={(event) => handleStartDate(event.target.value)}
-                  />
-                </label>
-                <label className="option-select" htmlFor="option-end-date">
-                  <span>마지막 날</span>
-                  <input
-                    id="option-end-date"
-                    type="date"
-                    value={endDate}
-                    min={options.start_date && options.start_date > today
-                      ? options.start_date : today}
-                    disabled={!options.start_date}
-                    aria-invalid={Boolean(dateError)}
-                    onChange={(event) => handleEndDate(event.target.value)}
-                  />
-                </label>
+              <div className="option-tile-body">
+                <div className="options-date-grid">
+                  <label className="option-select" htmlFor="option-start-date">
+                    <span>출발일</span>
+                    <input
+                      id="option-start-date"
+                      type="date"
+                      value={options.start_date ?? ''}
+                      min={today}
+                      aria-invalid={Boolean(dateError)}
+                      onChange={(event) => handleStartDate(event.target.value)}
+                    />
+                  </label>
+                  <label className="option-select" htmlFor="option-end-date">
+                    <span>마지막 날</span>
+                    <input
+                      id="option-end-date"
+                      type="date"
+                      value={endDate}
+                      min={options.start_date && options.start_date > today
+                        ? options.start_date : today}
+                      disabled={!options.start_date}
+                      aria-invalid={Boolean(dateError)}
+                      onChange={(event) => handleEndDate(event.target.value)}
+                    />
+                  </label>
+                </div>
+                <p className="options-note">당일은 같은 날짜를 선택하세요.</p>
+                {dateError && (
+                  <p className="form-error" role="alert">{dateError}</p>
+                )}
               </div>
-              <p className="options-note">당일은 같은 날짜를 선택하세요.</p>
-              {dateError && (
-                <p className="form-error" role="alert">{dateError}</p>
-              )}
             </section>
 
             <section className="option-tile" aria-labelledby="option-transport-title">
               <div className="option-tile-heading">
                 <h3 id="option-transport-title">
-                  <SvgIcon>
-                    <circle cx="6" cy="19" r="2" />
-                    <circle cx="18" cy="5" r="2" />
-                    <path d="M8 19h8a4 4 0 0 0 0-8H8a4 4 0 0 1 0-8h8" />
-                  </SvgIcon>
+                  <span className="option-tile-icon">
+                    <SvgIcon size={16} strokeWidth={2.2}>
+                      <circle cx="6" cy="19" r="2" />
+                      <circle cx="18" cy="5" r="2" />
+                      <path d="M8 19h8a4 4 0 0 0 0-8H8a4 4 0 0 1 0-8h8" />
+                    </SvgIcon>
+                  </span>
                   이동수단
                 </h3>
               </div>
-              <ChoiceButtons
-                labelId="option-transport-title"
-                value={options.transport}
-                choices={TRANSPORT_OPTIONS}
-                icons={TRANSPORT_ICONS}
-                stacked
-                onChange={(value) => onChange({ transport: value })}
-              />
-            </section>
-          </div>
-
-          <div className="option-groups">
-            <section className="option-group" aria-labelledby="option-mobility-title">
-              <h3 id="option-mobility-title">이동 보조기구</h3>
-              <ChoiceButtons
-                labelId="option-mobility-title"
-                value={options.mobility_aid}
-                choices={MOBILITY_OPTIONS}
-                icons={MOBILITY_ICONS}
-                onChange={(value) => onChange({ mobility_aid: value })}
-              />
+              <div className="option-tile-body">
+                <ChoiceButtons
+                  labelId="option-transport-title"
+                  value={options.transport}
+                  choices={TRANSPORT_OPTIONS}
+                  icons={TRANSPORT_ICONS}
+                  stacked
+                  onChange={(value) => onChange({ transport: value })}
+                />
+              </div>
             </section>
 
-            <fieldset className="option-group">
-              <legend>필요한 접근 조건</legend>
-              <div className="option-choice-list">
-                {ACCESS_REQUIREMENTS.map((item) => (
-                  <ChoiceCheckbox
-                    key={item.value}
-                    label={item.label}
-                    checked={options.requirements.includes(item.value)}
-                    onChange={() => toggleList('requirements', item.value)}
-                  />
-                ))}
+            <section className="option-tile option-group" aria-labelledby="option-mobility-title">
+              <div className="option-tile-heading">
+                <h3 id="option-mobility-title">
+                  <span className="option-tile-icon">
+                    <SvgIcon size={16} strokeWidth={2.2}>
+                      <circle cx="11" cy="4" r="1.8" />
+                      <path d="M11 7.5V13h5l2.5 6" />
+                      <path d="M11 10h4.5" />
+                      <path d="M8 10.5a5.5 5.5 0 1 0 7.3 7.5" />
+                    </SvgIcon>
+                  </span>
+                  이동 보조기구
+                </h3>
               </div>
-            </fieldset>
+              <div className="option-tile-body">
+                <ChoiceButtons
+                  labelId="option-mobility-title"
+                  value={options.mobility_aid}
+                  choices={MOBILITY_OPTIONS}
+                  icons={MOBILITY_ICONS}
+                  onChange={(value) => onChange({ mobility_aid: value })}
+                />
+              </div>
+            </section>
 
-            <fieldset className="option-group">
-              <legend>여행 종류</legend>
-              <div className="option-choice-list">
-                {TRAVEL_STYLES.map((style) => (
-                  <ChoiceCheckbox
-                    key={style}
-                    label={style}
-                    checked={options.travel_styles.includes(style)}
-                    onChange={() => toggleList('travel_styles', style)}
-                  />
-                ))}
+            <div
+              className="option-tile option-group"
+              role="group"
+              aria-labelledby="option-requirements-title"
+            >
+              <div className="option-tile-heading">
+                <h3 id="option-requirements-title">
+                  <span className="option-tile-icon">
+                    <SvgIcon size={16} strokeWidth={2.2}>
+                      <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6z" />
+                      <path d="m9 12 2 2 4-4" />
+                    </SvgIcon>
+                  </span>
+                  필요한 접근 조건
+                </h3>
               </div>
-            </fieldset>
+              <div className="option-tile-body">
+                <div className="option-choice-list">
+                  {ACCESS_REQUIREMENTS.map((item) => (
+                    <ChoiceCheckbox
+                      key={item.value}
+                      label={item.label}
+                      checked={options.requirements.includes(item.value)}
+                      onChange={() => toggleList('requirements', item.value)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="option-tile option-group"
+              role="group"
+              aria-labelledby="option-styles-title"
+            >
+              <div className="option-tile-heading">
+                <h3 id="option-styles-title">
+                  <span className="option-tile-icon">
+                    <SvgIcon size={16} strokeWidth={2.2}>
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="m15.5 8.5-2 5-5 2 2-5z" />
+                    </SvgIcon>
+                  </span>
+                  여행 종류
+                </h3>
+              </div>
+              <div className="option-tile-body">
+                <div className="option-choice-list">
+                  {TRAVEL_STYLES.map((style) => (
+                    <ChoiceCheckbox
+                      key={style}
+                      label={style}
+                      checked={options.travel_styles.includes(style)}
+                      onChange={() => toggleList('travel_styles', style)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </fieldset>
       </div>

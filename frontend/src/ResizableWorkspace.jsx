@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 const STORAGE_KEY = 'gachi-jeju.workspace-sidebar.v2'
 const DESKTOP_QUERY = '(min-width: 901px)'
 const SIDEBAR_MIN_WIDTH = 420
-const SIDEBAR_VISIBLE_GAP = 56
+// 사이드바가 열려도 왼쪽 대화창은 이 폭보다 좁아지지 않습니다.
+const CHAT_MIN_WIDTH = 360
 const DEFAULT_SIDEBAR_RATIO = 0.6
 const DEFAULT_SIDEBAR_MAX_WIDTH = 880
 const KEYBOARD_STEP = 24
@@ -26,7 +27,7 @@ function loadSidebarRatio() {
 }
 
 function calculateSidebarWidth(containerWidth, sidebarRatio) {
-  let maximumWidth = containerWidth - SIDEBAR_VISIBLE_GAP
+  let maximumWidth = containerWidth - CHAT_MIN_WIDTH
   if (maximumWidth < SIDEBAR_MIN_WIDTH) {
     maximumWidth = SIDEBAR_MIN_WIDTH
   }
@@ -209,9 +210,10 @@ function ResizableWorkspace({
     bodyClassName = 'workspace-body is-resizing'
   }
 
-  let sidebarStyle
+  // 사이드바 폭은 바깥 틀에 지정해 사이드바와 왼쪽 대화창이 함께 씁니다.
+  let bodyStyle
   if (sidebarWidth !== null) {
-    sidebarStyle = { '--workspace-sidebar-width': `${sidebarWidth}px` }
+    bodyStyle = { '--workspace-sidebar-width': `${sidebarWidth}px` }
   }
 
   let sidebarState = 'closed'
@@ -225,7 +227,12 @@ function ResizableWorkspace({
   }
 
   return (
-    <div ref={containerRef} className={bodyClassName}>
+    <div
+      ref={containerRef}
+      className={bodyClassName}
+      data-sidebar-state={sidebarState}
+      style={bodyStyle}
+    >
       <main className="workspace-main">
         <div className="workspace-main-inner">
           {main}
@@ -239,7 +246,6 @@ function ResizableWorkspace({
         data-state={sidebarState}
         aria-labelledby={sidebarTitleId}
         inert={!sidebarOpen}
-        style={sidebarStyle}
         onKeyDown={handleSidebarKeyDown}
       >
         <div
