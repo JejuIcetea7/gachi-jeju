@@ -156,3 +156,31 @@ RM01은 자동차 1박 2일의 권역 배치와 첫 숙박일의 실제 후보 �
 이후 제주신라호텔로 변경한 진단과 사용자 화면 확인은 별도 기록이며 RM01의 세 번째 자동 평가 단계로 집계하지 않습니다.
 상세 조회 선행과 순서 비교 경계 검사는 실제 서버 처리에 포함되지만, 재채점이 서버의 전체 검증 파이프라인을 다시 실행하지는 않습니다.
 실패 기록·후속 보완·검토 범위는 [실험 0008](experiments/0008-route-efficiency-multiday.md)을 참고합니다.
+
+────────────────────────────────────────
+
+## 7. 기간 축소·숙소 선택 취소 검증
+
+별도 정의 파일은 [chat_period_shortening_cases.json](../scripts/eval_cases/chat_period_shortening_cases.json)입니다.
+
+| 사례 | 확인할 흐름 |
+|---|---|
+| PS01 | 숙소가 선택된 1박 2일을 숙박 없는 당일로 줄입니다. |
+| PS02 | 관광 조건과 기간을 유지하며 숙소 선택만 취소합니다. |
+| PS03 | 고정 방문일과의 충돌을 질문하고 동의 후 기간과 숙박일을 줄입니다. |
+
+후속 단계에 `options_patch`를 지정하지 않아 자연어 변경 처리를 평가합니다.
+초기 숙소는 이전 실제 조회 기록의 선택값을 사용합니다.
+
+PS01 첫 단계의 `partial_plan`은 둘째 날에 방문이 없기 때문입니다.
+호텔→센터 귀환 이동은 별도로 유지해야 합니다.
+PS03의 질문은 `plan: null`로 기존 일정을 보존하고 다음 요청으로 이어져야 합니다.
+
+```cmd
+.venv\Scripts\python.exe -B -m scripts.evaluate_chat_multiturn --cases scripts/eval_cases/chat_period_shortening_cases.json
+.venv\Scripts\python.exe -B -m scripts.evaluate_chat_multiturn --run --cases scripts/eval_cases/chat_period_shortening_cases.json --case PS03 --repeat 1 --label period-shortening-check --reference-date 2026-11-18
+```
+
+대표 실행과 마지막 PS03 재채점, 원본 파일 보존을 확인했습니다.
+자동 통과 뒤 내용 검토에서 발견한 도착 설명 오류도 포함해
+[실험 0010](experiments/0010-chat-period-shortening.md)에 기록했습니다.

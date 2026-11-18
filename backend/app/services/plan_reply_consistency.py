@@ -22,6 +22,11 @@ _VISIT_START = re.compile(
     rf"(?P<clock>{_CLOCK})(?!\d)"
 )
 _DAY = re.compile(r"(?P<day>\d+)\s*일차|(?P<last>마지막\s*날)")
+_REMOVED_DAY = re.compile(
+    r"\s*(?:일정\s*)?(?:을|를|은|는|도|만)?\s*(?:모두\s*)?"
+    r"(?:(?:제거|삭제|제외|취소)(?:했습니다|하였습니다|했어요|했으며|했고|합니다)"
+    r"|없앴(?:습니다|어요|으며|고))"
+)
 _NON_EXACT = re.compile(
     r"\s*(?:이전|이후|까지|부터|보다|사이|전후|"
     r"(?:이|가|은|는)?\s*(?:아니|아닙|아닌|불가능|불가|미확인))"
@@ -49,7 +54,7 @@ def _missing_lodging_claim(text):
         return True
     return False
 
-def _origin_return_pattern(options):
+def _origin_name_pattern(options):
     names = ["출발지"]
     departure = options.get("departure")
     if isinstance(departure, str) and departure.strip():
@@ -57,13 +62,30 @@ def _origin_return_pattern(options):
         names.append(departure)
         if departure.endswith("센터"):
             names.append("센터")
-    target = "|".join(re.escape(name) for name in sorted(set(names), key=len, reverse=True))
+    return "|".join(re.escape(name) for name in sorted(set(names), key=len, reverse=True))
+
+
+def _origin_return_pattern(options):
+    target = _origin_name_pattern(options)
     return re.compile(
         rf"(?<!\d)(?P<clock>{_CLOCK})\s*(?:에|경|쯤)?\s*"
         rf"(?:같은\s*)?(?:{target})\s*(?:으로|로|에(?:는)?)\s*"
         r"돌아(?:옵니다|와요|오겠습니다|올\s*예정(?:입니다)?)"
     )
 
+
+def _origin_arrival_patterns(options):
+    target = _origin_name_pattern(options)
+    clock = (
+        rf"(?P<clock>{_CLOCK})"
+        rf"(?:\s*(?:~|-|부터)\s*(?P<end>{_CLOCK}))?(?!\d)"
+    )
+    place = rf"(?:같은\s*|원래\s*)?(?:{target})\s*(?:에(?:는)?|으로|로)"
+    arrival = r"도착\s*(?:합니다|해요|했습니다|할\s*예정(?:입니다)?|예정(?:입니다)?)"
+    return (
+        re.compile(rf"(?<!\w){place}\s*{clock}\s*(?:에|경|쯤)?\s*{arrival}"),
+        re.compile(rf"(?<!\d){clock}\s*(?:에|경|쯤)?\s*{place}\s*{arrival}"),
+    )
 
 def _clock(value):
     match = re.fullmatch(
@@ -87,7 +109,14 @@ def _clock(value):
 def _day_context(text, position, last_day):
     paragraph = text.rfind("\n\n", 0, position)
     prefix = text[paragraph + 2 if paragraph >= 0 else 0:position]
-    matches = list(_DAY.finditer(prefix))
+    matches = [
+        match for match in _DAY.finditer(prefix)
+        if not (
+            match["day"] is not None
+            and int(match["day"]) > last_day
+            and _REMOVED_DAY.match(prefix[match.end():]) is not None
+        )
+    ]
     if not matches:
         return None
     match = matches[-1]
@@ -130,6 +159,7 @@ def validate_plan_reply_consistency(reply, plan, *, options, user_message=""):
     ]]
     errors = []
     origin_return = _origin_return_pattern(options)
+    origin_arrivals = _origin_arrival_patterns(options)
     check_lodging = options.get("lodging_status") == "not_needed" or (
         options.get("trip_days") == 1
         and re.search(r"숙소|숙박", user_message) is None
@@ -178,8 +208,10 @@ def validate_plan_reply_consistency(reply, plan, *, options, user_message=""):
                 )
         if options.get("return_to_origin") is not True:
             continue
-        for pattern in (_RETURN_AFTER, _RETURN_BEFORE, origin_return):
+        for pattern in (_RETURN_AFTER, _RETURN_BEFORE, origin_return, *origin_arrivals):
             for match in pattern.finditer(text):
+                if pattern in origin_arrivals and re.search(r"다른\s*$", text[:match.start()]):
+                    continue
                 if _NON_EXACT.match(text[match.end():]):
                     continue
                 raw = match.groupdict().get("end") or match["clock"]
