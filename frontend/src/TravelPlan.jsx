@@ -121,22 +121,48 @@ function getVisitNumbers(items) {
   return visitNumbers
 }
 
-function RepresentativePlaceImage({ placeId, title }) {
-  const [unavailable, setUnavailable] = useState(false)
+function VisitCardDetails({ item, onOpenDetails }) {
+  const [photoUnavailable, setPhotoUnavailable] = useState(false)
+  const notes = [...new Set(item.accessibility_notes.map((text) => text.trim()).filter(Boolean))]
+  const showPhoto = !photoUnavailable
+    && item.verified === true
+    && /^P[0-9]{3}$/.test(item.place_id ?? '')
 
-  if (unavailable) return null
+  if (!showPhoto && notes.length === 0) return null
 
   return (
-    <img
-      className="plan-representative-image"
-      src={`/api/places/${encodeURIComponent(placeId)}/representative-image`}
-      alt={`${title} 대표 사진`}
-      width={640}
-      height={400}
-      loading="lazy"
-      decoding="async"
-      onError={() => setUnavailable(true)}
-    />
+    <div className="plan-visit-details">
+      {showPhoto && (
+        <img
+          className="plan-representative-image"
+          src={`/api/places/${encodeURIComponent(item.place_id)}/representative-image`}
+          alt={`${item.title} 대표 사진`}
+          width={640}
+          height={400}
+          loading="lazy"
+          decoding="async"
+          onError={() => setPhotoUnavailable(true)}
+        />
+      )}
+      {notes.length > 0 && (
+        <div className="plan-visit-notes">
+          <strong>방문 전 확인</strong>
+          <ul>
+            {notes.slice(0, 2).map((text) => <li key={text}>{text}</li>)}
+          </ul>
+          {notes.length > 2 && (
+            <button
+              type="button"
+              className="plan-visit-notes-more"
+              aria-haspopup="dialog"
+              onClick={onOpenDetails}
+            >
+              전체 확인사항 보기
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -241,13 +267,11 @@ function TravelPlan({ plan, autoFocus = true, transitRoutes = [] }) {
                           {' · '}
                           {formatDuration(item)}
                         </p>
-                        {item.verified === true && /^P[0-9]{3}$/.test(item.place_id ?? '') && (
-                          <RepresentativePlaceImage
-                            key={item.place_id}
-                            placeId={item.place_id}
-                            title={item.title}
-                          />
-                        )}
+                        <VisitCardDetails
+                          key={item.place_id}
+                          item={item}
+                          onOpenDetails={() => setPhotoPlace(item)}
+                        />
                       </div>
                     </li>
                   ) : (
