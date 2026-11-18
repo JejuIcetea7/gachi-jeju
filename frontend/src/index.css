@@ -4,6 +4,7 @@
   --color-surface: #ffffff;
   --color-surface-warm: #f8f3ec;
   --color-surface-note: #fffcf8;
+  --color-surface-band: #fbf6f0;
   --color-border: #ede6dc;
   --color-border-strong: #e0d6c8;
   --color-primary: #c74e00;
@@ -12,6 +13,7 @@
   --color-primary-strong-text: #7c2e00;
   --color-primary-line: #e65c00;
   --color-primary-soft: #fff2e8;
+  --color-primary-tint: #ffe6d3;
   --color-primary-border: rgba(199, 78, 0, 0.3);
   --color-secondary-text: #345d28;
   --color-secondary-soft: #edf6ea;
@@ -24,17 +26,17 @@
   --color-danger-soft: #fff4f2;
   --color-danger-border: #f1c9c4;
   --color-danger-line: #ba1a1a;
-  --radius-panel: 24px;
-  --radius-tile: 16px;
-  --radius-control: 12px;
+  --radius-panel: 18px;
+  --radius-tile: 14px;
+  --radius-control: 10px;
   --shadow-card: 0 8px 28px rgba(230, 92, 0, 0.04), 0 2px 8px rgba(92, 75, 64, 0.03);
   --shadow-primary: 0 6px 16px rgba(199, 78, 0, 0.22);
   --shadow-sidebar: -12px 0 32px rgba(92, 75, 64, 0.16);
 
   font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 400;
-  line-height: 1.6;
+  line-height: 1.55;
   color: var(--color-text);
   background: var(--color-background);
   color-scheme: light;
