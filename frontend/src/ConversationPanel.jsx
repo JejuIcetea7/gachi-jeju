@@ -77,6 +77,7 @@ function ArrowIcon() {
 function ConversationPanel({
   messages = [],
   onSend,
+  tripExamples = [],
   isSending = false,
   error = null,
   notice = null,
@@ -334,6 +335,30 @@ function ConversationPanel({
       )}
 
       <form className="conversation-form" onSubmit={handleSubmit}>
+        {!isSending && draft.length === 0 && tripExamples.length > 0
+          && typeof onSend === 'function' && (
+          <div className="trip-examples" role="group" aria-label="여행 요청 예시">
+            <p className="trip-examples-label">
+              <strong>요청 예시</strong>
+              <span>누르면 바로 전송</span>
+            </p>
+            <div className="trip-example-list">
+              {tripExamples.map((text) => (
+                <button
+                  key={text}
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => {
+                    followLatestRef.current = true
+                    onSend(text)
+                  }}
+                >
+                  {text}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <label htmlFor="conversation-input" className="sr-only">
           여행 요청
         </label>

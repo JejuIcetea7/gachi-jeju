@@ -35,6 +35,7 @@ import mascotWave from './assets/mascot/hallabong-wave.webp'
 import mascotFace from './assets/mascot/hallabong-face.webp'
 import mascotMagnifier from './assets/mascot/basalt-magnifier.webp'
 import mascotFlustered from './assets/mascot/basalt-flustered.webp'
+import { getTripExampleMessages } from './services/tripExamples.js'
 
 const CANCELLED_NOTICE = '요청을 취소했습니다. 내용을 바꾸어 보내거나 이 요청을 다시 보낼 수 있습니다.'
 const SIDEBAR_ID = 'workspace-sidebar'
@@ -273,6 +274,8 @@ function TravelWorkspace() {
   const busyRef = useRef(false)
 
   const { options, originPlace, messages, planResult, selectedDay } = session
+  const tripExamples = messages.length === 0 && !planResult
+    ? getTripExampleMessages(options, originPlace) : []
 
   // 일정이 새로 만들어지거나 바뀌면 사이드바를 엽니다. 새로고침으로 복원한 일정은 열지 않습니다.
   const [shownPlanResult, setShownPlanResult] = useState(planResult)
@@ -651,6 +654,7 @@ function TravelWorkspace() {
       <ConversationPanel
         messages={messages}
         onSend={handleSend}
+        tripExamples={tripExamples}
         isSending={isSending}
         error={error}
         notice={notice}
