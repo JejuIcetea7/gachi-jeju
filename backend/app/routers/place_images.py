@@ -3,7 +3,8 @@ from stat import S_ISREG
 from urllib.parse import quote
 
 from fastapi import APIRouter
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
+from ..services.place_representative_image import get_representative_image
 from pydantic import BaseModel
 
 from ..services.place_images import list_place_images
@@ -54,6 +55,26 @@ def _read_images(place_id: str):
 
     return result
 
+@router.get(
+    "/{place_id}/representative-image",
+    response_class=Response,
+    responses={
+        200: {"content": {"image/jpeg": {}}},
+        404: {"description": "대표 사진 없음"},
+    },
+)
+def get_place_representative_image(place_id: str):
+    content = get_representative_image(place_id)
+    if content is None:
+        return Response(status_code=404, headers={"Cache-Control": "no-store"})
+    return Response(
+        content=content,
+        media_type="image/jpeg",
+        headers={
+            "Cache-Control": "public, max-age=300",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 @router.get(
     "/{place_id}/images",

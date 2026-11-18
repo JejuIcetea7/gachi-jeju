@@ -5,6 +5,8 @@ from io import BytesIO
 from pathlib import Path
 from threading import RLock
 from xml.sax.saxutils import escape
+from time import monotonic
+from .place_representative_image import get_representative_image
 
 FONT_DIRECTORY = Path(__file__).resolve().parents[1] / "assets" / "fonts"
 FONT_NAMES = ("GachiNanum", "GachiNanumBold")
@@ -82,19 +84,52 @@ def _transit_lines(item, guidance):
     return lines
 
 
+def _load_visit_photos(plan):
+    deadline = monotonic() + 8
+    remaining_bytes = 4 * 1024 * 1024
+    seen = set()
+    photos = {}
+
+    for day in plan["days"]:
+        for item in day["items"]:
+            place_id = item.get("place_id")
+            if (
+                item["item_type"] != "visit"
+                or item.get("verified") is not True
+                or not place_id
+                or place_id in seen
+            ):
+                continue
+
+            remaining_time = deadline - monotonic()
+            if remaining_time <= 0 or remaining_bytes <= 0:
+                return photos
+
+            seen.add(place_id)
+            content = get_representative_image(
+                place_id, timeout=min(2.0, remaining_time),
+            )
+            if content is not None and len(content) <= remaining_bytes:
+                photos[place_id] = content
+                remaining_bytes -= len(content)
+
+    return photos
+
+
 def build_itinerary_pdf(snapshot, *, created_at=None):
-    """외부 조회나 일정 재생성 없이 전달받은 전체 일정을 PDF 바이트로 반환합니다."""
+    """등록된 대표 사진을 포함해 전달받은 전체 일정을 PDF로 반환합니다."""
+    photos = _load_visit_photos(snapshot["plan"])
     with FONT_LOCK:
-        return _render_itinerary_pdf(snapshot, created_at=created_at)
+        return _render_itinerary_pdf(snapshot, created_at=created_at, photos=photos)
 
 
-def _render_itinerary_pdf(snapshot, *, created_at):
+def _render_itinerary_pdf(snapshot, *, created_at, photos):
     try:
         from reportlab.lib import colors
         from reportlab.lib.pagesizes import A4
         from reportlab.lib.styles import ParagraphStyle
         from reportlab.platypus import (
-            LongTable, PageBreak, Paragraph, SimpleDocTemplate, Spacer, TableStyle,
+            Image, LongTable, PageBreak, Paragraph, SimpleDocTemplate, Spacer, TableStyle,
         )
         _register_fonts()
     except ImportError as error:
@@ -191,6 +226,12 @@ def _render_itinerary_pdf(snapshot, *, created_at):
             details = [title_parts[0]]
             if item["item_type"] == "visit":
                 details.append(paragraph("여행지 자료 등록" if item.get("verified") is True else "여행지 정보 확인 필요", "small"))
+                photo = photos.get(item.get("place_id")) if item.get("verified") is True else None
+                if photo is not None:
+                    details.extend([
+                        Spacer(1, 4),
+                        Image(BytesIO(photo), width=144, height=90, hAlign="LEFT"),
+                    ])
             key = item.get("route_id")
             selected = guidance.get(key) if route_counts.get(key) == 1 and guidance_counts.get(key) == 1 else None
             lines = _transit_lines(item, selected)
