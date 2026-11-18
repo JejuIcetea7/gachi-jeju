@@ -25,10 +25,105 @@ import {
 } from './services/travelOptions.js'
 import logoImage from './assets/gachi-jeju-logo.png'
 import ResizableWorkspace from './ResizableWorkspace.jsx'
+import GuideTour from './GuideTour.jsx'
+import mascotPoint from './assets/mascot/hallabong-point.webp'
+import mascotQuestion from './assets/mascot/basalt-question.webp'
+import mascotMap from './assets/mascot/duo-map.webp'
+import mascotCamera from './assets/mascot/hallabong-camera.webp'
+import mascotThumbsUp from './assets/mascot/hallabong-thumbs-up.webp'
+import mascotWave from './assets/mascot/hallabong-wave.webp'
 
 const CANCELLED_NOTICE = '요청을 취소했습니다. 내용을 바꾸어 보내거나 이 요청을 다시 보낼 수 있습니다.'
 const SIDEBAR_ID = 'workspace-sidebar'
 const SIDEBAR_TITLE_ID = 'workspace-results-title'
+const GUIDE_TOUR_STORAGE_KEY = 'gachi-jeju.guide-tour.v1'
+const DESKTOP_QUERY = '(min-width: 901px)'
+
+// 첫 방문 가이드 단계입니다. target은 화면 요소의 data-tour 값입니다.
+const GUIDE_TOUR_STEPS = [
+  {
+    target: 'options',
+    placement: 'bottom',
+    title: '여행 옵션',
+    text: '출발지·날짜·이동 방법·꼭 필요한 접근 조건을 고르면 일정에 반영돼요. 고르지 않고 대화로 말해도 괜찮아요. 오른쪽 위 \'옵션 접기\'로 접고 펼칠 수 있어요.',
+    character: mascotPoint,
+  },
+  {
+    target: 'chat',
+    placement: 'top',
+    title: '대화로 일정 만들기',
+    text: '가고 싶은 곳과 필요한 조건을 적어 보내면 일정을 만들어 드려요. 만든 일정도 대화로 고칠 수 있어요.',
+    character: mascotQuestion,
+  },
+  {
+    target: 'map',
+    placement: 'left',
+    title: '여행 지도',
+    text: '일정이 만들어지면 오른쪽에 지도와 일정표가 열려요. 지도에서는 출발지·방문 장소와 이동 경로를 볼 수 있어요.',
+    character: mascotMap,
+  },
+  {
+    target: 'plan-area',
+    placement: 'left',
+    title: '일정표',
+    text: '날짜별 방문 시간과 이동 방법이 이곳에 표시돼요. 장소 이름을 누르면 접근성 안내와 사진을 볼 수 있어요.',
+    character: mascotCamera,
+  },
+  {
+    target: 'export',
+    placement: 'bottom',
+    title: '일정 저장하기',
+    text: '만든 일정은 PDF로 내려받거나 이메일로 받을 수 있어요.',
+    character: mascotThumbsUp,
+  },
+  {
+    target: 'chat',
+    placement: 'right',
+    title: '보면서 고치기',
+    text: '지도와 일정을 보면서도 왼쪽 대화창으로 바로 일정을 고칠 수 있어요.',
+    character: mascotWave,
+  },
+]
+
+function hasSeenGuideTour() {
+  let seen = false
+  try {
+    seen = window.localStorage.getItem(GUIDE_TOUR_STORAGE_KEY) === 'done'
+  } catch {
+    // 저장소를 읽지 못하면 처음 방문으로 봅니다.
+  }
+  return seen
+}
+
+function markGuideTourSeen() {
+  try {
+    window.localStorage.setItem(GUIDE_TOUR_STORAGE_KEY, 'done')
+  } catch {
+    // 저장하지 못해도 가이드는 정상으로 닫습니다.
+  }
+}
+
+// 가이드 단계마다 사이드바를 열지 정합니다. 1·2단계는 메인 화면, 3~5단계는 사이드바를 봅니다.
+// 6단계는 넓은 화면에서는 사이드바 옆 대화창을, 좁은 화면에서는 사이드바를 닫고 대화창을 봅니다.
+// 가이드를 시작하기 전에 메인 화면과 사이드바 스크롤을 맨 위로 올립니다.
+function scrollWorkspaceToTop() {
+  const scrollAreas = document.querySelectorAll('.workspace-main, .workspace-sidebar-scroll')
+  for (const scrollArea of scrollAreas) {
+    scrollArea.scrollTo({ top: 0 })
+  }
+}
+
+function getGuideSidebarState(stepIndex) {
+  let shouldOpen = true
+  if (stepIndex <= 1) {
+    shouldOpen = false
+  }
+  const isDesktop = window.matchMedia(DESKTOP_QUERY).matches
+  if (stepIndex === 5 && !isDesktop) {
+    shouldOpen = false
+  }
+  return shouldOpen
+}
 
 function SvgIcon({ size = 20, children }) {
   return (
@@ -72,6 +167,16 @@ function RestartIcon() {
     <SvgIcon size={18}>
       <path d="M4 12a8 8 0 1 0 2.3-5.6" />
       <path d="M4 4v4h4" />
+    </SvgIcon>
+  )
+}
+
+function GuideIcon() {
+  return (
+    <SvgIcon size={18}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14" />
+      <path d="M12 17h.01" />
     </SvgIcon>
   )
 }
@@ -150,6 +255,10 @@ function TravelWorkspace() {
   const [optionsOpen, setOptionsOpen] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showAllDays, setShowAllDays] = useState(false)
+  const [tourActive, setTourActive] = useState(false)
+  const [tourStep, setTourStep] = useState(0)
+  const sidebarBeforeTourRef = useRef(false)
+  const focusBeforeTourRef = useRef(null)
   const busyRef = useRef(false)
 
   const { options, originPlace, messages, planResult, selectedDay } = session
@@ -183,6 +292,22 @@ function TravelWorkspace() {
   useEffect(() => {
     saveChatSession(session)
   }, [session])
+
+  // 처음 방문하면 화면이 뜬 뒤 가이드를 자동으로 시작합니다.
+  useEffect(() => {
+    if (hasSeenGuideTour()) return
+
+    const timer = window.setTimeout(() => {
+      scrollWorkspaceToTop()
+      sidebarBeforeTourRef.current = false
+      focusBeforeTourRef.current = null
+      setShowAllDays(false)
+      setTourStep(0)
+      setTourActive(true)
+      setSidebarOpen(false)
+    }, 120)
+    return () => window.clearTimeout(timer)
+  }, [])
 
   useEffect(() => () => {
     requestTracker.reset()
@@ -425,6 +550,45 @@ function TravelWorkspace() {
     setShowAllDays(false)
   }
 
+  function startGuideTour() {
+    scrollWorkspaceToTop()
+    sidebarBeforeTourRef.current = sidebarOpen
+    focusBeforeTourRef.current = document.activeElement
+    setShowAllDays(false)
+    setTourStep(0)
+    setTourActive(true)
+    setSidebarOpen(getGuideSidebarState(0))
+  }
+
+  function moveGuideTour(nextStep) {
+    setTourStep(nextStep)
+    setSidebarOpen(getGuideSidebarState(nextStep))
+  }
+
+  function finishGuideTour() {
+    setTourActive(false)
+    setSidebarOpen(sidebarBeforeTourRef.current)
+    markGuideTourSeen()
+
+    const returnElement = focusBeforeTourRef.current
+    if (returnElement?.isConnected && returnElement !== document.body) {
+      window.setTimeout(() => returnElement.focus({ preventScroll: true }), 0)
+    }
+  }
+
+  function handleGuideNext() {
+    if (tourStep >= GUIDE_TOUR_STEPS.length - 1) {
+      finishGuideTour()
+      return
+    }
+    moveGuideTour(tourStep + 1)
+  }
+
+  function handleGuidePrevious() {
+    if (tourStep <= 0) return
+    moveGuideTour(tourStep - 1)
+  }
+
   function handleDaySelect(dayNumber) {
     setShowAllDays(false)
     setSession((previous) => ({
@@ -518,7 +682,7 @@ function TravelWorkspace() {
 
         <div className="workspace-results-actions">
           {planResult && (
-            <div className="itinerary-export-actions">
+            <div className="itinerary-export-actions" data-tour="export">
               <ItineraryPdfDownload
                 planResult={planResult}
                 disabled={isSending}
@@ -527,6 +691,17 @@ function TravelWorkspace() {
                 planResult={planResult}
                 disabled={isSending}
               />
+            </div>
+          )}
+
+          {!planResult && tourActive && (
+            <div className="itinerary-export-actions is-guide-preview" data-tour="export" aria-hidden="true">
+              <button type="button" className="secondary-button" disabled tabIndex={-1}>
+                전체 일정 PDF 다운로드
+              </button>
+              <button type="button" className="secondary-button" disabled tabIndex={-1}>
+                이메일로 받기
+              </button>
             </div>
           )}
 
@@ -590,7 +765,7 @@ function TravelWorkspace() {
                 </span>
               </p>
 
-              <div key="all-days" className="workspace-schedule">
+              <div key="all-days" className="workspace-schedule" data-tour="plan-area">
                 {planResult.warnings.length > 0 && (
                   <div className="plan-notice">
                     <h3>
@@ -632,15 +807,17 @@ function TravelWorkspace() {
           )}
 
           {!isAllDaysView && (
-            <ItineraryMap
-              day={visibleDay}
-              options={planOptions}
-              mapRoutes={planResult.map_routes}
-            />
+            <div data-tour="map">
+              <ItineraryMap
+                day={visibleDay}
+                options={planOptions}
+                mapRoutes={planResult.map_routes}
+              />
+            </div>
           )}
 
           {!isAllDaysView && (
-            <div key={visibleDay?.day ?? 0} className="workspace-schedule">
+            <div key={visibleDay?.day ?? 0} className="workspace-schedule" data-tour="plan-area">
               {planResult.warnings.length > 0 && (
                 <div className="plan-notice">
                   <h3>
@@ -674,7 +851,7 @@ function TravelWorkspace() {
         </>
       ) : (
         <>
-          <div className="workspace-result-empty" role="status">
+          <div className="workspace-result-empty" role="status" data-tour="plan-area">
             <span className="workspace-result-empty-icon">
               <MapIcon size={26} />
             </span>
@@ -689,7 +866,9 @@ function TravelWorkspace() {
             </div>
           </div>
 
-          <ItineraryMap options={options} />
+          <div data-tour="map">
+            <ItineraryMap options={options} />
+          </div>
         </>
       )}
     </section>
@@ -703,16 +882,29 @@ function TravelWorkspace() {
             <img className="brand-logo" src={logoImage} alt="같이 가는 제주" />
           </h1>
 
-          <button
-            type="button"
-            className="secondary-button workspace-sidebar-toggle"
-            aria-expanded={sidebarOpen}
-            aria-controls={SIDEBAR_ID}
-            onClick={() => setSidebarOpen((previous) => !previous)}
-          >
-            <MapIcon />
-            {sidebarToggleLabel}
-          </button>
+          <div className="workspace-header-actions">
+            <button
+              type="button"
+              className="secondary-button workspace-guide-button"
+              aria-label="가이드 투어"
+              disabled={tourActive}
+              onClick={startGuideTour}
+            >
+              <GuideIcon />
+              <span className="workspace-guide-label">가이드 투어</span>
+            </button>
+
+            <button
+              type="button"
+              className="secondary-button workspace-sidebar-toggle"
+              aria-expanded={sidebarOpen}
+              aria-controls={SIDEBAR_ID}
+              onClick={() => setSidebarOpen((previous) => !previous)}
+            >
+              <MapIcon />
+              {sidebarToggleLabel}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -724,6 +916,15 @@ function TravelWorkspace() {
         sidebarTitleId={SIDEBAR_TITLE_ID}
         sidebarOpen={sidebarOpen}
         onCloseSidebar={() => setSidebarOpen(false)}
+      />
+
+      <GuideTour
+        active={tourActive}
+        step={tourStep}
+        steps={GUIDE_TOUR_STEPS}
+        onNext={handleGuideNext}
+        onPrevious={handleGuidePrevious}
+        onSkip={finishGuideTour}
       />
     </div>
   )

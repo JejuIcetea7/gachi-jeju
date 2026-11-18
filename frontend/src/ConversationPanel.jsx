@@ -185,6 +185,7 @@ function ConversationPanel({
       id="workspace-chat-pane"
       className="workspace-chat"
       aria-labelledby="conversation-title"
+      data-tour="chat"
     >
       <div className="workspace-card-heading">
         <div className="conversation-heading">

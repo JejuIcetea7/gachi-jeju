@@ -275,6 +275,7 @@ function TravelOptions({
       id="workspace-options-pane"
       className="workspace-options"
       aria-labelledby="workspace-options-title"
+      data-tour="options"
     >
       <div className="workspace-card-heading">
         <div className="workspace-heading-text">
