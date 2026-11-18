@@ -26,6 +26,11 @@ from ..services.chat_request_control import (
     get_chat_request_control,
     get_chat_request_timeout,
 )
+from ..services.chat_route_points import (
+    bind_chat_route_tools, read_chat_route_payload,
+    bind_current_place_details, validate_plan_place_details, validate_plan_visit_order,
+)
+from ..services.plan_evaluation import extract_tool_trace
 
 
 CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
@@ -100,6 +105,9 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
 - 날짜가 미정인 장소는 가까운 권역끼리 같은 날에 묶고, 각 날짜의 실제 출발·도착 위치로 순서를 다시 비교한다.
   1일차 출발은 확인된 출발지, 다음 날 출발은 선택한 전날 숙소, 종료는 당일 숙소 또는 요청한 마지막 날 귀환지다.
   숙소가 미정인 경계는 좌표를 생략하며 센터·전날 관광지·가상의 숙소를 대신 넣지 않는다.
+  여러 날의 일정은 권역을 날짜에 배치한 뒤 날짜별로 suggest_visit_order를 각각 호출한다.
+  전체 기간을 원래 출발지에서 출발해 돌아오는 한 번의 순회로 계산하지 않는다.
+  숙소 미정 1박 2일에 원래 출발지 귀환을 요청했다면 첫날은 출발 참조만, 둘째 날은 귀환 참조만 전달한다.
   12곳이 넘으면 고정된 경계를 유지한 작은 구간으로 나누고 전체 최적 경로를 계산했다고 설명하지 않는다.
 - 순서 후보는 직선거리 비교이며 실제 자동차·도보·버스 이동시간이나 접근성의 최적해가 아니다.
   기존과 같은 이동수단으로 필요한 모든 구간을 조회하고 운영시간·휴무일·필수 접근 조건·체류시간을 지킨다.
@@ -108,6 +116,13 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
   후속 수정에서 요청하지 않은 관광지·방문일·체류시간을 임의로 삭제하거나 변경하지 않는다.
 - 실제 조회 경로로 조건을 충족하는 후보를 채택한다. 거리 비교만으로 최단시간이나 이용 가능을 보장하지 않는다.
   비교에 실패하거나 고정 조건 때문에 후보를 채택하지 못하면 확인된 기존 순서와 조건을 유지한다.
+
+시설 정보 요약:
+- 필수 시설은 장소별로 확인한 Y·N·unknown과 조사 원문의 충돌 여부를 구분해 설명한다.
+- 일부 장소가 미확인이라는 이유로 모든 장소를 미확인이라고 요약하지 않는다.
+  확인된 시설이 있는 장소와 현장 확인이 필요한 장소를 나누어 안내한다.
+- 필수 시설의 집계값을 설명할 때는 장소명과 Y·N·unknown을 장소별로 적는다.
+  상세 조사 지점에 시설 기록이 있다는 사실과 집계값이 Y라는 판단을 혼동하지 않는다.
 
 휴무일:
 - 일정에 넣을 장소는 get_place_details의 visit_dates에 여행 날짜(start_date부터 여행 일수만큼, YYYY-MM-DD)를 넣어 확인한다.
@@ -124,6 +139,31 @@ CHAT_SYSTEM_PROMPT = SYSTEM_PROMPT + """
   종료 시각이 폐장 전이면 폐장 시각을 넘기거나 폐장 전 관람을 완료할 수 없다고 덧붙이지 않는다.
 - opening_hours가 '확인 안 됨'인 장소는 넣을 수 있고, 해당 visit의 accessibility_notes에 '운영시간 확인 필요'를 넣는다.
 - 관람료는 admission_fee를 근거로 안내하고, '확인 안 됨'이면 금액을 지어내지 않는다.
+
+요청별 위치 참조:
+- 이동 도구에 origin_ref·destination_ref 인자가 있으면 좌표를 직접 전달하지 않는다.
+  DB 관광지는 place:P001처럼 place:접두사와 place_id를 사용한다.
+  현재 options에서 좌표까지 확인한 원래 출발지와 요청한 최종 귀환지는 departure다.
+  선택한 N번째 숙박일의 숙소는 stay:N이다. 미정 숙소의 참조를 만들지 않는다.
+- 출발지가 미정이거나 새 출발지·숙소로 변경하면 find_location으로 조회하고,
+  그 응답의 point_ref(found:...)를 해당 새 위치의 이동에 사용한다.
+  이름이 같거나 가까운 장소라도 다른 place_id의 좌표나 참조를 대신 쓰지 않는다.
+- suggest_visit_order에 day 인자가 있으면 해당 일차의 장소만 place_ids에 넣는다.
+  경계도 origin_ref·destination_ref로 지정하며 미정인 경계는 null로 둔다.
+  귀환을 요청한 숙소 미정 1박 2일은 1일차 origin_ref=departure, destination_ref=null,
+  2일차 origin_ref=null, destination_ref=departure다.
+  출발지를 새로 조회했다면 departure 대신 이번 조회의 point_ref를 사용한다.
+- 이동 응답의 origin·destination에 표시된 장소명과 방향을 확인한 뒤 해당 move에 route_id를 복사한다.
+  방문 순서를 바꾸면 새 순서의 출발→도착 방향으로 이동을 다시 조회한다.
+- 이전 일정의 관광지를 유지하는 숙소 선택·시간 수정 요청도 이번 생성 시도에서
+  모든 방문 장소의 get_place_details를 먼저 호출하고 방문 날짜를 확인한다.
+  장소 ID로 좌표를 읽는 것과 이전 답변의 상세 설명은 이번 상세 조회를 대신하지 않는다.
+- details_required가 나오면 place_ids의 상세 정보를 조회한 뒤 이동·순서 비교를 다시 요청한다.
+  자동 재생성에서도 첫 시도의 상세 조회를 재사용하지 않는다.
+- stay:N은 요청 options에 전달된 기존 숙소의 위치이며 새 숙소로 자동 변경되지 않는다.
+  숙소를 변경했다면 find_location 응답의 새 point_ref를 이동 도구뿐 아니라
+  suggest_visit_order의 해당 숙박일 도착과 다음 날 출발에도 사용한다.
+  새 숙소를 options에 저장한 뒤 기존 stay:N으로 순서를 비교한 결과를 근거로 삼지 않는다.
 
 지도 경로 연결:
 - move의 transport에는 '자동차', '버스', '도보' 같은 일반 이동수단명만 쓴다.
@@ -177,6 +217,7 @@ def build_chat_agent(
     route_calls: list[dict] | None = None,
     http_client=None,
     location_tool=None,
+    request_payload=None,
 ):
     check_chat_request_control()
     control = get_chat_request_control()
@@ -185,16 +226,24 @@ def build_chat_agent(
     if route_calls is None:
         route_calls = []
 
-    tools = [
-        find_location if location_tool is None else location_tool,
-        search_places,
-        search_places_by_name,
-        suggest_visit_order,
-        get_place_details,
-        get_place_details,
+    location = find_location if location_tool is None else location_tool
+    order = suggest_visit_order
+    details = get_place_details
+    route_tools = [
         create_driving_map_tool(route_calls),
         create_bus_map_tool(route_calls),
         create_walking_map_tool(route_calls),
+    ]
+    if request_payload is not None:
+        details, require_details = bind_current_place_details(get_place_details)
+        location, order, route_tools = bind_chat_route_tools(
+            request_payload, location_tool=location, order_tool=order,
+            driving_tool=route_tools[0], bus_tool=route_tools[1],
+            walking_tool=route_tools[2], require_details=require_details,
+        )
+    tools = [
+        location, search_places, search_places_by_name, order,
+        details, details, *route_tools,
     ]
     model_options = {}
     if http_client is not None:
@@ -227,6 +276,9 @@ def run_chat_agent(
     try:
         with chat_model_http_client() as http_client:
             arguments = {"route_calls": route_calls}
+            request_payload = read_chat_route_payload(messages)
+            if request_payload is not None:
+                arguments["request_payload"] = request_payload
             location_tool = bind_selected_lodging_location(find_location, messages)
             if location_tool is not find_location:
                 arguments["location_tool"] = location_tool
@@ -238,10 +290,22 @@ def run_chat_agent(
         check_chat_request_control()
 
     new_messages = result["messages"][len(messages):]
+    generated_reply = result.get("structured_response")
+    generated_plan = getattr(generated_reply, "plan", None)
+    plan_data = generated_plan.model_dump() if generated_plan is not None else None
+    tool_trace = extract_tool_trace(new_messages) if generated_plan is not None else []
+    detail_errors = validate_plan_place_details(plan_data, tool_trace)
+    order_errors = validate_plan_visit_order(
+        plan_data,
+        generated_reply.options.model_dump() if generated_plan is not None else {},
+        tool_trace,
+    )
     return {
         "chat_reply": result.get("structured_response"),
         "model_call_count": count_model_calls(new_messages),
         "tool_call_counts": count_tool_calls(new_messages),
         "route_calls": route_calls,
         "messages": new_messages,
+        "place_detail_errors": detail_errors,
+        "visit_order_errors": order_errors,
     }
