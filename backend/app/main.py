@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import chat_requests, lodgings, place_details, place_images, plan
+from .routers import chat_requests, itinerary_pdf, lodgings, place_details, place_images, plan
 from .services.chat_request_runtime import shutdown_chat_request_runtime
 from .routers.plan import build_error_response
 from contextlib import asynccontextmanager
@@ -30,6 +30,7 @@ app.add_middleware(
 )
 app.include_router(plan.router)
 app.include_router(chat_requests.router)
+app.include_router(itinerary_pdf.router)
 app.include_router(place_images.router)
 app.include_router(place_details.router)
 app.include_router(lodgings.router)

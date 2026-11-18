@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import ConversationPanel from './ConversationPanel.jsx'
 import TravelOptions from './TravelOptions.jsx'
 import TravelPlan from './TravelPlan.jsx'
+import ItineraryPdfDownload from './ItineraryPdfDownload.jsx'
 import LodgingPanel from './LodgingPanel.jsx'
 import {
   chooseLodging, getLodgingSearchCenter, getLodgingSelectionMessage, getLodgingStay,
@@ -380,9 +381,18 @@ function TravelWorkspace() {
           className="workspace-results"
           aria-labelledby="workspace-results-title"
         >
-          <div className="workspace-panel-heading">
-            <h2 id="workspace-results-title">여행 지도와 일정</h2>
-            <p>지도에서 장소를 확인하고 날짜별 일정을 살펴보세요.</p>
+          <div className="workspace-panel-heading workspace-results-heading">
+            <div className="workspace-results-heading-copy">
+              <h2 id="workspace-results-title">여행 지도와 일정</h2>
+              <p>지도에서 장소를 확인하고 날짜별 일정을 살펴보세요.</p>
+            </div>
+
+            {planResult && (
+              <ItineraryPdfDownload
+                planResult={planResult}
+                disabled={isSending}
+              />
+            )}
           </div>
 
           <div className="workspace-results-content">
