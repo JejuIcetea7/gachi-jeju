@@ -85,6 +85,7 @@ function ConversationPanel({
   onOpenPlan,
   planLabel = '',
   headerAction = null,
+  mascotImages = {},
 }) {
   const [draft, setDraft] = useState('')
   const inputRef = useRef(null)
@@ -219,6 +220,9 @@ function ConversationPanel({
       >
         {messages.length === 0 ? (
           <div className="conversation-empty">
+            {mascotImages.greeting && (
+              <img className="conversation-empty-mascot" src={mascotImages.greeting} alt="" />
+            )}
             <p>어떤 제주 여행을 떠나고 싶으신가요?</p>
             <p>
               “부모님과 2박 3일 여행을 하고 싶어요.
@@ -235,9 +239,21 @@ function ConversationPanel({
                   ? 'is-user' : 'is-assistant'}${message.status === 'failed'
                   ? ' is-failed' : ''}`}
               >
-                <span className="conversation-avatar">
-                  {message.role === 'user' ? <UserIcon /> : <ChatIcon size={18} />}
-                </span>
+                {message.role === 'user' && (
+                  <span className="conversation-avatar">
+                    <UserIcon />
+                  </span>
+                )}
+                {message.role !== 'user' && mascotImages.assistant && (
+                  <span className="conversation-avatar is-mascot">
+                    <img src={mascotImages.assistant} alt="" />
+                  </span>
+                )}
+                {message.role !== 'user' && !mascotImages.assistant && (
+                  <span className="conversation-avatar">
+                    <ChatIcon size={18} />
+                  </span>
+                )}
                 <div className="conversation-bubble">
                   <p className="conversation-author">
                     {message.role === 'user' ? '나' : '같이 가는 제주'}
@@ -277,7 +293,11 @@ function ConversationPanel({
 
       {isSending && (
         <div className="conversation-progress">
-          <span className="conversation-progress-dot" aria-hidden="true" />
+          {mascotImages.waiting ? (
+            <img className="conversation-state-mascot is-moving" src={mascotImages.waiting} alt="" />
+          ) : (
+            <span className="conversation-progress-dot" aria-hidden="true" />
+          )}
           <p role="status">여행 정보를 확인하고 답변을 준비하고 있습니다.</p>
           {typeof onCancel === 'function' && (
             <button type="button" className="secondary-button" onClick={onCancel}>
@@ -296,15 +316,20 @@ function ConversationPanel({
 
       {error && (
         <div className="conversation-error" role="alert">
-          <p>{error.message}</p>
-          {details.length > 0 && (
-            <ul>
-              {details.map((detail, index) => (
-                <li key={index}>{formatDetail(detail)}</li>
-              ))}
-            </ul>
+          {mascotImages.error && (
+            <img className="conversation-state-mascot" src={mascotImages.error} alt="" />
           )}
-          {retryButton}
+          <div className="conversation-error-body">
+            <p>{error.message}</p>
+            {details.length > 0 && (
+              <ul>
+                {details.map((detail, index) => (
+                  <li key={index}>{formatDetail(detail)}</li>
+                ))}
+              </ul>
+            )}
+            {retryButton}
+          </div>
         </div>
       )}
 

@@ -32,11 +32,22 @@ import mascotMap from './assets/mascot/duo-map.webp'
 import mascotCamera from './assets/mascot/hallabong-camera.webp'
 import mascotThumbsUp from './assets/mascot/hallabong-thumbs-up.webp'
 import mascotWave from './assets/mascot/hallabong-wave.webp'
+import mascotFace from './assets/mascot/hallabong-face.webp'
+import mascotMagnifier from './assets/mascot/basalt-magnifier.webp'
+import mascotFlustered from './assets/mascot/basalt-flustered.webp'
 
 const CANCELLED_NOTICE = '요청을 취소했습니다. 내용을 바꾸어 보내거나 이 요청을 다시 보낼 수 있습니다.'
 const SIDEBAR_ID = 'workspace-sidebar'
 const SIDEBAR_TITLE_ID = 'workspace-results-title'
 const GUIDE_TOUR_STORAGE_KEY = 'gachi-jeju.guide-tour.v1'
+
+// 대화창에 넣는 마스코트: 시작 전 인사, 답변 아이콘, 답변 대기, 오류
+const CONVERSATION_MASCOTS = {
+  greeting: mascotWave,
+  assistant: mascotFace,
+  waiting: mascotMagnifier,
+  error: mascotFlustered,
+}
 const DESKTOP_QUERY = '(min-width: 901px)'
 
 // 첫 방문 가이드 단계입니다. target은 화면 요소의 data-tour 값입니다.
@@ -647,6 +658,7 @@ function TravelWorkspace() {
         onRetry={retryMessage ? handleRetry : undefined}
         onOpenPlan={planResult ? () => setSidebarOpen(true) : undefined}
         planLabel={planBannerLabel}
+        mascotImages={CONVERSATION_MASCOTS}
         headerAction={(
           <button
             type="button"
@@ -852,9 +864,7 @@ function TravelWorkspace() {
       ) : (
         <>
           <div className="workspace-result-empty" role="status" data-tour="plan-area">
-            <span className="workspace-result-empty-icon">
-              <MapIcon size={26} />
-            </span>
+            <img className="workspace-result-empty-mascot" src={mascotMap} alt="" />
             <div>
               <p className="workspace-result-empty-title">
                 대화로 일정을 먼저 만들어 주세요.
