@@ -1553,10 +1553,20 @@ fieldset.option-group legend {
   display: contents;
 }
 
-.workspace-results-heading .itinerary-pdf-download > button {
+.workspace-results-heading .itinerary-export-actions {
   grid-column: 2;
   grid-row: 1;
   justify-self: end;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  max-width: 420px;
+  min-width: 0;
+}
+
+.itinerary-export-actions .secondary-button {
   white-space: nowrap;
 }
 
@@ -1580,9 +1590,75 @@ fieldset.option-group legend {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .workspace-results-heading .itinerary-pdf-download > button {
+  .workspace-results-heading .itinerary-export-actions {
     grid-column: 1;
     grid-row: auto;
     justify-self: end;
   }
+}
+
+.itinerary-email-dialog {
+  box-sizing: border-box;
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 24px;
+  overflow-y: auto;
+  border: 1px solid #9db1a5;
+  border-radius: 16px;
+  color: #173d35;
+  background: #ffffff;
+}
+
+.itinerary-email-dialog::backdrop {
+  background: rgb(16 35 28 / 45%);
+}
+
+.itinerary-email-dialog form {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.itinerary-email-dialog label {
+  font-weight: 700;
+}
+
+.itinerary-email-dialog input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #9db1a5;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.itinerary-email-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.travel-workspace .itinerary-email-submit {
+  border-color: #1f644f;
+  color: #ffffff;
+  background: #1f644f;
+}
+
+.workspace-results-heading .itinerary-email-feedback {
+  margin: 0;
+  padding: 12px;
+  border-radius: 8px;
+  color: #174d3d;
+  background: #edf4ee;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.workspace-results-heading .itinerary-email-feedback.is-error {
+  color: #b42318;
+  background: #fff1ef;
 }

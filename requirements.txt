@@ -10,3 +10,4 @@ openai==3.46.0
 httpx2==2.16.0
 reportlab==4.4.9
 pypdf==6.21.4
+email-validator==2.3.0

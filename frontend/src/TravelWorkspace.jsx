@@ -3,6 +3,7 @@ import ConversationPanel from './ConversationPanel.jsx'
 import TravelOptions from './TravelOptions.jsx'
 import TravelPlan from './TravelPlan.jsx'
 import ItineraryPdfDownload from './ItineraryPdfDownload.jsx'
+import ItineraryEmailDialog from './ItineraryEmailDialog.jsx'
 import LodgingPanel from './LodgingPanel.jsx'
 import {
   chooseLodging, getLodgingSearchCenter, getLodgingSelectionMessage, getLodgingStay,
@@ -388,10 +389,16 @@ function TravelWorkspace() {
             </div>
 
             {planResult && (
-              <ItineraryPdfDownload
-                planResult={planResult}
-                disabled={isSending}
-              />
+              <div className="itinerary-export-actions">
+                <ItineraryPdfDownload
+                  planResult={planResult}
+                  disabled={isSending}
+                />
+                <ItineraryEmailDialog
+                  planResult={planResult}
+                  disabled={isSending}
+                />
+              </div>
             )}
           </div>
 

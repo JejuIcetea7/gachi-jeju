@@ -7,6 +7,7 @@
 > 아래 상세 요청·응답 설명은 단계형 UI와 기존 POST /plan 연동을 기준으로 작성되었습니다.
 
 PDF 다운로드 준비·요청 형식은 [여행 일정 PDF 다운로드](itinerary-pdf.md)를 참고합니다.
+PDF 이메일 발송과 서버 설정은 [여행 일정 PDF 이메일 발송](itinerary-email.md)을 참고합니다.
 
 최종 검증일(기존 /plan): 2026-11-10
 
@@ -43,6 +44,7 @@ npm --prefix frontend run dev
 | 대화형 일정 생성·수정 | POST /chat | POST /api/chat |
 | 대화 요청 취소 | POST /chat/cancel | POST /api/chat/cancel |
 | 전체 일정 PDF 다운로드 | POST /itineraries/pdf | POST /api/itineraries/pdf |
+| 일정 PDF 이메일 발송 | POST /itineraries/email | POST /api/itineraries/email |
 | 주변 숙소 후보 | GET /lodgings/nearby | GET /api/lodgings/nearby |
 | 장소 상세 조회 | GET /places/{place_id}/details | GET /api/places/{place_id}/details |
 | 장소 사진 목록 | GET /places/{place_id}/images | GET /api/places/{place_id}/images |
