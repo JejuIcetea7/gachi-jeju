@@ -13,7 +13,8 @@ from pypdf import PdfReader
 from backend.app.main import app
 from backend.app.routers import itinerary_pdf as pdf_router
 from backend.app.services import itinerary_pdf as pdf_service
-
+from PIL import Image
+from backend.app.routers import place_images as images_router
 
 def item(kind="visit", **changes):
     return {
@@ -59,8 +60,16 @@ def render(value):
 def pdf_text(content):
     return "\n".join(page.extract_text() for page in PdfReader(BytesIO(content)).pages)
 
+def representative_jpeg():
+    output = BytesIO()
+    Image.new("RGB", (640, 400), "orange").save(output, "JPEG")
+    return output.getvalue()
 
 class ItineraryPdfTests(unittest.TestCase):
+    def setUp(self):
+        self.photos = self.enterContext(patch.object(
+            pdf_service, "get_representative_image", return_value=None,
+        ))
     def test_all_days_lodging_notes_and_korean_font_are_preserved(self):
         value = snapshot()
         before = copy.deepcopy(value)
@@ -177,9 +186,32 @@ class ItineraryPdfTests(unittest.TestCase):
         )
         self.assertIn("2026-11-18 09:30", pdf_text(content))
 
+    def test_same_photo_is_loaded_once_and_only_used_for_verified_visits(self):
+        self.photos.return_value = representative_jpeg()
+        value = snapshot()
+        value["plan"]["days"][0]["items"] += [
+            item("move", place_id="P044"),
+            item(verified=False, place_id="P044"),
+            item(place_id="P001", verified=False),
+        ]
+        value["plan"]["days"][2]["items"] = [item()]
+
+        pdf = render(value)
+        pages = PdfReader(BytesIO(pdf)).pages
+        self.assertEqual([len(page.images) for page in pages], [1, 0, 1])
+        self.assertEqual(pages[0].images[0].image.size, (640, 400))
+        self.assertIn("여행지 정보 확인 필요", pdf_text(pdf))
+        self.photos.assert_called_once()
+        self.assertEqual(self.photos.call_args.args, ("P044",))
+
 
 class ItineraryPdfHttpTests(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        self.photos = self.enterContext(patch.object(
+            pdf_service, "get_representative_image", return_value=None,
+        ))
     async def test_http_download_headers_and_full_pdf(self):
+        self.photos.return_value = representative_jpeg()
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post("/itineraries/pdf", json=snapshot())
         self.assertEqual(response.status_code, 200)
@@ -187,6 +219,7 @@ class ItineraryPdfHttpTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("filename*=UTF-8''", response.headers["content-disposition"])
         self.assertIn("no-store", response.headers["cache-control"])
         self.assertIn("3일차", pdf_text(response.content))
+        self.assertEqual(len(PdfReader(BytesIO(response.content)).pages[0].images), 1)
 
     async def test_invalid_request_returns_existing_error_format(self):
         value = snapshot()
@@ -205,6 +238,24 @@ class ItineraryPdfHttpTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.json()["error"]["code"], "pdf_unavailable")
         self.assertEqual(health.status_code, 200)
+
+    async def test_representative_endpoint_serves_jpeg_and_handles_missing_photo(self):
+        content = representative_jpeg()
+        with patch.object(
+            images_router, "get_representative_image",
+            side_effect=lambda place_id: content if place_id == "P044" else None,
+        ):
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test",
+            ) as client:
+                photo = await client.get("/places/P044/representative-image")
+                missing = await client.get("/places/P002/representative-image")
+
+        self.assertEqual(photo.status_code, 200)
+        self.assertEqual(photo.headers["content-type"], "image/jpeg")
+        self.assertEqual(photo.content, content)
+        self.assertEqual(missing.status_code, 404)
+        self.assertEqual(missing.headers["cache-control"], "no-store")
 
 
 if __name__ == "__main__":

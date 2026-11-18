@@ -121,6 +121,25 @@ function getVisitNumbers(items) {
   return visitNumbers
 }
 
+function RepresentativePlaceImage({ placeId, title }) {
+  const [unavailable, setUnavailable] = useState(false)
+
+  if (unavailable) return null
+
+  return (
+    <img
+      className="plan-representative-image"
+      src={`/api/places/${encodeURIComponent(placeId)}/representative-image`}
+      alt={`${title} 대표 사진`}
+      width={640}
+      height={400}
+      loading="lazy"
+      decoding="async"
+      onError={() => setUnavailable(true)}
+    />
+  )
+}
+
 function TravelPlan({ plan, autoFocus = true, transitRoutes = [] }) {
   const headingRef = useRef(null)
   const [photoPlace, setPhotoPlace] = useState(null)
@@ -222,6 +241,13 @@ function TravelPlan({ plan, autoFocus = true, transitRoutes = [] }) {
                           {' · '}
                           {formatDuration(item)}
                         </p>
+                        {item.verified === true && /^P[0-9]{3}$/.test(item.place_id ?? '') && (
+                          <RepresentativePlaceImage
+                            key={item.place_id}
+                            placeId={item.place_id}
+                            title={item.title}
+                          />
+                        )}
                       </div>
                     </li>
                   ) : (

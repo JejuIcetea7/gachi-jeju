@@ -1347,6 +1347,13 @@
   box-shadow: var(--shadow-card);
 }
 
+.plan-representative-image {
+  display: block;
+  width: min(100%, 224px);
+  height: auto;
+  border-radius: 8px;
+}
+
 .plan-timeline-title-row {
   display: flex;
   flex-wrap: wrap;
