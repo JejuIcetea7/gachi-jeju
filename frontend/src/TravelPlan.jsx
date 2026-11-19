@@ -219,10 +219,6 @@ function TravelPlan({ plan, autoFocus = true, transitRoutes = [] }) {
                     <li key={index} className="plan-timeline-item is-visit">
                       <div className="plan-timeline-marker">
                         <span className="plan-visit-number">{visitNumbers[index]}</span>
-                        <span className="plan-time">
-                          <span>{item.start_time}</span>
-                          <span>~ {item.end_time}</span>
-                        </span>
                       </div>
                       <div className="plan-timeline-card">
                         <div className="plan-timeline-title-row">
@@ -259,13 +255,13 @@ function TravelPlan({ plan, autoFocus = true, transitRoutes = [] }) {
                           </span>
                         </div>
                         <p className="plan-timeline-meta">
-                          <SvgIcon>
-                            <circle cx="12" cy="12" r="9" />
-                            <path d="M12 7v5l3 2" />
-                          </SvgIcon>
-                          <span className="plan-type">방문</span>
-                          {' · '}
-                          {formatDuration(item)}
+                          <strong className="plan-visit-duration">방문 {formatDuration(item)}</strong>
+                          <span aria-hidden="true">·</span>
+                          <span className="plan-visit-time">
+                            <time dateTime={item.start_time}>{item.start_time}</time>
+                            {' ~ '}
+                            <time dateTime={item.end_time}>{item.end_time}</time>
+                          </span>
                         </p>
                         <VisitCardDetails
                           key={item.place_id}
@@ -283,16 +279,14 @@ function TravelPlan({ plan, autoFocus = true, transitRoutes = [] }) {
                         </span>
                       </div>
                       <div className="plan-timeline-move">
-                        <p className="plan-timeline-title-row">
-                          <span className="plan-type">이동</span>
-                          <strong className="plan-item-title">{item.title}</strong>
-                        </p>
                         <p className="plan-move-detail">
-                          {item.transport || '이동수단 확인 필요'}
-                          {' · '}
-                          {formatDistance(item.distance_km)}
-                          {' · '}
-                          {formatDuration(item)}
+                          <strong className="plan-move-duration">
+                            이동 · {item.transport && `${item.transport} `}{formatDuration(item)}
+                          </strong>
+                          <span className="plan-move-route">
+                            {item.title} · {formatDistance(item.distance_km)}
+                            {!item.transport && ' · 이동수단 확인 필요'}
+                          </span>
                         </p>
                         {isTransitMove(item) && (
                           <TransitMoveGuide guidance={guidanceById.get(item.route_id)} />
