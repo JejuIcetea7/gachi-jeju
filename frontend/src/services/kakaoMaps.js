@@ -8,13 +8,19 @@ function isKakaoMapsReady() {
   )
 }
 
-export function loadKakaoMaps() {
-  const apiKey = import.meta.env.VITE_KAKAO_MAP_KEY?.trim()
+export async function loadKakaoMaps() {
+  let apiKey = import.meta.env.VITE_KAKAO_MAP_KEY?.trim()
 
   if (!apiKey) {
-    return Promise.reject(
-      new Error('지도용 JavaScript 키를 설정해 주세요.'),
-    )
+    const config = await fetch('/api/map-config', {
+      signal: AbortSignal.timeout(5000),
+    }).then((response) => response.ok ? response.json() : null).catch(() => null)
+    const runtimeKey = config?.kakao_map_key
+    apiKey = typeof runtimeKey === 'string' ? runtimeKey.trim() : ''
+  }
+
+  if (!apiKey) {
+    throw new Error('지도용 JavaScript 키를 설정해 주세요.')
   }
 
   if (isKakaoMapsReady()) {
