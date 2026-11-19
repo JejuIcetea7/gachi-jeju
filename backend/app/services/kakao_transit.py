@@ -6,7 +6,14 @@ from urllib.request import Request, urlopen
 
 import truststore
 
-def parse_transit_response(data: dict) -> dict:
+from .transit_geometry import extract_transit_geometry
+from .chat_request_transport import open_chat_url
+
+def parse_transit_response(
+    data: dict,
+    *,
+    include_geometry: bool = False,
+) -> dict:
     provider_status = data.get("status")
     if provider_status in {"NO_RESULTS", "STARTNODES_NULL", "ENDNODES_NULL", "EQUAL_POINTS"}:
         return {"status": "no_route", "reason": provider_status}
@@ -43,13 +50,18 @@ def parse_transit_response(data: dict) -> dict:
 
             segments.append(segment)
         
-        routes.append({
+        route_data = {
             "distance_m": properties.get("totalDistance"),
             "duration_seconds": properties.get("totalTime"),
             "transfers": properties.get("transfers"),
             "fare_krw": (properties.get("fare") or {}).get("value"),
             "segments": segments,
-        })
+        }
+
+        if include_geometry:
+            route_data.update(extract_transit_geometry(route["steps"]))
+
+        routes.append(route_data)
 
     if not routes:
         return {"status": "no_route", "reason": "NO_BUS_ROUTE"}
@@ -63,6 +75,7 @@ def get_transit_routes(
     destination_latitude: float,
     destination_longitude: float,
     api_key: str,
+    include_geometry: bool = False,
 ) -> dict:
     api_key = api_key.strip()
     if not api_key:
@@ -81,7 +94,7 @@ def get_transit_routes(
     context = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 
     try:
-        with urlopen(request, context=context, timeout=20) as response:
+        with open_chat_url(urlopen, request, context=context, timeout=20) as response:
             data = json.load(response)
     except HTTPError as error:
         with error:
@@ -103,6 +116,9 @@ def get_transit_routes(
         return {"status": "api_error", "reason": "INVALID_RESPONSE"}
 
     try:
-        return parse_transit_response(data)
+        return parse_transit_response(
+            data,
+            include_geometry=include_geometry,
+        )
     except (KeyError, TypeError, AttributeError):
         return {"status": "api_error", "reason": "INVALID_RESPONSE"}

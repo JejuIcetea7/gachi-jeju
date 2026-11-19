@@ -1,0 +1,198 @@
+import math
+
+from .lodging_planning import _night_choices
+
+
+EARTH_RADIUS_M = 6_371_000.0
+ENDPOINT_TOLERANCE_M = 100.0
+COORDINATE_TOLERANCE = 0.000001
+
+
+def _same_point(first, second):
+    return (
+        first is not None and second is not None
+        and all(abs(left - right) <= COORDINATE_TOLERANCE for left, right in zip(first, second))
+    )
+
+
+def _coordinate(value: dict | None) -> tuple[float, float] | None:
+    if not isinstance(value, dict):
+        return None
+
+    latitude = value.get("latitude")
+    longitude = value.get("longitude")
+    if (
+        type(latitude) not in (int, float)
+        or type(longitude) not in (int, float)
+        or not -90 <= latitude <= 90
+        or not -180 <= longitude <= 180
+    ):
+        return None
+
+    return float(latitude), float(longitude)
+
+
+def _visit_coordinate(item: dict | None) -> tuple[float, float] | None:
+    if (
+        not isinstance(item, dict)
+        or item.get("item_type") != "visit"
+        or (item.get("verified") is not True and not item.get("restaurant_address"))
+    ):
+        return None
+    return _coordinate(item)
+
+
+def _distance_m(first: tuple, second: tuple) -> float:
+    latitude_1, longitude_1 = map(math.radians, first)
+    latitude_2, longitude_2 = map(math.radians, second)
+    value = (
+        math.sin((latitude_2 - latitude_1) / 2) ** 2
+        + math.cos(latitude_1)
+        * math.cos(latitude_2)
+        * math.sin((longitude_2 - longitude_1) / 2) ** 2
+    )
+    return 2 * EARTH_RADIUS_M * math.asin(
+        math.sqrt(min(1.0, max(0.0, value)))
+    )
+
+
+def validate_route_endpoints(
+    plan: dict,
+    route_calls: list[dict] | None,
+    *,
+    departure: dict | None = None,
+    return_to_origin: bool = False,
+    daily_departure: bool = False,
+    lodging_stays: list[dict] | None = None,
+) -> list[str]:
+    """DB 검증 후의 일정과 길찾기에 전달한 좌표를 대조합니다.
+
+    확인된 방문 장소의 바로 앞뒤 이동과 연속 이동의 연결을 검사합니다.
+    확인된 두 위치가 다르면 이동이 있어야 합니다. 숙박 불필요 일정은 매일 출발지를 사용합니다.
+    선택한 숙소는 해당 일차 마지막 이동의 도착과 다음 일차 첫 이동의 출발에 대조합니다.
+    비교 기준 좌표가 없으면 해당 끝점은 검사하지 않습니다.
+    도로선 paths는 사용하지 않으며, 입력은 변경하지 않습니다.
+    """
+    records = {}
+    duplicate_ids = set()
+    for record in route_calls if isinstance(route_calls, list) else []:
+        if not isinstance(record, dict):
+            continue
+        route_id = record.get("route_id")
+        if not isinstance(route_id, str) or not route_id.strip():
+            continue
+        if route_id in records:
+            duplicate_ids.add(route_id)
+        records[route_id] = record
+
+    def find_record(item):
+        route_id = item.get("route_id")
+        if not isinstance(route_id, str) or route_id in duplicate_ids:
+            return None
+        return records.get(route_id)
+
+    departure_coordinate = _coordinate(departure)
+    stay_choices = _night_choices(lodging_stays)
+    days = plan["days"]
+    errors = []
+
+    for day_index, day in enumerate(days):
+        items = day["items"]
+        number = day["day"]
+        start = _coordinate(stay_choices.get(number - 1))
+        end = _coordinate(stay_choices.get(number))
+        if number == 1 or daily_departure:
+            start = departure_coordinate
+        returning = return_to_origin and (day_index == len(days) - 1 or daily_departure)
+        if returning:
+            end = departure_coordinate
+        if (
+            return_to_origin is True and departure_coordinate is not None
+            and day_index == len(days) - 1 and day_index > 0
+            and start is not None and not _same_point(start, departure_coordinate)
+            and days[day_index - 1].get("day") == day["day"] - 1
+            and days[day_index - 1].get("items")
+            and (not items or (
+                items[-1].get("item_type") == "visit" and _visit_coordinate(items[-1]) is None
+            ))
+        ):
+            errors.append(
+                f"{day['day']}일차: 전날 선택한 숙소와 원래 출발지가 확인돼 있고 귀환이 요청됐습니다. "
+                "관광지 방문이 없어도 숙소에서 원래 출발지로 가는 귀환 이동을 포함해 주세요. "
+                "이번 시도의 이동 조회 결과를 사용하고 관광지를 임의로 추가하지 마세요."
+            )
+        for index, item in enumerate(items):
+            previous = items[index - 1] if index > 0 else None
+            following = items[index + 1] if index + 1 < len(items) else None
+            if item["item_type"] == "visit":
+                location = _visit_coordinate(item)
+                label = f"{number}일차 '{item['title']}'"
+                if previous is None and start is not None and location is not None and not _same_point(start, location):
+                    errors.append(f"{label}: 출발 위치에서 이 방문지까지의 이동을 조회해 일정에 추가해 주세요.")
+                if previous is not None and previous["item_type"] == "visit":
+                    previous_location = _visit_coordinate(previous)
+                    both_known = previous_location is not None and location is not None
+                    includes_restaurant = previous.get("restaurant_address") or item.get("restaurant_address")
+                    if (both_known or includes_restaurant) and not _same_point(previous_location, location):
+                        errors.append(f"{label}: '{previous['title']}'에서 이 방문지까지의 이동을 조회해 일정에 추가해 주세요.")
+                if following is None and end is not None and location is not None and not _same_point(end, location):
+                    destination_label = "원래 출발지로 귀환" if returning else "선택한 숙소로 도착"
+                    errors.append(f"{label}: {destination_label}하는 이동을 조회해 일정에 추가해 주세요.")
+                continue
+
+            label = f"{day['day']}일차 {index + 1}번째 일정 '{item['title']}'"
+            record = find_record(item)
+            if record is None:
+                errors.append(f"{label}: 좌표를 대조할 경로 기록을 확인하지 못했습니다.")
+                continue
+
+            origin = _visit_coordinate(previous)
+            destination = _visit_coordinate(following)
+
+            if index == 0:
+                origin = start
+            if index == len(items) - 1:
+                destination = end
+
+            for field, expected, endpoint_label in (
+                ("origin", origin, "출발"),
+                ("destination", destination, "도착"),
+            ):
+                if expected is None:
+                    continue
+
+                actual = _coordinate(record.get(field))
+                if actual is None:
+                    errors.append(
+                        f"{label}: 조회 경로의 {endpoint_label} 좌표가 올바르지 않습니다."
+                    )
+                    continue
+
+                distance = _distance_m(expected, actual)
+                if distance > ENDPOINT_TOLERANCE_M:
+                    errors.append(
+                        f"{label}: 조회 경로의 {endpoint_label} 위치가 "
+                        f"일정의 위치와 {distance:.0f}m 떨어져 있습니다. "
+                        f"허용 범위는 {ENDPOINT_TOLERANCE_M:.0f}m입니다."
+                    )
+
+            if previous is not None and previous.get("item_type") == "move":
+                previous_record = find_record(previous)
+                if previous_record is None:
+                    continue
+                previous_destination = _coordinate(
+                    previous_record.get("destination")
+                )
+                current_origin = _coordinate(record.get("origin"))
+                if previous_destination is None or current_origin is None:
+                    errors.append(f"{label}: 연속 이동의 연결 좌표가 올바르지 않습니다.")
+                elif (
+                    _distance_m(previous_destination, current_origin)
+                    > ENDPOINT_TOLERANCE_M
+                ):
+                    errors.append(
+                        f"{label}: 직전 이동의 도착 위치와 이번 이동의 "
+                        "출발 위치가 일치하지 않습니다."
+                    )
+
+    return errors

@@ -1,0 +1,318 @@
+import math
+import sqlite3
+from datetime import date
+from pathlib import Path
+import unicodedata
+
+from ..services.closed_days import STATUS_UNKNOWN, judge_closed_on_date
+
+DATABASE_FILE = Path(__file__).resolve().parents[3] / "data" / "processed" / "gachi_jeju.db"
+EARTH_RADIUS_KM = 6371.0
+INVALID_DATE_STATUS = "날짜 형식 오류"
+
+def calculate_distance_km(
+    first_latitude: float,
+    first_longitude: float,
+    second_latitude: float,
+    second_longitude: float,
+) -> float:
+    """두 좌표 사이의 직선거리(km)를 하버사인 공식으로 계산합니다."""
+    first_latitude_radian = math.radians(first_latitude)
+    second_latitude_radian = math.radians(second_latitude)
+    latitude_difference = math.radians(second_latitude - first_latitude)
+    longitude_difference = math.radians(second_longitude - first_longitude)
+
+    latitude_part = math.sin(latitude_difference / 2) ** 2
+    longitude_part = (
+        math.cos(first_latitude_radian)
+        * math.cos(second_latitude_radian)
+        * math.sin(longitude_difference / 2) ** 2
+    )
+    central_angle = 2 * math.asin(math.sqrt(latitude_part + longitude_part))
+
+    distance_km = EARTH_RADIUS_KM * central_angle
+    return distance_km
+
+def read_rows(query: str, parameters: tuple) -> list[sqlite3.Row]:
+    database_uri = f"file:{DATABASE_FILE}?mode=ro"
+    connection = sqlite3.connect(database_uri, uri=True)
+    connection.row_factory = sqlite3.Row
+    try:
+        rows = connection.execute(query, parameters).fetchall()
+    finally:
+        connection.close()
+    return rows
+
+def read_distance_km(place: dict) -> float:
+    return place["distance_km"]
+
+def search_places(
+    *,
+    center_latitude: float,
+    center_longitude: float,
+    radius_km: float = 15.0,
+    category: str | None = None,
+    max_count: int = 10,
+) -> dict:
+    """기준 좌표에서 반경 안에 있는 무장애 여행지를 가까운 순으로 돌려줍니다. 장소 이름을 알면 search_places_by_name을 씁니다.
+    category는 공원, 기타, 박물관·전시, 산책로, 시장, 자연, 해변 중 하나이고, 비우면 전체에서 찾습니다.
+    distance_km는 직선거리이며 실제 이동시간이 아닙니다."""
+    query = "SELECT place_id, name, category, latitude, longitude FROM places"
+    parameters = ()
+    if category:
+        query = query + " WHERE category = ?"
+        parameters = (category,)
+
+    try:
+        rows = read_rows(query, parameters)
+    except sqlite3.Error:
+        return {"status": "db_error"}
+
+    nearby_places = []
+    for row in rows:
+        distance_km = calculate_distance_km(
+            center_latitude,
+            center_longitude,
+            row["latitude"],
+            row["longitude"],
+        )
+        if distance_km > radius_km:
+            continue
+
+        place = {
+            "place_id": row["place_id"],
+            "name": row["name"],
+            "category": row["category"],
+            "latitude": row["latitude"],
+            "longitude": row["longitude"],
+            "distance_km": round(distance_km, 1),
+        }
+        nearby_places.append(place)
+
+    nearby_places.sort(key=read_distance_km)
+    selected_places = nearby_places[:max_count]
+
+    result = {"status": "ok", "places": selected_places}
+    if len(selected_places) == 0:
+        result = {"status": "not_found", "places": []}
+    return result
+
+def check_closed_days_on_dates(closed_days: str, visit_dates: list[str]) -> dict:
+    """날짜(YYYY-MM-DD)마다 '휴무' / '영업' / '확인 안 됨' / '날짜 형식 오류'"""
+    closed_day_checks = {}
+    for visit_date_text in visit_dates:
+        try:
+            visit_date = date.fromisoformat(visit_date_text)
+        except ValueError:
+            closed_day_checks[visit_date_text] = INVALID_DATE_STATUS
+            continue
+        closed_day_checks[visit_date_text] = judge_closed_on_date(closed_days, visit_date)
+    return closed_day_checks
+
+def read_closed_days_by_place_id(place_ids: list[str]) -> dict:
+    """place_id -> closed_days 정리 값 (빈칸이면 ''). DB에 없는 place_id는 빠집니다."""
+    closed_days_by_place_id = {}
+    if len(place_ids) == 0:
+        return closed_days_by_place_id
+
+    placeholders = ", ".join(["?"] * len(place_ids))
+    query = f"SELECT place_id, closed_days FROM places WHERE place_id IN ({placeholders})"
+    rows = read_rows(query, tuple(place_ids))
+    for row in rows:
+        closed_days = row["closed_days"]
+        if closed_days is None:
+            closed_days = ""
+        closed_days_by_place_id[row["place_id"]] = closed_days
+    return closed_days_by_place_id
+
+def read_opening_hours_by_place_id(place_ids: list[str]) -> dict:
+    """place_id -> opening_hours 정리 값 (빈칸이면 ''). DB에 없는 place_id는 빠집니다."""
+    opening_hours_by_place_id = {}
+    if len(place_ids) == 0:
+        return opening_hours_by_place_id
+
+    placeholders = ", ".join(["?"] * len(place_ids))
+    query = f"SELECT place_id, opening_hours FROM places WHERE place_id IN ({placeholders})"
+    rows = read_rows(query, tuple(place_ids))
+    for row in rows:
+        opening_hours = row["opening_hours"]
+        if opening_hours is None:
+            opening_hours = ""
+        opening_hours_by_place_id[row["place_id"]] = opening_hours
+    return opening_hours_by_place_id
+
+def replace_blank_with_unknown(value: str | None) -> str:
+    text = value
+    if text is None or text == "":
+        text = STATUS_UNKNOWN
+    return text
+
+def get_place_details(*, place_id: str, visit_dates: list[str] | None = None) -> dict:
+    """여행지 하나의 관람 동선 지점별 접근성 설명(경사, 계단, 화장실, 대여 등)과 휴무일·운영시간·관람료를 돌려줍니다.
+    place_id는 장소 검색 도구 결과에서 선택한 place_id를 씁니다.
+    accessibility_facts는 현장 조사 문서의 시설·추천 정보 원문입니다(장애인 주차·화장실·주출입구 치수,
+    장애 유형별 추천 여부, 보조기기 대여, 이동약자 안내). 조사 문서가 없는 장소는 빈 목록입니다.
+    visit_dates에 방문할 수 있는 날짜(YYYY-MM-DD 목록)를 넣으면 closed_day_checks에 날짜별로
+    '휴무', '영업', '확인 안 됨' 중 하나를 돌려줍니다. closed_days가 '확인 안 됨'이면 휴무일 정보가 없습니다.
+    opening_hours는 운영시간 정리 값입니다('상시 개방', '09:00-18:00 입장마감 17:00',
+    계절별은 '3-10월 09:00-18:00;11-2월 09:00-17:00'처럼 방문 날짜의 달로 고름).
+    opening_hours_raw는 원문(시설별 시간·공연 회차 등 포함), admission_fee는 관람료 원문입니다.
+    값이 없으면 '확인 안 됨'입니다.
+    accessibility는 DB의 장애인 화장실·주차 및 계단·경사 집계 값을 그대로 제공합니다.
+    Y/N/unknown은 항목별 의미와 accessibility_facts·spots의 원문을 함께 확인합니다.
+    has_slope_or_stairs의 Y는 계단·경사 정보가 있다는 뜻이며, 계단 존재나 통행 불가 판정이 아닙니다.
+    unknown은 시설이 없다는 뜻이 아닙니다."""
+    place_query = (
+        "SELECT place_id, name, category, closed_days, opening_hours, opening_hours_raw, admission_fee, "
+        "accessible_toilet, accessible_parking, has_slope_or_stairs "
+        "FROM places WHERE place_id = ?"
+    )
+    spot_query = (
+        'SELECT name, description FROM place_spots WHERE place_id = ? ORDER BY "order"'
+    )
+    accessibility_query = (
+        "SELECT section, facility_name, description, raw_value FROM place_accessibility_raw "
+        "WHERE place_id = ? ORDER BY rowid"
+    )
+
+    try:
+        place_rows = read_rows(place_query, (place_id,))
+        spot_rows = read_rows(spot_query, (place_id,))
+        accessibility_rows = read_rows(accessibility_query, (place_id,))
+    except sqlite3.Error:
+        return {"status": "db_error"}
+
+    if len(place_rows) == 0:
+        return {"status": "not_found"}
+
+    spots = []
+    seen_spots = set()
+    for row in spot_rows:
+        description = row["description"]
+        if not description:
+            continue
+
+        spot_key = (row["name"], description)
+        if spot_key in seen_spots:
+            continue
+        seen_spots.add(spot_key)
+
+        spot = {"name": row["name"], "description": description}
+        spots.append(spot)
+
+    accessibility_facts = []
+    for row in accessibility_rows:
+        raw_value = row["raw_value"]
+        # '-'와 빈칸은 조사 값이 없다는 뜻이라 응답 길이만 늘린다
+        if raw_value is None or raw_value.strip() in ("", "-"):
+            continue
+        fact = {
+            "section": row["section"],
+            "facility_name": row["facility_name"] or "",
+            "description": row["description"],
+            "raw_value": raw_value,
+        }
+        accessibility_facts.append(fact)
+
+    place_row = place_rows[0]
+    closed_days = place_row["closed_days"]
+    if closed_days is None:
+        closed_days = ""
+
+    closed_days_text = closed_days
+    if closed_days_text == "":
+        closed_days_text = STATUS_UNKNOWN
+
+    result = {
+        "status": "ok",
+        "place_id": place_row["place_id"],
+        "name": place_row["name"],
+        "category": place_row["category"],
+        "closed_days": closed_days_text,
+        "opening_hours": replace_blank_with_unknown(place_row["opening_hours"]),
+        "opening_hours_raw": replace_blank_with_unknown(place_row["opening_hours_raw"]),
+        "admission_fee": replace_blank_with_unknown(place_row["admission_fee"]),
+        "accessibility": {
+            "accessible_toilet": place_row["accessible_toilet"],
+            "accessible_parking": place_row["accessible_parking"],
+            "has_slope_or_stairs": place_row["has_slope_or_stairs"],
+        },
+        "spots": spots,
+        "accessibility_facts": accessibility_facts,
+    }
+    if visit_dates:
+        result["closed_day_checks"] = check_closed_days_on_dates(closed_days, visit_dates)
+    return result
+
+def normalize_place_name(value: str) -> str:
+    """공백과 대소문자, 한글 유니코드 표기를 정규화합니다."""
+    return unicodedata.normalize("NFC", "".join(value.split())).casefold()
+
+
+def search_places_by_name(*, keyword: str, max_count: int = 5) -> dict:
+    """DB 여행지 이름으로 후보를 찾습니다. 이름 없이 주변 여행지를 찾을 때는 search_places를 씁니다.
+
+    exact는 이름 정규화 후 일치, partial은 이름 일부가 겹치는 후보입니다.
+    partial을 같은 장소로 자동 확정하지 말고 후보의 이름·좌표를 확인합니다.
+    상세 정보는 후보의 place_id로 get_place_details를 호출합니다.
+    max_count는 1~10입니다.
+    """
+    if not isinstance(keyword, str) or not 1 <= len(keyword.strip()) <= 100:
+        return {
+            "status": "invalid_input",
+            "message": "장소 이름은 1~100자로 입력해 주세요.",
+            "places": [],
+        }
+
+    if type(max_count) is not int or not 1 <= max_count <= 10:
+        return {
+            "status": "invalid_input",
+            "message": "검색 결과 수는 1~10 사이의 정수여야 합니다.",
+            "places": [],
+        }
+
+    query_name = normalize_place_name(keyword)
+
+    try:
+        rows = read_rows(
+            "SELECT place_id, name, category, latitude, longitude FROM places",
+            (),
+        )
+    except sqlite3.Error:
+        return {"status": "db_error", "places": []}
+
+    matches = []
+    for row in rows:
+        if (
+            not isinstance(row["name"], str) or not row["name"].strip()
+            or not isinstance(row["place_id"], str) or not row["place_id"].strip()
+        ):
+            continue
+
+        candidate_name = normalize_place_name(row["name"])
+        if query_name == candidate_name:
+            name_match = "exact"
+        elif query_name in candidate_name or candidate_name in query_name:
+            name_match = "partial"
+        else:
+            continue
+
+        matches.append({
+            "place_id": row["place_id"],
+            "name": row["name"],
+            "category": row["category"],
+            "latitude": row["latitude"],
+            "longitude": row["longitude"],
+            "name_match": name_match,
+        })
+
+    matches.sort(key=lambda place: (
+        0 if place["name_match"] == "exact" else 1,
+        normalize_place_name(place["name"]),
+        place["place_id"],
+    ))
+    selected = matches[:max_count]
+    return {
+        "status": "ok" if selected else "not_found",
+        "places": selected,
+    }

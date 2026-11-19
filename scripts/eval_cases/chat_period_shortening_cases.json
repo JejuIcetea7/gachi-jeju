@@ -1,0 +1,308 @@
+[
+  {
+    "case_id": "PS01",
+    "description": "선택 숙소가 있는 1박 2일을 숙박 없는 당일 일정으로 축소",
+    "turns": [
+      {
+        "turn_id": "T01",
+        "description": "첫날 한라수목원 방문·호텔 숙박·다음 날 귀환",
+        "request": {
+          "message": "2026년 11월 20~21일 자동차 1박 2일 여행입니다. 제주빅데이터센터에서 출발해 1일차 한라수목원을 60분 방문하고 선택한 제주신라호텔로 이동하겠습니다. 2일차는 관광지를 추가하지 말고 호텔에서 같은 센터로 돌아오는 이동만 넣어 주세요. 매일 활동 시간은 09:00~19:00입니다. options의 숙소 위치를 사용해 모든 이동을 조회하고 전체 일정을 만들어 주세요. 이동 보조기구를 사용하지 않으며 필수 시설 조건은 없습니다.",
+          "options": {
+            "departure": "제주빅데이터센터",
+            "departure_latitude": 33.4511465551529,
+            "departure_longitude": 126.571820608703,
+            "start_date": "2026-11-20",
+            "trip_days": 2,
+            "transport": "driving",
+            "mobility_aid": "none",
+            "requirements": [],
+            "travel_styles": [],
+            "return_to_origin": true,
+            "lodging_status": "provided",
+            "lodging_stays": [
+              {
+                "night": 1,
+                "name": "제주신라호텔",
+                "address": "제주특별자치도 서귀포시 중문관광로72번길 75",
+                "latitude": 33.24743087763671,
+                "longitude": 126.40804141124566,
+                "provider_place_id": null,
+                "place_url": null
+              }
+            ]
+          }
+        },
+        "expectation": {
+          "outcome": "partial_plan",
+          "empty_days": [2]
+        },
+        "time_window": {
+          "start": "09:00",
+          "end": "19:00"
+        },
+        "expected_visits": [
+          {
+            "day": 1,
+            "place_id": "P044",
+            "duration_minutes": 60
+          }
+        ],
+        "review_points": [
+          "2일차는 방문이 없어서 partial_plan으로 분류합니다. 호텔→센터 귀환 이동은 반드시 있어야 합니다.",
+          "선택한 숙소 위치와 1일차 한라수목원 60분 방문을 유지했는지 확인합니다."
+        ]
+      },
+      {
+        "turn_id": "T02",
+        "description": "숙박과 둘째 날을 없애고 당일 귀환으로 변경",
+        "message": "여행을 2026년 11월 20일 당일로 줄여 주세요. 숙박은 하지 않으므로 숙소 선택과 호텔 이동, 2일차를 제거해 주세요. 1일차 한라수목원 60분 방문은 유지하고 제주빅데이터센터에서 출발해 관람 후 같은 센터로 돌아오게 모든 이동을 다시 조회해 주세요. 자동차·활동 시간 09:00~19:00·보조기구 미사용·필수 시설 없음은 유지합니다.",
+        "expectation": {
+          "outcome": "plan"
+        },
+        "time_window": {
+          "start": "09:00",
+          "end": "19:00"
+        },
+        "expected_options": {
+          "trip_days": 1,
+          "lodging_status": "not_needed",
+          "lodging_stays": []
+        },
+        "preserve_visits": true,
+        "expected_visits": [
+          {
+            "day": 1,
+            "place_id": "P044",
+            "duration_minutes": 60
+          }
+        ],
+        "review_points": [
+          "호텔 선택과 호텔 도착·출발 이동이 남지 않았는지 확인합니다.",
+          "1일차 센터→한라수목원→센터의 새 조회 경로만 사용하고, 숙소 미정 메모를 붙이지 않았는지 확인합니다."
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "PS02",
+    "description": "1박 2일 기간과 관광 방문을 유지하며 선택한 숙소만 취소",
+    "turns": [
+      {
+        "turn_id": "T01",
+        "description": "숙소가 선택된 이틀 관광 일정 생성",
+        "request": {
+          "message": "2026년 11월 20~21일 자동차 1박 2일 여행입니다. 제주빅데이터센터에서 출발해 1일차 한라수목원, 2일차 제주국립박물관을 각각 60분 방문하고 마지막 날 같은 센터로 돌아오겠습니다. 첫날 숙소는 options에 선택한 제주신라호텔입니다. 매일 09:00~19:00 안에서 숙소 전후 이동을 포함해 모든 이동을 조회하고 전체 일정을 만들어 주세요. 이동 보조기구를 사용하지 않으며 필수 시설 조건은 없습니다.",
+          "options": {
+            "departure": "제주빅데이터센터",
+            "departure_latitude": 33.4511465551529,
+            "departure_longitude": 126.571820608703,
+            "start_date": "2026-11-20",
+            "trip_days": 2,
+            "transport": "driving",
+            "mobility_aid": "none",
+            "requirements": [],
+            "travel_styles": [],
+            "return_to_origin": true,
+            "lodging_status": "provided",
+            "lodging_stays": [
+              {
+                "night": 1,
+                "name": "제주신라호텔",
+                "address": "제주특별자치도 서귀포시 중문관광로72번길 75",
+                "latitude": 33.24743087763671,
+                "longitude": 126.40804141124566,
+                "provider_place_id": null,
+                "place_url": null
+              }
+            ]
+          }
+        },
+        "expectation": {
+          "outcome": "plan"
+        },
+        "time_window": {
+          "start": "09:00",
+          "end": "19:00"
+        },
+        "expected_visits": [
+          {
+            "day": 1,
+            "place_id": "P044",
+            "duration_minutes": 60
+          },
+          {
+            "day": 2,
+            "place_id": "P092",
+            "duration_minutes": 60
+          }
+        ],
+        "review_points": [
+          "선택한 호텔 도착·다음 날 호텔 출발과 마지막 날 센터 귀환이 모두 있는지 확인합니다."
+        ]
+      },
+      {
+        "turn_id": "T02",
+        "description": "숙소 선택을 취소하고 미정 경계 이동만 제외",
+        "message": "1일차 제주신라호텔 숙소 선택만 취소해 주세요. 숙박은 계속 필요하지만 새 숙소는 아직 미정입니다. 여행 기간 2026년 11월 20~21일과 관광지의 방문일·각 60분 체류, 자동차, 활동 시간 09:00~19:00, 보조기구 미사용·필수 시설 없음, 마지막 날 센터 귀환은 유지해 주세요. 첫날 호텔 도착과 둘째 날 호텔 출발 이동은 제외하고 남은 관광 일정과 이동을 다시 조회해 주세요. 센터나 다른 호텔을 숙소 대신 넣지 마세요.",
+        "expectation": {
+          "outcome": "plan"
+        },
+        "time_window": {
+          "start": "09:00",
+          "end": "19:00"
+        },
+        "expected_options": {
+          "trip_days": 2,
+          "lodging_status": "undecided",
+          "lodging_stays": []
+        },
+        "preserve_visits": true,
+        "expected_visits": [
+          {
+            "day": 1,
+            "place_id": "P044",
+            "duration_minutes": 60
+          },
+          {
+            "day": 2,
+            "place_id": "P092",
+            "duration_minutes": 60
+          }
+        ],
+        "review_points": [
+          "2일차 첫 방문은 박물관이며 출발지를 센터·이전 호텔·가상의 숙소로 만들지 않았는지 확인합니다.",
+          "첫날 센터 출발과 마지막 날 박물관→센터 귀환은 유지하고, 새 숙소를 임의 선택하지 않았는지 확인합니다."
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "PS03",
+    "description": "고정 방문일과 충돌하는 기간 축소를 확인한 뒤 범위 밖 숙박일 정리",
+    "turns": [
+      {
+        "turn_id": "T01",
+        "description": "같은 호텔에서 두 번 숙박하는 2박 3일 일정",
+        "request": {
+          "message": "2026년 11월 20~22일 자동차 2박 3일 여행입니다. 제주빅데이터센터에서 출발해 1일차 11월 20일 한라수목원, 2일차 11월 21일 제주국립박물관, 3일차 11월 22일 함덕서우봉해변을 각각 한 번씩 60분 방문하고 마지막 날 같은 센터로 돌아오겠습니다. 이 방문일은 고정입니다. 첫째·둘째 밤 모두 options에 선택한 제주신라호텔에서 숙박합니다. 매일 09:00~19:00 안에서 선택한 숙소 위치로 필요한 모든 이동을 조회해 전체 일정을 만들어 주세요. 이동 보조기구를 사용하지 않으며 필수 시설 조건은 없습니다.",
+          "options": {
+            "departure": "제주빅데이터센터",
+            "departure_latitude": 33.4511465551529,
+            "departure_longitude": 126.571820608703,
+            "start_date": "2026-11-20",
+            "trip_days": 3,
+            "transport": "driving",
+            "mobility_aid": "none",
+            "requirements": [],
+            "travel_styles": [],
+            "return_to_origin": true,
+            "lodging_status": "provided",
+            "lodging_stays": [
+              {
+                "night": 1,
+                "name": "제주신라호텔",
+                "address": "제주특별자치도 서귀포시 중문관광로72번길 75",
+                "latitude": 33.24743087763671,
+                "longitude": 126.40804141124566,
+                "provider_place_id": null,
+                "place_url": null
+              },
+              {
+                "night": 2,
+                "name": "제주신라호텔",
+                "address": "제주특별자치도 서귀포시 중문관광로72번길 75",
+                "latitude": 33.24743087763671,
+                "longitude": 126.40804141124566,
+                "provider_place_id": null,
+                "place_url": null
+              }
+            ]
+          }
+        },
+        "expectation": {
+          "outcome": "plan"
+        },
+        "time_window": {
+          "start": "09:00",
+          "end": "19:00"
+        },
+        "expected_visits": [
+          {
+            "day": 1,
+            "place_id": "P044",
+            "duration_minutes": 60
+          },
+          {
+            "day": 2,
+            "place_id": "P092",
+            "duration_minutes": 60
+          },
+          {
+            "day": 3,
+            "place_id": "P038",
+            "duration_minutes": 60
+          }
+        ],
+        "review_points": [
+          "각 날짜의 지정 관광지와 60분 방문, 두 숙박일의 선택과 마지막 날 귀환을 확인합니다."
+        ]
+      },
+      {
+        "turn_id": "T02",
+        "description": "기간 축소와 셋째 날 고정 방문의 충돌을 질문",
+        "message": "여행을 11월 20~21일 1박 2일로 줄이고 싶습니다. 하지만 11월 22일 함덕서우봉해변 방문도 그대로 유지하고 방문일을 바꾸거나 제외하지 마세요. 서로 충돌하면 어떤 조건을 바꿀지 먼저 질문하고, 제 답변 전에는 기존 2박 3일 조건과 숙소 선택·일정을 유지해 주세요.",
+        "expectation": {
+          "outcome": "message"
+        },
+        "review_points": [
+          "11월 21일 종료와 11월 22일 고정 방문의 충돌을 설명하고 조정할 조건을 질문하는지 확인합니다.",
+          "plan은 null이고 기존 3일 조건과 두 숙박일 선택을 유지하는지 확인합니다."
+        ]
+      },
+      {
+        "turn_id": "T03",
+        "description": "셋째 날 방문 제외에 동의한 뒤 유효한 첫 숙박일만 유지",
+        "message": "11월 22일 함덕서우봉해변 방문은 제외해 주세요. 11월 20~21일 1박 2일로 줄이고 둘째 밤 숙소 선택도 제거해 주세요. 첫째 밤에 선택한 제주신라호텔의 이름·주소·좌표는 유지해 주세요. 첫날 한라수목원, 둘째 날 제주국립박물관은 각 60분으로 유지하고 마지막 날 센터로 돌아오겠습니다. 자동차·활동 시간 09:00~19:00·보조기구 미사용·필수 시설 없음도 유지하며 필요한 모든 이동을 다시 조회해 전체 일정을 만들어 주세요.",
+        "expectation": {
+          "outcome": "plan"
+        },
+        "time_window": {
+          "start": "09:00",
+          "end": "19:00"
+        },
+        "expected_options": {
+          "trip_days": 2,
+          "lodging_status": "provided",
+          "lodging_stays": [
+            {
+              "night": 1,
+              "name": "제주신라호텔",
+              "address": "제주특별자치도 서귀포시 중문관광로72번길 75",
+              "latitude": 33.24743087763671,
+              "longitude": 126.40804141124566,
+              "provider_place_id": null,
+              "place_url": null
+            }
+          ]
+        },
+        "expected_visits": [
+          {
+            "day": 1,
+            "place_id": "P044",
+            "duration_minutes": 60
+          },
+          {
+            "day": 2,
+            "place_id": "P092",
+            "duration_minutes": 60
+          }
+        ],
+        "review_points": [
+          "두 번째 숙박일만 없어지고 첫 숙박일의 선택은 그대로 유지되는지 확인합니다.",
+          "셋째 날과 해변 방문을 제거하되 다른 방문일·체류시간·조건을 바꾸지 않았는지 확인합니다."
+        ]
+      }
+    ]
+  }
+]

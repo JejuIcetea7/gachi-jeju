@@ -22,11 +22,30 @@
 | `B주변정보` | `dgk_*` (group `B주변정보`) | 50 | 주변시설 |
 | `그 외` 주변시설 | `dgk_*` (group `그 외`, `휠체어 진입` 컬럼) | 42 | 주변시설 |
 
-- 허브 `-1.csv`(이동 경로 좌표)와 HWP는 이번에 읽지 않는다.
+- 허브 `-1.csv`(이동 경로 좌표)는 읽지 않는다.
+- 일반정보 HWP(`D관광정보` 49개)는 `scripts/convert_hwp_general_info.py`로 변환한 `data/processed/hwp_general_info/<데이터ID>.json`을 읽어 `closed_days`, `admission_fee`, 접근성 원본 표에 쓴다.
+- 허브 HWP(`hub_102`~`hub_121` 20개)는 같은 스크립트로 `data/processed/hwp_hub_info/hub_<번호>.md·json`에 변환하고, 사람이 원문을 보고 정리한 `data/processed/closed_days_map.csv`(`place_id`, `name`, `source_file`, `raw_text`, `closed_days`, `status`)를 읽는다.
+- 나머지 장소는 한국관광공사 국문 관광정보 API로 후보를 찾고(`scripts/match_tour_api_places.py`), 사람이 확인한 결과(`data/processed/tour_api_review.csv`)를 `scripts/apply_tour_api_closed_days.py`가 같은 대응표에 넣는다 (`source_file` = `tour_api:<콘텐츠ID>`).
+  - 후보 단계: 1 이름 같음 3km 이내 또는 포함 관계 500m 이내, 2 이름 유사도 0.6 이상 1km 이내, 3 그 외. 1단계와 `통과`만 사용
+  - `status`: `확정` / `확인필요`(빈칸). 실행 순서: `apply_tour_api_closed_days.py` → `build_places.py`
+  - 매칭 대상은 170곳 전체 (2026-11-13부터, 이전에는 휴무일 빈칸 103곳). 이용요금 원문 `usefee_raw`도 담는다
+- `admission_fee`는 매칭 결과 `outputs/tour_api_candidates/candidates.csv`의 `usefee_raw`(1단계·`통과`만)를 직접 읽는다.
+- 휴무일은 같은 장소에 허브·일반정보 HWP 값이 있어도 API 값이 `확정`이면 API 값을 쓴다 (2026-11-13부터). 대응표 값이 빈칸이면 일반정보 HWP 값을 지우지 않는다.
+- 운영시간 대응표 `data/processed/opening_hours_map.csv`(`place_id`, `name`, `source_file`, `raw_text`, `opening_hours`, `status`)는 `scripts/build_opening_hours_map.py`가 만든다. 원문은 API 이용시간(1단계·`통과`) > 허브 HWP `관람시간`. 실행 순서: `build_opening_hours_map.py` → `build_places.py`
+
+### 직접 조사한 운영정보 반영
+
+- 조사 원문은 프로젝트 루트 `휴무일_29곳_조사.txt`, 정리한 대응표는 `data/processed/manual_place_operating_info.csv`에 보관한다. 대응표는 29곳의 원문, 정리 값, 기재된 출처·확인일, 정리 이유를 보존한다. 출처 주소와 확인일이 없는 항목은 임의로 채우지 않는다.
+- `build_places.py`는 수동 대응표의 비어 있지 않은 휴무일·운영시간을 기존 `closed_days_map.csv`·`opening_hours_map.csv`에 우선 반영한다. 해당 대응표의 `source_file`은 수동 대응표의 장소 ID를 가리킨다. `확정`은 사용자 조사에서 정리 값이 정해졌다는 뜻이며 별도의 공식 출처 대조 완료를 뜻하지 않는다. 빈 정리 값은 기존 정보를 유지한다.
+- 관람료도 수동 대응표의 비어 있지 않은 정리 값을 기존 HWP·API 결과보다 우선 적용한다. 기존 API 대응표 생성 스크립트를 재실행했어도, 다음 `build_places.py` 실행에서 수동 조사값을 다시 적용한다.
+- 원본 수집 CSV가 일부만 있는 환경에서는 `python3 -B scripts/build_places.py --operating-info-only`로 기존 `places.csv`의 휴무일·운영시간·운영시간 원문·관람료만 갱신하고, 저장된 네 CSV를 DB에 다시 적재한다. 장소·지점·주변시설·접근성 원본을 다시 수집하거나 재생성하지 않는다. 원본 전체가 있는 환경의 전체 생성 명령은 기존과 같다.
+- 2026-11-15 반영: 휴무일 7곳, 운영시간 정리 값 변경 5곳(생각하는정원은 기존 시간 유지), 관람료 5곳. 합계 휴무일 148곳·미확인 22곳, 운영시간 113곳, 관람료 87곳.
+- 워터서커스는 공연 시작 시각만 있어 운영시간은 빈칸으로 유지한다. 오설록 라스트오더는 입장 마감으로 쓰지 않고, 유리의성 여름 매표 마감은 추정하지 않는다. 제주조각공원은 이어지는 주간·야간 운영을 09:00-23:00으로 정리하고 구간별 매표 시간은 원문에 보존한다. 동문시장 야시장 시간, 식당 운영시간, 명칭 변경 메모도 원문에 보존한다. 자연·공원이라는 이유로 상시 개방·연중무휴·무료를 채우지 않는다.
 
 ## 출력
 
 ### places.csv (장소 1행)
+- `closed_days_note`: 휴무일 조사 메모. 사용자 조사에서 자연·공원이라 정보를 찾지 못했다고 기록한 장소에 `자연경관·야외 장소로, 별도 휴무일 안내를 찾지 못함`을 저장한다. 휴무일 값은 빈칸(DB에서는 NULL)으로 유지한다. 수동 조사 대응표에서 읽어 전체 생성·운영정보 갱신 모두에 적용한다.
 - 기본: `place_id`, `name`, `category`
 - 위치: `region`, `address`, `latitude`, `longitude`
 - 접근성: `wheelchair_level`, `stroller_level`, `has_slope_or_stairs`
@@ -39,6 +58,13 @@
 
 ### place_nearby.csv (주변시설 1행)
 - `place_id`, `facility_type`, `name`, `distance_m`, `address`, `phone`, `access_note`, `wheelchair_entry`, `accessible_toilet`, `source_file`
+
+### place_accessibility_raw.csv (접근성 특징 1행)
+- `place_id`, `section`, `facility_name`, `description`, `raw_value`, `source_file`
+- HWP 69곳(일반정보 49, 허브 20)의 접근성 사실을 원문 그대로 담는다. 입력은 kordoc 변환 json(`hwp_general_info/`, `hwp_hub_info/`)
+- 일반정보: 기본정보(장애인 주차·화장실, 보조기기 대여), 추천 대상, 주차장(장애인·임산부 구역, 기타), 장애인 화장실, 주출입구
+- 허브: 이용안내의 보조기기·편의장비·승강기, 장애인 주차 문장, 개요의 '이동약자를 위한 안내'
+- 빼는 것: 관람동선 문장(`place_spots`와 겹침), 사진, 주변 시설, 일반 주차·대형버스·전기차, 관람시간·요금 등
 
 ### place_id_map.csv
 - 원본 파일 ↔ `place_id` 대응표. 중복 확정 결과를 담는다.
@@ -90,11 +116,27 @@
 
 ### 5. places 집계
 - `has_slope_or_stairs`: 지점 중 하나라도 계단·경사 정보가 있으면 `Y`
+- `accessible_parking`: 접근성 원본 표에서 판정, 근거 없으면 `unknown`
+  - 일반정보: 장애인 주차면수 1 이상인 주차장이 있거나 '장애인 주차장 유무'가 있음·유 → `Y`, 유무 없음·무 또는 주차면수 모두 없음 → `N`
+  - 허브: 이용안내 주차장 문장에 "장애인 주차구역(은/이) 없" → `N`, 장애인·주차 언급 → `Y`
 - `accessible_toilet`: 지점 중 하나라도 장애인화장실이 있으면 `Y`
 - `wheelchair_level`, `stroller_level`: `unknown`
 - `category`: 기본 목록(자연, 박물관, 시장, 해변, 산책로 등)으로 분류
 - `visit_minutes`: 60
-- `region`, `address`, `opening_hours`, `closed_days`, `admission_fee`: 빈칸
+- `region`, `address`: 빈칸
+- `opening_hours`: 운영시간 대응표의 정리 값, `opening_hours_raw`: 같은 표의 원문
+  - 정리 값 형식: `상시 개방` / `09:00-18:00` / `09:00-18:00 입장마감 17:00`, 계절별은 `3-10월 …`을 앞에 붙여 `;`로 잇는다
+  - 규칙: 시각 없이 `상시 개방`만 있음, 또는 시간 하나(+ 입장·매표 마감 하나)이고 계절·시설·점포 구분이 없음. 그 외는 스크립트의 장소별 표로 사람이 정함
+  - 시설이 여럿이면 대표 시설 하나, 계절 달이 원문에 없으면 더 이른 마감. 형식에 안 맞는 정리 값은 빈칸 + 실패 로그
+- `admission_fee`: 원문에 최소 정리만 한다 (줄바꿈·공백 정리, `※ 자세한 …` 안내 삭제, 값 전체가 `없음`·`무료`면 `무료`)
+  - 우선순위: 한국관광공사 API `usefee_raw` > 허브 HWP > 일반정보 HWP 첫 표 `관람료` 행
+  - 허브 HWP: 표의 `관람료` 행(세로로 합쳐진 칸은 아래 행에도 채움) 또는 `관람료 :` 문단과 다음 항목(보조기기·문의 등) 전까지의 문단
+  - 장소별 예외: P156 이중섭거리 `무료` (원문은 이중섭미술관 요금)
+- `closed_days`: 일반정보 HWP 첫 표의 `휴무일` 원문을 정리 값으로 바꿔 넣고, 없으면 빈칸
+  - 정리 값 형식 6가지를 `;`로 잇는다: `연중무휴`(단독), `매주 월요일`, `매월 첫째 화요일`, `1월 1일`, `설날`·`추석`(당일)·`설날연휴`·`추석연휴`(전날~다음날 3일), `법정공휴일`
+  - 일반정보 HWP: 원문 → 정리 값 대응표와 장소별 예외표(P128, P156, P131)로 처리, 표에 없는 원문은 빈칸 + 실패 로그
+  - 허브 HWP: `closed_days_map.csv` 값이 일반정보 값보다 우선. 형식에 안 맞는 정리 값은 넣지 않고 실패 로그
+  - HWP ↔ `place_id`: 파일 이름 속 장소명(공백 제거)을 대응표의 원본 파일 이름과 맞추고, 오타 2건은 데이터ID로 직접 연결
 
 ### 6. 출처 간 충돌
 - 지점·주변시설: 출처별로 모두 넣고 `source_file`로 구분한다.
@@ -103,7 +145,7 @@
 - 충돌한 값은 충돌 로그에 남긴다.
 
 ### 7. SQLite 적재
-- CSV 3개를 `gachi_jeju.db`의 표 3개로 넣는다. DB는 CSV에서 다시 만들 수 있다.
+- CSV 4개를 `gachi_jeju.db`의 표 4개(`places`, `place_spots`, `place_nearby`, `place_accessibility_raw`)로 넣는다. DB는 CSV에서 다시 만들 수 있다.
 
 ## 실패 처리
 - 파일 읽기 실패, 예상과 다른 컬럼은 실패 로그에 파일 경로와 사유를 남기고 다음 파일로 넘어간다.
@@ -122,9 +164,12 @@
 - `choose_representative_spot`: 대표 좌표 고르기
 - `find_duplicate_candidates`: 중복 후보 목록 출력
 - `create_draft_place_id_map`, `load_place_id_map`: 대응표 초안 만들기·읽기
+- `load_hwp_closed_days_by_place_id`: 일반정보 HWP 변환 결과에서 `closed_days` 정리 값 만들기 (`load_place_id_by_name_token`, `extract_place_name_token`, `read_closed_days_raw_text`)
+- `load_closed_days_map`, `is_valid_closed_days`: 휴무일 대응표 읽기, 정리 값 형식 검사
 - `build_places_rows`, `record_place_conflicts`: places 집계, 충돌 기록
 - `verify_outputs`: 행 수 대조, `place_id` 참조 확인
 - `find_anomalies`: 이상값 기록 (값은 고치지 않음)
+- `build_accessibility_raw_rows`: 접근성 원본 표 (`extract_general_info_accessibility_rows`, `extract_hub_info_accessibility_rows`, 표 격자 해석 `list_origin_cells`)
 - `build_sqlite_database`, `load_csv_to_sqlite`: SQLite 적재
 
 ## 검증 상태
@@ -136,7 +181,20 @@
 - 확인함: 사려니숲길 3쌍 - `hub_37`·`hub_51` 좌표 전부 같음(지점 35/35, 경로 111/111) → `hub_37` 제외. `hub_72`와는 입구 6~8지점만 겹침 → 별개
 - 확인함: 중복 후보 19쌍 사용자 확정 (2026-11-05) - 중복 1쌍(`hub_37`·`hub_51`), 나머지 18쌍은 별개 장소 (싱계물해양공원/싱게물공원과용당포구 포함)
 - 확인 안 함: 합친 262행 전수 대조, 카테고리 분류 정확도
-- 확인 안 함: HWP 내용 (로컬 파일은 Git LFS 포인터)
+- 확인함: 일반정보 HWP 49개 모두 `place_id`와 연결, `closed_days` 48곳 `연중무휴`, P131 빈칸, 나머지 칸 변화 없음 (2026-11-12)
+- 확인함: 허브 HWP 20개 `git lfs fetch`로 받음(크기·해시 일치), 20개 모두 `이용안내`에 관람시간·휴무 정보. `closed_days` 19곳 채움, P108 빈칸(휴무 언급 없음). 합계 67곳 채움, 103곳 빈칸 (2026-11-12)
+- 확인함: 한국관광공사 API로 103곳 중 74곳 채움(P108 포함). 합계 141곳 채움, 29곳 `확인필요` 빈칸. 대응표 정리 값 형식 위반 0건, `places.csv`에서 바뀐 칸은 `closed_days`뿐 (2026-11-12)
+- 확인 안 함: 1단계 59곳 후보 전수 대조 (규칙만으로 통과), 형식에서 뺀 조건("월요일이 공휴일이면 다음 비공휴일 휴무" 등)의 일정 영향
+- 확인함: 접근성 원본 표 69곳 3,145줄 (장애인 화장실 1,501, 기본정보 441, 주출입구 440, 추천 대상 392, 주차장 284, 이용안내 87). 퍼시픽마리나요트공원(장애인 주차 5대, 내부 출입문 폭 94cm, 추천 대상 8줄)·가문동해안길(장애인 주차 없음)을 원본과 대조. 기존 CSV 3개 변화 없음 (2026-11-12)
+- 확인 안 함: 69곳 전수 대조, 허브 HWP의 서술 구간(사진 설명·지점별 접근성 문단)
+- 확인함: `accessible_parking` Y 31, N 32, unknown 107. 허브 14곳 문장 판정을 원문과 대조(P109·P111·P119 N, P118 Y 등) (2026-11-12)
+- 확인 안 함: HWP가 없는 101곳의 장애인 주차 (`place_spots` 지점 설명 키워드는 아직 쓰지 않음)
+- 확인함: 관광공사 API 매칭 170곳으로 확대, 새 67곳 중 1단계 24 자동 통과, 2·3단계 11곳 사람 확인(통과 8, 틀림 3), 나머지 3단계 32곳 틀림. 사용 109곳 (2026-11-13)
+- 확인함: `admission_fee` 82곳 (무료 55, 금액 27). 금액 27곳 원문 출력해 확인, `places.csv`에서 바뀐 칸은 `admission_fee`뿐 (2026-11-13)
+- 확인함: 휴무일 API 우선 적용으로 4곳 바뀜 (P104 연중무휴 → 1월 1일·설날·추석, P115·P118 연휴 표기, P120 매주 수요일 → 매주 월요일). 합계 141곳 그대로 (2026-11-13)
+- 확인함: `opening_hours` 109곳 (상시 개방 49, 시각 60), 확인필요 2곳(P100 동문시장, P133 도두봉). 형식 위반 0건, 정리 값 60곳을 원문과 함께 출력해 확인 (2026-11-13)
+- 확인 안 함: 허브 HWP 휴무일·운영시간 중 API로 바뀐 값의 실제 최신 여부, 원문에만 남긴 조건(공연 회차, 시설별 시간, 사전 예약)
+- 확인 안 함: 허브 HWP 요금의 최신 여부 (P107 아르떼뮤지엄 원문은 2020년 오픈특가), 관광지 유형(12) API는 요금 칸이 없어 88곳 빈칸
 
 ## 이후 개선
 
@@ -147,9 +205,9 @@
 ### 값 채우기 기준
 - `wheelchair_level`, `stroller_level`: 허브 장소설명(경사 각도·노면), `고도`, HWP 장애 유형별 추천 여부로 기준 마련 (장애 유형 컬럼은 그때 확정)
 - `has_slope_or_stairs`: 모든 지점이 `특이사항없음`인 장소를 `N`으로 볼지 결정 ("계단 없는 곳" 조건에 필요)
-- `accessible_parking`, `wheelchair_rental`, `stroller_rental`: 허브 장소설명 키워드("장애인주차", "대여")로 채울지 결정
+- `accessible_parking`(HWP 없는 101곳), `wheelchair_rental`, `stroller_rental`: 허브 장소설명 키워드("장애인주차", "대여")로 채울지 결정
 - `indoor_outdoor`: 카테고리 추정 또는 HWP로 채울지 결정
-- `region`, `address`, 운영시간: `git lfs pull` 후 HWP로 채우고, 못 채운 주소는 카카오 좌표→주소 API
+- `region`, `address`: HWP로 채우고, 못 채운 주소는 카카오 좌표→주소 API
 - 관광공사 API 연결 키는 필요할 때 추가
 
 ### 규칙 보완

@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>장소 사진 검수 · 같이 가는 제주</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#22352d;background:#f4f5f1;font-synthesis:none;--green:#1f654b;--line:#dce2dc;--muted:#63736a}
+    *{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button,select,input[type=file]{cursor:pointer}button{border:1px solid var(--line);background:white;color:inherit;border-radius:8px;padding:9px 13px}button:hover{border-color:var(--green)}button:disabled{opacity:.45;cursor:default}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #72ab91;outline-offset:3px}.primary{background:var(--green);border-color:var(--green);color:white}header{padding:28px max(24px,calc((100vw - 1400px)/2));background:#fff;border-bottom:1px solid var(--line)}.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--green);font-weight:750;margin:0 0 10px}h1{font-size:28px;margin:0 0 8px;letter-spacing:-.04em}h2{font-size:18px;margin:0}p{line-height:1.6}.intro{color:var(--muted);margin:0;font-size:14px}.page{max-width:1448px;padding:22px 24px 48px;margin:auto}.setup{background:white;border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:18px}.file-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:16px}.file-grid label{display:grid;gap:9px;font-size:14px;font-weight:650}.file-grid small{font-weight:400;color:var(--muted);font-size:12px}.file-grid input{width:100%;font-size:12px}.help{font-size:12px;color:var(--muted);margin:14px 0 0}.toolbar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin:18px 0}.toolbar .actions{display:flex;gap:8px;flex-wrap:wrap}.save-state{font-size:12px;color:var(--muted);align-self:center}.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0}.stat{background:white;border:1px solid var(--line);border-radius:10px;padding:14px}.stat span{font-size:12px;color:var(--muted)}.stat strong{display:block;margin-top:5px;font-size:23px;font-weight:650}.workspace{display:grid;grid-template-columns:230px minmax(0,1fr);gap:20px;align-items:start}.filters{background:white;border:1px solid var(--line);border-radius:12px;padding:18px;position:sticky;top:16px}.filters h2{margin-bottom:18px}.field{display:grid;gap:7px;margin-bottom:16px;font-size:13px}.field input,.field select{width:100%;padding:9px;border:1px solid var(--line);border-radius:7px;background:white;min-width:0}.check{display:flex;gap:8px;font-size:13px;align-items:flex-start;margin:14px 0;line-height:1.5}.check input{margin-top:3px;accent-color:var(--green)}.results-heading{display:flex;gap:12px;justify-content:space-between;align-items:center;margin:1px 0 14px}.results-heading span{font-size:12px;color:var(--muted)}.cards{display:grid;gap:16px}.card{background:white;border:1px solid var(--line);border-radius:12px;overflow:hidden}.card-top{padding:13px 18px;border-bottom:1px solid var(--line);display:flex;gap:12px;justify-content:space-between;align-items:center}.photo-id{font-weight:700;font-size:14px}.badge{font-size:11px;padding:4px 8px;border-radius:20px;background:#eef1ed;color:var(--muted)}.badge.warning{color:#855716;background:#fff3da}.card-body{display:grid;grid-template-columns:minmax(220px,.9fr) minmax(0,1.1fr)}.picture{background:#eef0eb;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;min-height:250px;gap:10px}.picture button{background:none;border:0;padding:0;width:100%;display:block}.picture img{display:block;object-fit:contain;width:100%;height:280px}.picture small{font-size:11px;color:var(--muted)}.missing{font-size:13px;color:var(--muted);text-align:center;overflow-wrap:anywhere}.info{padding:18px;min-width:0}.facility{font-size:16px;font-weight:700;margin:0 0 8px}.place{font-size:12px;color:var(--muted);margin-bottom:12px}.description{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.7;max-height:220px;overflow:auto;background:#f8faf7;padding:12px;border:1px solid #edf0eb;border-radius:7px}.no-description{color:#846c46}.review-buttons{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0 10px}.review-buttons button{font-size:12px;padding:8px 11px}.review-buttons button[aria-pressed=true]{background:var(--green);border-color:var(--green);color:white}.note-label{font-size:12px;color:var(--muted);display:grid;gap:6px}.note-label textarea{resize:vertical;min-height:58px;width:100%;border:1px solid var(--line);border-radius:7px;padding:9px}.source-details{border-top:1px solid var(--line);padding:12px 18px;font-size:12px}.source-details summary{cursor:pointer;color:var(--muted)}.source-details pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:350px;overflow:auto;font-size:11px;line-height:1.6}.pagination{display:flex;gap:12px;justify-content:center;align-items:center;margin:24px 0;font-size:13px}.empty{padding:60px 20px;background:white;border:1px dashed #bdc9bf;border-radius:12px;text-align:center;color:var(--muted);line-height:1.8}.notice{border-radius:8px;background:#e7efe8;color:#28553d;padding:12px 16px;font-size:13px;white-space:pre-wrap;margin-bottom:16px}.notice.error{color:#913d34;background:#f9e9e5}[hidden]{display:none!important}dialog{border:0;border-radius:14px;max-width:min(1200px,94vw);max-height:94vh;padding:16px;background:#f8faf7}dialog::backdrop{background:#14251de0}.dialog-bar{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:10px}dialog img{display:block;max-width:100%;max-height:75vh;object-fit:contain;margin:auto}dialog p{white-space:pre-wrap;font-size:13px;max-width:1000px;max-height:100px;overflow:auto}code{font-size:12px;overflow-wrap:anywhere}
+    @media(max-width:900px){.file-grid{grid-template-columns:1fr}.workspace{grid-template-columns:1fr}.filters{position:static;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}.filters h2{grid-column:1/-1;margin-bottom:8px}.field{margin-bottom:6px}.stats{grid-template-columns:repeat(3,1fr)}.card-body{grid-template-columns:1fr}.picture img{height:300px}.page{padding:16px}.intro{font-size:13px}header{padding:24px 18px}}
+  </style>
+</head>
+<body>
+  <header>
+    <p class="eyebrow">같이 가는 제주 · 로컬 검수 도구</p>
+    <h1>사진과 설명을 함께 확인하세요</h1>
+    <p class="intro">사진을 보고 시설·설명 연결을 확인합니다. 이 페이지는 기존 여행 서비스와 연결되지 않으며 원본 사진과 CSV를 수정하지 않습니다.</p>
+  </header>
+  <main class="page">
+    <section class="setup" aria-labelledby="setup-title">
+      <h2 id="setup-title">검수할 자료 선택</h2>
+      <div class="file-grid">
+        <label>1. 사진 목록 CSV<input id="csv-input" type="file" accept=".csv,text/csv"><small>data/processed/place_photos.csv</small></label>
+        <label>2. 통합 사진 폴더<input id="folder-input" type="file" webkitdirectory multiple><small>data/processed/photos 폴더 선택</small></label>
+        <label>장소 이름 불러오기 · 선택<input id="places-input" type="file" accept=".csv,text/csv"><small>data/processed/places.csv를 선택하면 장소명도 표시합니다.</small></label>
+      </div>
+      <p class="help">인터넷 없이 동작하며 선택한 파일을 외부로 전송하지 않습니다. 브라우저의 폴더 선택 확인 창에서는 통합 사진 폴더를 선택해 주세요.</p>
+    </section>
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+    <div class="toolbar">
+      <span id="save-state" class="save-state" aria-live="polite">검수 결과는 이 브라우저에 임시 보관됩니다. 완료 후 JSON으로 저장해 주세요.</span>
+      <div class="actions">
+        <button id="import-button" type="button">이전 결과 가져오기</button>
+        <input id="review-input" type="file" accept=".json,application/json" hidden>
+        <button id="csv-export" type="button" disabled>결과 CSV 내려받기</button>
+        <button id="json-export" class="primary" type="button" disabled>결과 JSON 저장</button>
+      </div>
+    </div>
+    <section id="stats" class="stats" aria-label="검수 진행 현황">
+      <div class="stat"><span>전체 사진</span><strong id="total-count">0</strong></div>
+      <div class="stat"><span>정상</span><strong id="verified-count">0</strong></div>
+      <div class="stat"><span>연결 오류</span><strong id="incorrect-count">0</strong></div>
+      <div class="stat"><span>판단 보류</span><strong id="hold-count">0</strong></div>
+      <div class="stat"><span>아직 미검수</span><strong id="pending-count">0</strong></div>
+    </section>
+    <div class="workspace">
+      <aside class="filters" aria-label="사진 필터">
+        <h2>사진 찾기</h2>
+        <label class="field">장소<select id="place-filter"><option value="">전체 장소</option></select></label>
+        <label class="field">검색<input id="search-input" type="search" placeholder="사진 ID · 시설명 · 설명"></label>
+        <label class="field">검수 상태<select id="status-filter"><option value="">전체 상태</option><option value="pending">미검수</option><option value="verified">정상</option><option value="incorrect">연결 오류</option><option value="hold">판단 보류</option></select></label>
+        <label class="field">한 페이지<select id="page-size"><option value="12">12개</option><option value="24">24개</option><option value="48">48개</option></select></label>
+        <label class="check"><input id="uncertain-only" type="checkbox">미확인 연결이 있는 사진만</label>
+        <label class="check"><input id="empty-only" type="checkbox">설명 없는 사진만</label>
+      </aside>
+      <section aria-labelledby="results-title">
+        <div class="results-heading"><h2 id="results-title">검수 사진</h2><span id="result-count">자료를 선택해 주세요</span></div>
+        <div id="cards" class="cards"><div class="empty">사진 목록 CSV와 통합 사진 폴더를 선택하면<br>사진과 설명이 여기에 표시됩니다.</div></div>
+        <nav id="pagination" class="pagination" aria-label="사진 페이지" hidden><button id="previous-page" type="button">← 이전</button><span id="page-label"></span><button id="next-page" type="button">다음 →</button></nav>
+      </section>
+    </div>
+  </main>
+  <dialog id="photo-dialog" aria-labelledby="dialog-title"><div class="dialog-bar"><strong id="dialog-title"></strong><button id="close-dialog" type="button">닫기</button></div><img id="dialog-image" alt=""><p id="dialog-description"></p></dialog>
+  <script id="review-script">
+    'use strict';
+    const STORAGE_KEY = 'gachi-jeju-photo-review-v1';
+    const REVIEW_LABELS = {pending: '미검수', verified: '정상', incorrect: '연결 오류', hold: '판단 보류'};
+    const state = {photos: [], files: new Map(), names: new Map(), reviews: Object.create(null), page: 1, objectUrls: [], folderSelected: false, csvName: ''};
+    const elements = {};
+    for (const element of document.querySelectorAll('[id]')) elements[element.id] = element;
+
+    function parseCsv(text) {
+      text = text.replace(/^\uFEFF/, '');
+      const records = [];
+      let record = [];
+      let field = '';
+      let quoted = false;
+      for (let index = 0; index < text.length; index += 1) {
+        const character = text[index];
+        if (quoted) {
+          if (character === '"' && text[index + 1] === '"') { field += '"'; index += 1; }
+          else if (character === '"') quoted = false;
+          else field += character;
+        } else if (character === '"' && field === '') quoted = true;
+        else if (character === ',') { record.push(field); field = ''; }
+        else if (character === '\r' || character === '\n') {
+          if (character === '\r' && text[index + 1] === '\n') index += 1;
+          record.push(field);
+          if (record.some(value => value !== '')) records.push(record);
+          record = []; field = '';
+        } else field += character;
+      }
+      if (quoted) throw new Error('CSV의 따옴표가 닫히지 않았습니다.');
+      record.push(field);
+      if (record.some(value => value !== '')) records.push(record);
+      if (!records.length) throw new Error('CSV가 비어 있습니다.');
+      const headers = records.shift();
+      if (new Set(headers).size !== headers.length) throw new Error('CSV에 중복된 컬럼 이름이 있습니다.');
+      const rows = [];
+      for (const values of records) {
+        if (values.length !== headers.length) throw new Error('CSV의 컬럼 개수가 맞지 않습니다.');
+        const row = Object.create(null);
+        for (let index = 0; index < headers.length; index += 1) row[headers[index]] = values[index];
+        rows.push(row);
+      }
+      return {headers, rows};
+    }
+
+    function readJsonArray(value) {
+      if (!value) return [];
+      const parsed = JSON.parse(value);
+      if (!Array.isArray(parsed)) throw new Error('목록 컬럼의 형식이 잘못되었습니다.');
+      return parsed;
+    }
+
+    function preparePhotos(text) {
+      const parsed = parseCsv(text);
+      for (const column of ['photo_id', 'place_id', 'image_path', 'description', 'sha256']) {
+        if (!parsed.headers.includes(column)) throw new Error('사진 목록 CSV에 ' + column + ' 컬럼이 없습니다.');
+      }
+      const identifiers = new Set();
+      for (const photo of parsed.rows) {
+        if (!photo.photo_id || identifiers.has(photo.photo_id)) throw new Error('사진 ID가 비어 있거나 중복되었습니다.');
+        identifiers.add(photo.photo_id);
+        photo.placeIds = readJsonArray(photo.place_ids);
+        if (!photo.placeIds.length) photo.placeIds = [photo.place_id];
+        photo.mappingStatuses = readJsonArray(photo.mapping_status);
+        photo.sourceRecords = readJsonArray(photo.sources);
+        photo.searchText = [photo.photo_id, photo.spot_name, photo.description, ...photo.placeIds].join(' ').toLocaleLowerCase();
+      }
+      return parsed.rows;
+    }
+
+    function showNotice(message, error = false) {
+      elements.notice.textContent = message;
+      elements.notice.classList.toggle('error', error);
+      elements.notice.hidden = !message;
+    }
+
+    function readReview(photo) {
+      const review = state.reviews[photo.photo_id];
+      if (review && review.sha256 === photo.sha256) return review;
+      return {photo_id: photo.photo_id, sha256: photo.sha256, status: 'pending', note: ''};
+    }
+
+    function persistReviews() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.reviews));
+        elements['save-state'].textContent = '이 브라우저에 저장했습니다. 옮기거나 보관하려면 결과 JSON을 저장해 주세요.';
+      } catch {
+        elements['save-state'].textContent = '브라우저 저장을 사용할 수 없습니다. 종료 전에 결과 JSON을 저장해 주세요.';
+      }
+    }
+
+    function saveReview(photo, changes) {
+      const review = {...readReview(photo), ...changes, updated_at: new Date().toISOString()};
+      state.reviews[photo.photo_id] = review;
+      persistReviews();
+    }
+
+    function findPhotoFile(photo) {
+      const marker = 'data/processed/photos/';
+      let relativePath = photo.image_path.replaceAll('\\', '/');
+      if (relativePath.startsWith(marker)) relativePath = relativePath.slice(marker.length);
+      return state.files.get(relativePath) || null;
+    }
+
+    function makeElement(tag, className, text) {
+      const element = document.createElement(tag);
+      if (className) element.className = className;
+      if (text !== undefined) element.textContent = text;
+      return element;
+    }
+
+    function makeObjectUrl(file) {
+      const url = URL.createObjectURL(file);
+      state.objectUrls.push(url);
+      return url;
+    }
+
+    function showLargePhoto(photo, file) {
+      const dialogImage = elements['dialog-image'];
+      if (dialogImage.dataset.objectUrl) URL.revokeObjectURL(dialogImage.dataset.objectUrl);
+      const url = URL.createObjectURL(file);
+      dialogImage.dataset.objectUrl = url;
+      dialogImage.src = url;
+      dialogImage.alt = photo.spot_name || photo.photo_id;
+      elements['dialog-title'].textContent = photo.photo_id + ' · ' + (photo.spot_name || '시설 연결 미확인');
+      elements['dialog-description'].textContent = photo.description;
+      elements['photo-dialog'].showModal();
+    }
+
+    function buildPhotoCard(photo) {
+      const card = makeElement('article', 'card');
+      const top = makeElement('div', 'card-top');
+      top.append(makeElement('span', 'photo-id', photo.photo_id));
+      const uncertain = photo.mappingStatuses.includes('unconfirmed');
+      const review = readReview(photo);
+      top.append(makeElement('span', 'badge' + (uncertain ? ' warning' : ''), uncertain ? '원본 연결 미확인' : REVIEW_LABELS[review.status]));
+      const body = makeElement('div', 'card-body');
+      const picture = makeElement('div', 'picture');
+      const file = findPhotoFile(photo);
+      if (file) {
+        const open = makeElement('button');
+        open.type = 'button';
+        open.setAttribute('aria-label', photo.photo_id + ' 사진 크게 보기');
+        const image = makeElement('img');
+        image.src = makeObjectUrl(file); image.alt = photo.spot_name || photo.photo_id; image.loading = 'lazy';
+        image.addEventListener('error', () => {
+          picture.replaceChildren(makeElement('p', 'missing', '브라우저에서 표시하지 못하는 형식이거나 파일을 읽지 못했습니다.\n' + photo.image_path));
+        });
+        open.append(image); open.addEventListener('click', () => showLargePhoto(photo, file));
+        picture.append(open, makeElement('small', '', (photo.width || '?') + ' × ' + (photo.height || '?') + ' · 누르면 확대'));
+      } else {
+        picture.append(makeElement('p', 'missing', (state.folderSelected ? '선택한 폴더에서 사진을 찾지 못했습니다.' : '통합 사진 폴더를 선택해 주세요.') + '\n' + photo.image_path));
+      }
+      const info = makeElement('div', 'info');
+      info.append(makeElement('h3', 'facility', photo.spot_name || '시설 연결 미확인'));
+      const names = [];
+      for (const placeId of photo.placeIds) names.push(state.names.has(placeId) ? placeId + ' ' + state.names.get(placeId) : placeId);
+      info.append(makeElement('div', 'place', names.join(' · ')));
+      info.append(makeElement('div', 'description' + (photo.description === '설명 없음' ? ' no-description' : ''), photo.description));
+      const buttons = makeElement('div', 'review-buttons');
+      for (const status of ['verified', 'incorrect', 'hold', 'pending']) {
+        const button = makeElement('button', '', status === 'pending' ? '표시 해제' : REVIEW_LABELS[status]);
+        button.type = 'button'; button.setAttribute('aria-pressed', String(review.status === status));
+        button.addEventListener('click', () => { saveReview(photo, {status}); render(); });
+        buttons.append(button);
+      }
+      const noteLabel = makeElement('label', 'note-label', '검수 메모');
+      const note = makeElement('textarea'); note.rows = 2; note.value = review.note; note.placeholder = '예: 입구 사진이 아니라 화장실 내부 사진';
+      note.addEventListener('input', () => saveReview(photo, {note: note.value}));
+      noteLabel.append(note); info.append(buttons, noteLabel); body.append(picture, info);
+      const details = makeElement('details', 'source-details');
+      details.append(makeElement('summary', '', '원본 출처 · 사진 번호 · 연결 근거 보기'));
+      const provenance = {image_path: photo.image_path, mapping_status: photo.mappingStatuses, sources: photo.sourceRecords};
+      details.append(makeElement('pre', '', JSON.stringify(provenance, null, 2)));
+      card.append(top, body, details);
+      return card;
+    }
+
+    function updateStats() {
+      const counts = {verified: 0, incorrect: 0, hold: 0, pending: 0};
+      for (const photo of state.photos) counts[readReview(photo).status] += 1;
+      elements['total-count'].textContent = state.photos.length.toLocaleString('ko-KR');
+      for (const [status, count] of Object.entries(counts)) elements[status + '-count'].textContent = count.toLocaleString('ko-KR');
+    }
+
+    function rebuildPlaceOptions() {
+      const previous = elements['place-filter'].value;
+      const counts = new Map();
+      for (const photo of state.photos) {
+        for (const placeId of photo.placeIds) counts.set(placeId, (counts.get(placeId) || 0) + 1);
+      }
+      const options = [new Option('전체 장소', '')];
+      for (const placeId of [...counts.keys()].sort()) {
+        const name = state.names.get(placeId) || '';
+        options.push(new Option(placeId + ' ' + name + ' (' + counts.get(placeId) + ')', placeId));
+      }
+      elements['place-filter'].replaceChildren(...options);
+      if (counts.has(previous)) elements['place-filter'].value = previous;
+    }
+
+    function filterPhotos() {
+      const place = elements['place-filter'].value;
+      const status = elements['status-filter'].value;
+      const search = elements['search-input'].value.trim().toLocaleLowerCase();
+      const photos = [];
+      for (const photo of state.photos) {
+        if (place && !photo.placeIds.includes(place)) continue;
+        if (status && readReview(photo).status !== status) continue;
+        if (elements['uncertain-only'].checked && !photo.mappingStatuses.includes('unconfirmed')) continue;
+        if (elements['empty-only'].checked && photo.description !== '설명 없음') continue;
+        const placeNames = photo.placeIds.map(placeId => state.names.get(placeId) || '').join(' ').toLocaleLowerCase();
+        if (search && !photo.searchText.includes(search) && !placeNames.includes(search)) continue;
+        photos.push(photo);
+      }
+      return photos;
+    }
+
+    function render() {
+      for (const url of state.objectUrls) URL.revokeObjectURL(url);
+      state.objectUrls = [];
+      updateStats();
+      const photos = filterPhotos();
+      const pageSize = Number(elements['page-size'].value);
+      const pages = Math.max(1, Math.ceil(photos.length / pageSize));
+      state.page = Math.min(state.page, pages);
+      elements['result-count'].textContent = '필터 결과 ' + photos.length.toLocaleString('ko-KR') + '개';
+      const content = document.createDocumentFragment();
+      if (!photos.length) content.append(makeElement('div', 'empty', state.photos.length ? '조건에 맞는 사진이 없습니다.' : '사진 목록 CSV와 통합 사진 폴더를 선택해 주세요.'));
+      const offset = (state.page - 1) * pageSize;
+      for (const photo of photos.slice(offset, offset + pageSize)) content.append(buildPhotoCard(photo));
+      elements.cards.replaceChildren(content);
+      elements.pagination.hidden = !photos.length;
+      elements['page-label'].textContent = state.page + ' / ' + pages + ' 페이지';
+      elements['previous-page'].disabled = state.page === 1;
+      elements['next-page'].disabled = state.page >= pages;
+      elements['json-export'].disabled = !state.photos.length;
+      elements['csv-export'].disabled = !state.photos.length;
+    }
+
+    function validateReviews(records) {
+      if (!Array.isArray(records)) throw new Error('검수 결과 목록 형식이 잘못되었습니다.');
+      const reviews = Object.create(null);
+      for (const record of records) {
+        if (!record || typeof record.photo_id !== 'string' || typeof record.sha256 !== 'string' || !Object.hasOwn(REVIEW_LABELS, record.status) || typeof record.note !== 'string') throw new Error('검수 결과 항목 형식이 잘못되었습니다.');
+        reviews[record.photo_id] = {photo_id: record.photo_id, sha256: record.sha256, status: record.status, note: record.note, updated_at: typeof record.updated_at === 'string' ? record.updated_at : ''};
+      }
+      return reviews;
+    }
+
+    function downloadFile(filename, content, type) {
+      const url = URL.createObjectURL(new Blob([content], {type}));
+      const link = document.createElement('a'); link.href = url; link.download = filename;
+      document.body.append(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function exportRecords() {
+      const records = [];
+      for (const photo of state.photos) {
+        const review = readReview(photo);
+        if (review.status !== 'pending' || review.note) records.push({...review, place_ids: photo.placeIds, image_path: photo.image_path});
+      }
+      return records;
+    }
+
+    function quoteCsv(value) {
+      let text = String(value ?? '');
+      if (/^[=+@\-\t\r]/.test(text)) text = "'" + text;
+      return '"' + text.replaceAll('"', '""') + '"';
+    }
+
+    elements['csv-input'].addEventListener('change', async event => {
+      const file = event.target.files[0]; if (!file) return;
+      try {
+        const photos = preparePhotos(await file.text());
+        state.photos = photos; state.csvName = file.name; state.page = 1;
+        rebuildPlaceOptions(); render();
+        showNotice(photos.length.toLocaleString('ko-KR') + '개 사진 목록을 불러왔습니다. 브라우저에 저장된 검수는 사진 ID와 파일 내용이 일치할 때 복원됩니다.');
+      } catch (error) { showNotice(error.message, true); }
+    });
+    elements['folder-input'].addEventListener('change', event => {
+      state.files = new Map();
+      for (const file of event.target.files) {
+        const parts = file.webkitRelativePath.split('/');
+        const relative = parts.slice(1).join('/');
+        state.files.set(relative, file);
+      }
+      state.folderSelected = true; render();
+      const matched = state.photos.filter(photo => findPhotoFile(photo)).length;
+      showNotice(state.photos.length ? state.photos.length.toLocaleString('ko-KR') + '개 중 ' + matched.toLocaleString('ko-KR') + '개 사진 파일이 연결됐습니다.' : '사진 폴더를 읽었습니다. 사진 목록 CSV도 선택해 주세요.', Boolean(state.photos.length && matched !== state.photos.length));
+    });
+    elements['places-input'].addEventListener('change', async event => {
+      const file = event.target.files[0]; if (!file) return;
+      try {
+        const parsed = parseCsv(await file.text());
+        if (!parsed.headers.includes('place_id') || !parsed.headers.includes('name')) throw new Error('places.csv의 place_id·name 컬럼이 필요합니다.');
+        const names = new Map();
+        for (const row of parsed.rows) names.set(row.place_id, row.name);
+        state.names = names; rebuildPlaceOptions(); render(); showNotice('장소 이름 ' + names.size + '개를 불러왔습니다.');
+      } catch (error) { showNotice(error.message, true); }
+    });
+    for (const id of ['place-filter', 'status-filter', 'page-size', 'uncertain-only', 'empty-only']) {
+      elements[id].addEventListener('change', () => { state.page = 1; render(); });
+    }
+    let searchTimeout;
+    elements['search-input'].addEventListener('input', () => {
+      clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { state.page = 1; render(); }, 180);
+    });
+    elements['previous-page'].addEventListener('click', () => { state.page -= 1; render(); elements['results-title'].scrollIntoView({block: 'start'}); });
+    elements['next-page'].addEventListener('click', () => { state.page += 1; render(); elements['results-title'].scrollIntoView({block: 'start'}); });
+    elements['close-dialog'].addEventListener('click', () => elements['photo-dialog'].close());
+    elements['photo-dialog'].addEventListener('close', () => {
+      const image = elements['dialog-image'];
+      if (image.dataset.objectUrl) URL.revokeObjectURL(image.dataset.objectUrl);
+      delete image.dataset.objectUrl; image.removeAttribute('src');
+    });
+    elements['import-button'].addEventListener('click', () => elements['review-input'].click());
+    elements['review-input'].addEventListener('change', async event => {
+      const file = event.target.files[0]; if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        if (data.version !== 1) throw new Error('지원하지 않는 검수 결과 버전입니다.');
+        const imported = validateReviews(data.reviews);
+        let skipped = 0;
+        const current = new Map(state.photos.map(photo => [photo.photo_id, photo.sha256]));
+        for (const [photoId, review] of Object.entries(imported)) {
+          if (current.size && current.get(photoId) !== review.sha256) { skipped += 1; continue; }
+          state.reviews[photoId] = review;
+        }
+        persistReviews(); render(); showNotice('검수 결과를 가져왔습니다. 현재 목록과 사진 내용이 다른 항목은 ' + skipped + '개 건너뛰었습니다.');
+      } catch (error) { showNotice(error.message, true); }
+    });
+    elements['json-export'].addEventListener('click', () => {
+      const data = {version: 1, exported_at: new Date().toISOString(), source_csv: state.csvName, reviews: exportRecords()};
+      downloadFile('photo-reviews-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(data, null, 2), 'application/json;charset=utf-8');
+    });
+    elements['csv-export'].addEventListener('click', () => {
+      const records = [['photo_id', 'place_ids', 'review_status', 'note', 'image_path', 'sha256']];
+      for (const photo of state.photos) {
+        const review = readReview(photo);
+        records.push([photo.photo_id, photo.placeIds.join(' / '), REVIEW_LABELS[review.status], review.note, photo.image_path, photo.sha256]);
+      }
+      const text = records.map(record => record.map(quoteCsv).join(',')).join('\r\n');
+      downloadFile('photo-reviews-' + new Date().toISOString().slice(0, 10) + '.csv', '\uFEFF' + text, 'text/csv;charset=utf-8');
+    });
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      state.reviews = validateReviews(Object.values(saved));
+    } catch {
+      elements['save-state'].textContent = '이전 검수 기록을 불러오지 못했습니다. 저장한 JSON이 있으면 가져오세요.';
+    }
+  </script>
+</body>
+</html>

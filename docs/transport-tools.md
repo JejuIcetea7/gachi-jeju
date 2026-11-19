@@ -33,7 +33,7 @@ Python 3.12와 프로젝트용 가상환경을 사용합니다.
 프로젝트 루트에서 의존성을 설치합니다.
 
 ```cmd
-python -m pip install -r backend\requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 프로젝트 루트의 `.env`에 다음 환경변수를 설정합니다.
@@ -267,3 +267,18 @@ python -B -m scripts.check_kakao_walking
 - [카카오맵 도보 API](https://developers.kakao.com/docs/ko/kakaomap/rest-api#walk)
 - [제주 BIS Open API 안내](https://www.jeju.go.kr/help/open.htm?act=view&seq=967654)
 - [제주 BIS 공식 노선 안내](https://bus.jeju.go.kr/publicTrafficInformation/generalBusSchedule?viewtype=3)
+
+
+**2026-11-16 Agent 버스 요약의 정거장 수**
+
+`get_bus_route_summary`의 Agent 요약과 화면용 버스 안내는
+같은 `ride_stop_count` 계산을 사용합니다.
+
+| 필드 | 의미 |
+|---|---|
+| `segments[].ride_stop_count` | 승차지는 제외하고 하차지는 포함한 이동 정거장 수입니다. 정류장 목록이 불완전하거나 승하차 이름과 맞지 않으면 `null`입니다. |
+| `segments[].arriving_buses[].remaining_stops` | 현재 조회한 차량이 승차 정류장까지 남긴 정류장 수입니다. 이용자가 이동할 정거장 수와 구분합니다. |
+
+승차지를 포함한 목록 길이인 기존 `stop_count`는 Agent 요약에서 제외합니다.
+`get_bus_trip`의 원본 경로 형식과 차량별 실시간 정보는 유지합니다.
+관련 검사와 실제 확인 결과는 [응답 설명 정합성 보완](experiments/0004-chat-response-consistency.md)을 참고합니다.
