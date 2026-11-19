@@ -1462,6 +1462,15 @@
   padding-top: 14px;
 }
 
+.plan-timeline-item.is-move .plan-timeline-marker {
+  gap: 2px;
+  padding-top: 6px;
+}
+
+.plan-timeline-item.is-move .plan-timeline-marker::after {
+  min-height: 0;
+}
+
 .plan-timeline-marker::after {
   content: '';
   flex: 1;
@@ -1568,10 +1577,6 @@
   margin: 0;
 }
 
-.plan-timeline-move .plan-timeline-title-row {
-  justify-content: flex-start;
-}
-
 .plan-timeline .plan-item-title {
   margin: 0;
   overflow-wrap: anywhere;
@@ -1635,46 +1640,42 @@
   font-size: 13px;
 }
 
-.plan-timeline-meta .plan-type {
-  padding: 0;
-  color: inherit;
-  background: none;
-  font-size: inherit;
+.plan-visit-duration,
+.plan-move-duration {
+  color: var(--color-text);
   font-weight: 600;
+}
+
+.plan-visit-time {
+  white-space: nowrap;
 }
 
 .plan-timeline-move {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-self: start;
+  gap: 4px;
   min-width: 0;
-  margin: 6px 0;
-  padding: 10px 14px;
+  margin: 4px 0;
+  padding: 6px 12px;
   border: 1px dashed var(--color-border-strong);
   border-radius: var(--radius-control);
   background: var(--color-surface-warm);
 }
 
-.plan-timeline-move .plan-type {
-  display: inline-flex;
-  padding: 1px 10px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 999px;
-  color: var(--color-text-soft);
-  background: var(--color-surface);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.plan-timeline-move .plan-item-title {
-  font-size: 14px;
-}
-
 .plan-timeline .plan-move-detail {
-  display: block;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
   margin: 0;
   color: var(--color-text-muted);
   font-size: 13px;
+}
+
+.plan-move-route {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .plan-transit-guide,
