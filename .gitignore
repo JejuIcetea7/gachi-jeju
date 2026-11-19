@@ -38,3 +38,10 @@ outputs/chat_eval/
 # 데이터 공유용 대용량 압축 파일
 /data/**/*.zip
 /outputs/**/*.zip
+
+# 원본을 그대로 옮긴 파일은 로컬에만 보관 (제주데이터허브 등 원본 외부 공개 제한)
+/data/processed/hwp_hub_info/
+/data/processed/hwp_general_info/
+/outputs/tour_api_candidates/responses/
+/outputs/tour_api_candidates/jeju_catalog.json
+/outputs/check_tour_api/
