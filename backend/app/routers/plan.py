@@ -123,6 +123,7 @@ class PlanItemResponse(BaseModel):
     longitude: float | None
     transport: str | None
     duration_minutes: int | None
+    rest_minutes: int | None = Field(default=None, ge=0, le=1440, strict=True, exclude_if=lambda value: value is None)
     distance_km: float | None
     accessibility_notes: list[str]
     route_id: str | None = Field(default=None, max_length=80)
@@ -133,9 +134,17 @@ class PlanDayResponse(BaseModel):
     day: int
     items: list[PlanItemResponse]
 
+class ScheduleLimit(BaseModel):
+    """사용자 입력에서 서버가 읽어 확정한 분 단위 제약. 장소가 없으면 하루 일정에 적용."""
+    day: int | None = Field(default=None, ge=1)
+    visit: str | None = None
+    kind: Literal["start", "end", "earliest", "latest", "duration", "minimum", "maximum", "rest"]
+    minutes: int = Field(ge=0, le=1440, strict=True)
+
 class PlanBodyResponse(BaseModel):
     assumptions: list[str]
     days: list[PlanDayResponse]
+    schedule_limits: list[ScheduleLimit] = Field(default_factory=list, exclude_if=lambda value: not value)
 
 class PlanMetaResponse(BaseModel):
     model_call_count: int

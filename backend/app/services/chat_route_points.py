@@ -4,11 +4,13 @@ from copy import deepcopy
 import inspect
 import json
 from threading import Lock
+from typing import Literal
 from uuid import uuid4
 import sqlite3
 
 from .chat_request_control import check_chat_request_control
-from .kakao_local import RESTAURANT_CATEGORY_CODE
+from ..config import get_kakao_api_key
+from .kakao_local import RESTAURANT_CATEGORY_CODE, search_nearby_restaurants
 from .lodging_planning import LodgingStay, validate_lodging_options, _night_choices
 from .route_endpoints import _coordinate
 from ..tools.places import normalize_place_name, read_rows
@@ -62,27 +64,49 @@ def read_confirmed_restaurants(tool_trace):
         if not isinstance(record, dict) or record.get("tool") != "find_location":
             continue
         output = record.get("output")
-        if (
-            not isinstance(output, dict) or output.get("status") != "ok"
-            or output.get("category_group_code") != RESTAURANT_CATEGORY_CODE
-            or output.get("lookup_performed") is False
-        ):
+        if not isinstance(output, dict) or output.get("status") != "ok" or output.get("lookup_performed") is False:
             continue
-        reference = output.get("point_ref")
-        name = output.get("name")
-        address = output.get("address")
-        coordinates = _coordinate(output)
-        if (
-            isinstance(reference, str) and reference.startswith("found:") and 6 < len(reference) <= 80
-            and isinstance(name, str) and name.strip()
-            and isinstance(address, str) and address.strip()
-            and coordinates is not None
-        ):
-            restaurants[reference] = {
-                "name": name, "address": address,
-                "latitude": coordinates[0], "longitude": coordinates[1],
-            }
+        places = output.get("places", [output])
+        if not isinstance(places, list):
+            continue
+        for place in places:
+            if not isinstance(place, dict) or place.get("category_group_code") != RESTAURANT_CATEGORY_CODE:
+                continue
+            reference = place.get("point_ref")
+            name = place.get("name")
+            address = place.get("address")
+            coordinates = _coordinate(place)
+            if (
+                isinstance(reference, str) and reference.startswith("found:") and 6 < len(reference) <= 80
+                and isinstance(name, str) and name.strip()
+                and isinstance(address, str) and address.strip()
+                and coordinates is not None
+            ):
+                restaurants[reference] = {
+                    "name": name, "address": address,
+                    "latitude": coordinates[0], "longitude": coordinates[1],
+                }
     return restaurants
+
+
+def restaurant_lookup_failure(tool_trace):
+    """식사 장소를 찾기 위해 실행한 조회의 마지막 결과를 읽는다."""
+    if read_confirmed_restaurants(tool_trace):
+        return None
+    for record in reversed(tool_trace):
+        arguments = record.get("input")
+        if record.get("tool") != "find_location" or not isinstance(arguments, dict) or arguments.get("purpose") != "restaurant":
+            continue
+        output = record.get("output")
+        if not isinstance(output, dict) or output.get("lookup_performed") is False:
+            continue
+        status = output.get("status")
+        if status in ("not_found", "api_error", "rate_limited", "auth_error"):
+            return status
+        if status == "ok" and output.get("category_group_code") != RESTAURANT_CATEGORY_CODE:
+            return "not_found"
+        return None
+    return None
 
 
 def validate_plan_restaurants(plan, restaurants):
@@ -339,15 +363,48 @@ def bind_chat_route_tools(
             arguments[field + "_longitude"] = resolved["longitude"]
         return arguments, labels, None
 
-    def find_location(*, keyword: str, refresh: bool = False) -> dict:
-        """이름·주소로 위치를 확인하고 이번 실행에서만 사용할 point_ref를 반환합니다.
+    def register_location(location):
+        reference = "found:" + str(uuid4())
+        resolved = point(reference, location.get("name"), location)
+        if resolved is not None:
+            with lock:
+                points[reference] = resolved
+            location["point_ref"] = reference
 
-        검색어가 좌표가 있는 출발지 이름과 일치하면 기존 departure를 반환합니다.
-        같은 이름의 다른 지점으로 바꾸려면 주소나 입구 이름을 검색어에 넣어 주세요.
-        일정에 남은 식당을 다시 찾으면 이름으로 조회한 뒤 기존 주소와 대조합니다.
-        선택한 숙소와 다른 위치 또는 주소 정정의 새 조회 근거가 필요하면 refresh=true입니다.
-        lookup_performed가 false이면 기존 좌표를 재사용한 결과입니다.
+    def find_location(
+        *, keyword: str = "", refresh: bool = False, purpose: Literal["location", "restaurant"] = "location",
+        center_ref: str | None = None,
+    ) -> dict:
+        """위치나 식당을 찾아 이번 실행에서만 쓰는 point_ref를 반환합니다. 상황에 맞는 인자 조합 하나를 고릅니다.
+
+        상황별 사용법:
+        1. 출발지·숙소·관광지 위치: keyword=이름이나 주소. purpose는 기본값 "location".
+        2. 이름을 아는 식당: keyword=식당 이름, purpose="restaurant".
+        3. 특정 장소 주변 식당: purpose="restaurant", center_ref=기준 장소 참조(place:장소ID, departure, stay:N, 조회한 point_ref).
+           keyword는 비우고, 사용자가 음식 종류를 지정했을 때만 그 종류를 넣습니다. 거리순 최대 5곳을 반환합니다.
+        4. 선택한 숙소의 다른 지점·주소 정정: keyword=새 이름이나 주소, refresh=true.
+
+        결과 읽기:
+        - lookup_performed가 false이면 새로 조회하지 않고 기존 좌표를 재사용한 결과입니다.
+        - 검색어가 좌표가 있는 출발지 이름과 같으면 기존 departure를 반환합니다. 같은 이름의 다른 지점은 주소나 입구 이름을 넣습니다.
+        - 일정에 남은 식당을 다시 찾으면 기존 주소와 대조하고, 다르면 not_found입니다.
         """
+        if center_ref is not None:
+            if purpose != "restaurant":
+                return {"status": "invalid_input", "message": "center_ref는 주변 식당 조회에 사용합니다."}
+            center, error = resolve(center_ref)
+            if error is not None:
+                return {**error, "lookup_performed": False}
+            check_chat_request_control()
+            result = search_nearby_restaurants(
+                latitude=center["latitude"], longitude=center["longitude"],
+                keyword=keyword, api_key=get_kakao_api_key(),
+            )
+            for candidate in result.get("places", []):
+                register_location(candidate)
+            return result
+        if not keyword.strip():
+            return {"status": "invalid_input", "message": "장소 이름이나 주변 식당 검색의 center_ref가 필요합니다."}
         if (
             departure_name is not None
             and isinstance(keyword, str)
@@ -363,15 +420,12 @@ def bind_chat_route_tools(
         if has_refresh:
             arguments["refresh"] = refresh
         result = deepcopy(location_tool(**arguments))
+        if purpose == "restaurant" and isinstance(result, dict) and result.get("status") in ("api_error", "rate_limited", "auth_error"):
+            result["message"] = "식당 검색 서비스를 사용할 수 없습니다. 검색을 중단하고 기존 일정과 식사 요청을 유지해 주세요."
         if isinstance(result, dict) and result.get("status") == "ok":
             if previous_restaurant is not None and not _matches_saved_restaurant(result, *previous_restaurant):
                 return {"status": "not_found"}
-            reference = "found:" + str(uuid4())
-            resolved = point(reference, result.get("name"), result)
-            if resolved is not None:
-                with lock:
-                    points[reference] = resolved
-                result["point_ref"] = reference
+            register_location(result)
         return result
 
     def suggest_visit_order(

@@ -26,6 +26,20 @@ const flush = async () => {
   for (let index = 0; index < 6; index += 1) await Promise.resolve()
 }
 
+test('식당 검색 재시도에는 원래 식사 조건만 전송하고 기존 일정을 함께 보냅니다', async (t) => {
+  const meal = '박물관 관람 후 12시에 근처 식당에서 점심을 먹도록 추가해줘.'
+  const currentPlan = { assumptions: [], days: [{ day: 1, items: [] }] }
+  const requests = []
+  t.mock.method(globalThis, 'fetch', async (_, init) => {
+    requests.push(JSON.parse(init.body))
+    return response({ ...sample(), restaurant_retry_request: meal })
+  })
+  const first = await requestTravelChat({ ...input(), currentPlan })
+  await requestTravelChat({ ...input(), currentPlan, message: first.restaurant_retry_request })
+  assert.equal(requests[1].message, meal)
+  assert.deepEqual(requests[1].current_plan, currentPlan)
+})
+
 function fakeTimers(t) {
   let nextId = 0
   const pending = new Map()

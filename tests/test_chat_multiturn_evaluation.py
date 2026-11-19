@@ -287,7 +287,7 @@ class ChatMultiturnEvaluationTests(unittest.TestCase):
         record = make_record()
         add_lodging_days(record, with_moves=False)
         score = evaluation.evaluate_chat_turn(make_case(record), record)
-        self.assertTrue(score["checks"]["endpoints"]["passed"])
+        self.assertFalse(score["checks"]["endpoints"]["passed"])
         self.assertFalse(score["checks"]["turn_lodging"]["passed"])
         self.assertFalse(score["automatic_passed"])
 

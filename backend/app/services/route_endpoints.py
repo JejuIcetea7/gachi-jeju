@@ -5,6 +5,14 @@ from .lodging_planning import _night_choices
 
 EARTH_RADIUS_M = 6_371_000.0
 ENDPOINT_TOLERANCE_M = 100.0
+COORDINATE_TOLERANCE = 0.000001
+
+
+def _same_point(first, second):
+    return (
+        first is not None and second is not None
+        and all(abs(left - right) <= COORDINATE_TOLERANCE for left, right in zip(first, second))
+    )
 
 
 def _coordinate(value: dict | None) -> tuple[float, float] | None:
@@ -54,12 +62,13 @@ def validate_route_endpoints(
     *,
     departure: dict | None = None,
     return_to_origin: bool = False,
+    daily_departure: bool = False,
     lodging_stays: list[dict] | None = None,
 ) -> list[str]:
     """DB 검증 후의 일정과 길찾기에 전달한 좌표를 대조합니다.
 
     확인된 방문 장소의 바로 앞뒤 이동과 연속 이동의 연결을 검사합니다.
-    출발지는 1일차 첫 이동, 귀환은 마지막 일차의 마지막 이동에만 적용합니다.
+    확인된 두 위치가 다르면 이동이 있어야 합니다. 숙박 불필요 일정은 매일 출발지를 사용합니다.
     선택한 숙소는 해당 일차 마지막 이동의 도착과 다음 일차 첫 이동의 출발에 대조합니다.
     비교 기준 좌표가 없으면 해당 끝점은 검사하지 않습니다.
     도로선 paths는 사용하지 않으며, 입력은 변경하지 않습니다.
@@ -89,13 +98,23 @@ def validate_route_endpoints(
 
     for day_index, day in enumerate(days):
         items = day["items"]
+        number = day["day"]
+        start = _coordinate(stay_choices.get(number - 1))
+        end = _coordinate(stay_choices.get(number))
+        if number == 1 or daily_departure:
+            start = departure_coordinate
+        returning = return_to_origin and (day_index == len(days) - 1 or daily_departure)
+        if returning:
+            end = departure_coordinate
         if (
             return_to_origin is True and departure_coordinate is not None
             and day_index == len(days) - 1 and day_index > 0
-            and _coordinate(stay_choices.get(day["day"] - 1)) is not None
+            and start is not None and not _same_point(start, departure_coordinate)
             and days[day_index - 1].get("day") == day["day"] - 1
             and days[day_index - 1].get("items")
-            and (not items or items[-1].get("item_type") != "move")
+            and (not items or (
+                items[-1].get("item_type") == "visit" and _visit_coordinate(items[-1]) is None
+            ))
         ):
             errors.append(
                 f"{day['day']}일차: 전날 선택한 숙소와 원래 출발지가 확인돼 있고 귀환이 요청됐습니다. "
@@ -105,23 +124,20 @@ def validate_route_endpoints(
         for index, item in enumerate(items):
             previous = items[index - 1] if index > 0 else None
             following = items[index + 1] if index + 1 < len(items) else None
-            if item.get("restaurant_address"):
-                restaurant = _visit_coordinate(item)
-                start = departure_coordinate if day["day"] == 1 else _coordinate(stay_choices.get(day["day"] - 1))
-                end = _coordinate(stay_choices.get(day["day"]))
-                if day_index == len(days) - 1 and return_to_origin is True:
-                    end = departure_coordinate
-                for neighbor, boundary, label in (
-                    (previous, start, "식당으로 가는"),
-                    (following, end, "식당에서 출발하는"),
-                ):
-                    if neighbor is None:
-                        missing = boundary is not None and boundary != restaurant
-                    else:
-                        missing = neighbor["item_type"] != "move" and _visit_coordinate(neighbor) != restaurant
-                    if missing:
-                        errors.append(f"{day['day']}일차 '{item['title']}': {label} 이동을 조회해 일정에 추가해 주세요.")
-            if item.get("item_type") != "move":
+            if item["item_type"] == "visit":
+                location = _visit_coordinate(item)
+                label = f"{number}일차 '{item['title']}'"
+                if previous is None and start is not None and location is not None and not _same_point(start, location):
+                    errors.append(f"{label}: 출발 위치에서 이 방문지까지의 이동을 조회해 일정에 추가해 주세요.")
+                if previous is not None and previous["item_type"] == "visit":
+                    previous_location = _visit_coordinate(previous)
+                    both_known = previous_location is not None and location is not None
+                    includes_restaurant = previous.get("restaurant_address") or item.get("restaurant_address")
+                    if (both_known or includes_restaurant) and not _same_point(previous_location, location):
+                        errors.append(f"{label}: '{previous['title']}'에서 이 방문지까지의 이동을 조회해 일정에 추가해 주세요.")
+                if following is None and end is not None and location is not None and not _same_point(end, location):
+                    destination_label = "원래 출발지로 귀환" if returning else "선택한 숙소로 도착"
+                    errors.append(f"{label}: {destination_label}하는 이동을 조회해 일정에 추가해 주세요.")
                 continue
 
             label = f"{day['day']}일차 {index + 1}번째 일정 '{item['title']}'"
@@ -134,18 +150,9 @@ def validate_route_endpoints(
             destination = _visit_coordinate(following)
 
             if index == 0:
-                origin = (
-                    departure_coordinate if day.get("day") == 1
-                    else _coordinate(stay_choices.get(day["day"] - 1))
-                )
-            if index == len(items) - 1 and day_index < len(days) - 1:
-                destination = _coordinate(stay_choices.get(day["day"]))
-            if (
-                return_to_origin is True
-                and day_index == len(days) - 1
-                and index == len(items) - 1
-            ):
-                destination = departure_coordinate
+                origin = start
+            if index == len(items) - 1:
+                destination = end
 
             for field, expected, endpoint_label in (
                 ("origin", origin, "출발"),

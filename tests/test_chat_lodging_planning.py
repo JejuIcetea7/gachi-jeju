@@ -84,7 +84,7 @@ class ChatLodgingPlanningTests(unittest.TestCase):
         self.closed = self.enterContext(patch.object(chat_router, "read_closed_days_by_place_id", return_value={}))
         self.opening = self.enterContext(patch.object(chat_router, "read_opening_hours_by_place_id", return_value={}))
 
-    def post(self, selected_options=None, message="숙소는 미정이고 관광 일정부터 만들어 주세요."):
+    def post(self, selected_options=None, message="관광 일정부터 만들어 주세요."):
         request = chat_router.ChatRequest(message=message,
                                           options=selected_options or options())
         result = chat_router.create_chat(request)
@@ -122,6 +122,14 @@ class ChatLodgingPlanningTests(unittest.TestCase):
         self.assertEqual(len(body["map_routes"]), 4)
         self.assertEqual(self.lookup.call_count, 2)
 
+    def test_stay_at_verified_site_needs_no_transfer(self):
+        selected = options(status="provided", stays=[stay(point=SITE)])
+        plan, records = make_plan()
+        self.agent.return_value = agent_result(plan, records, selected)
+        status, body = self.post(selected)
+        self.assertEqual(status, 200)
+        self.assertEqual([route["route_id"] for route in body["map_routes"]], ["current-1-start", "current-2-end"])
+
     def test_partial_choices_only_connect_the_selected_night(self):
         selected = options(3, stays=[stay()])
         plan, records = make_plan(3, [stay()])
@@ -133,28 +141,41 @@ class ChatLodgingPlanningTests(unittest.TestCase):
         self.assertEqual(body["plan"]["days"][1]["items"][-1]["item_type"], "visit")
         self.assertEqual(body["plan"]["days"][2]["items"][0]["item_type"], "visit")
 
-    def test_omitted_response_state_keeps_previously_declared_undecided_state(self):
-        plan, records = make_plan()
+    def omitted_lodging_options(self):
         response_options = options()
         response_options.pop("lodging_status")
         response_options.pop("lodging_stays")
-        self.agent.return_value = agent_result(plan, records, response_options)
+        return response_options
+
+    def test_omitted_lodging_state_is_fed_back_instead_of_filled_by_server(self):
+        plan, records = make_plan()
+        self.agent.side_effect = [
+            agent_result(plan, records, self.omitted_lodging_options()),
+            agent_result(plan, records, options()),
+        ]
         status, body = self.post(options())
         self.assertEqual(status, 200)
+        self.assertEqual(self.agent.call_count, 2)
         self.assertEqual(body["options"]["lodging_status"], "undecided")
-        payload = json.loads(self.agent.call_args.args[0][-1]["content"])
-        self.assertEqual(payload["options"]["lodging_status"], "undecided")
+        first_payload = json.loads(self.agent.call_args_list[0].args[0][-1]["content"])
+        self.assertEqual(first_payload["options"]["lodging_status"], "undecided")
+        retry = json.loads(self.agent.call_args.args[0][-1]["content"])["plan_retry"]
+        self.assertFalse(retry["constraints_locked"])
+        self.assertTrue(any("숙소 상태" in reason and "changed_options" in reason for reason in retry["validation_errors"]))
 
-    def test_omitted_response_stays_keep_selected_locations(self):
+    def test_omitted_selected_stays_are_fed_back_and_kept_by_the_agent(self):
         selected = options(status="provided", stays=[stay()])
-        response_options = options()
-        response_options.pop("lodging_status")
-        response_options.pop("lodging_stays")
         plan, records = make_plan(stays=[stay()])
-        self.agent.return_value = agent_result(plan, records, response_options)
+        self.agent.side_effect = [
+            agent_result(plan, records, self.omitted_lodging_options()),
+            agent_result(plan, records, selected),
+        ]
         status, body = self.post(selected)
         self.assertEqual(status, 200)
+        self.assertEqual(self.agent.call_count, 2)
         self.assertEqual(body["options"]["lodging_stays"][0]["name"], "선택한 숙소")
+        retry = json.loads(self.agent.call_args.args[0][-1]["content"])["plan_retry"]
+        self.assertTrue(any("숙박일별 숙소" in reason for reason in retry["validation_errors"]))
 
     def test_explicit_lodging_change_is_respected(self):
         original = options(status="provided", stays=[stay()])
@@ -162,6 +183,10 @@ class ChatLodgingPlanningTests(unittest.TestCase):
         plan, records = make_plan(stays=changed["lodging_stays"])
         self.agent.return_value = agent_result(plan, records, changed)
         self.agent.return_value["messages"] = self.location_evidence(OTHER_HOTEL)
+        self.agent.return_value["chat_reply"].request_actions = [
+            chat_router.RequestAction(subject="lodging", action="change", evidence="선택한 숙소로 변경했습니다.")
+        ]
+        self.agent.return_value["chat_reply"].changed_options = ["lodging_stays"]
         status, body = self.post(original, message="선택한 숙소로 변경했습니다.")
         self.assertEqual(status, 200)
         self.assertEqual(body["options"]["lodging_stays"][0]["latitude"], OTHER_HOTEL["latitude"])
@@ -184,32 +209,35 @@ class ChatLodgingPlanningTests(unittest.TestCase):
         status, body = self.post(options())
         self.assertEqual(status, 502)
         self.assertEqual(body["error"]["code"], "plan_validation_failed")
-        self.assertTrue(any("사용자 선택" in item["reason"] for item in body["error"]["details"]))
+        self.assertTrue(any("숙소" in item["reason"] for item in body["error"]["details"]))
         self.lookup.assert_not_called()
 
     def test_question_cannot_silently_store_an_unselected_stay(self):
         chosen = options(status="provided", stays=[stay()])
         self.agent.return_value = agent_result(None, [], chosen)
+        self.agent.return_value["chat_reply"].changed_options = ["lodging_status", "lodging_stays"]
         status, body = self.post(options())
         self.assertEqual(status, 502)
         self.assertEqual(body["error"]["code"], "plan_validation_failed")
-        self.agent.assert_called_once()
+        self.assertEqual(self.agent.call_count, 2)
+        self.assertTrue(any("위치 조회 근거" in item["reason"] for item in body["error"]["details"]))
 
-    def test_unselected_lodging_moves_are_excluded_while_tourism_is_preserved(self):
-        original, records = make_plan(stays=[stay()])
-        before = original.model_dump()
-        self.agent.return_value = agent_result(original, records, options())
+    def test_unselected_lodging_moves_are_fed_back_and_tourism_plan_is_accepted(self):
+        with_hotel_moves, hotel_records = make_plan(stays=[stay()], prefix="bad-")
+        tourism_only, tourism_records = make_plan()
+        self.agent.side_effect = [
+            agent_result(with_hotel_moves, hotel_records, options()),
+            agent_result(tourism_only, tourism_records, options()),
+        ]
         status, body = self.post()
         self.assertEqual(status, 200)
-        self.agent.assert_called_once()
-        self.assertEqual(len(body["plan"]["days"]), 2)
+        self.assertEqual(self.agent.call_count, 2)
+        retry = json.loads(self.agent.call_args.args[0][-1]["content"])["plan_retry"]
+        self.assertTrue(any("숙소가 미정" in reason for reason in retry["validation_errors"]))
         self.assertEqual(body["plan"]["days"][0]["items"][-1]["item_type"], "visit")
         self.assertEqual(body["plan"]["days"][1]["items"][0]["item_type"], "visit")
         self.assertEqual([route["route_id"] for route in body["map_routes"]], ["current-1-start", "current-2-end"])
-        self.assertEqual(body["transit_routes"], [])
-        self.assertIn("숙소가 미정인 구간의 이동을 제외한 관광 일정", body["reply"])
-        self.assertTrue(any("제외" in note for note in body["plan"]["assumptions"]))
-        self.assertEqual(original.model_dump(), before)
+        self.assertEqual(body["reply"], "관광 일정을 구성했습니다.")
 
     def test_missing_selected_transfers_can_be_fixed_with_one_retry(self):
         selected = options(status="provided", stays=[stay()])
@@ -246,28 +274,37 @@ class ChatLodgingPlanningTests(unittest.TestCase):
         self.lookup.assert_not_called()
 
 
-    def test_reported_second_day_center_departure_is_excluded(self):
+    def test_reported_second_day_center_departure_is_fed_back(self):
         plan, records = make_plan(stays=[stay()])
         plan.days[0].items.pop()
         plan.days[1].items[0].title = "원래 출발지 → 관광지"
         records[2]["origin"] = dict(ORIGIN)
-        self.agent.return_value = agent_result(plan, records, options())
+        corrected, corrected_records = make_plan()
+        self.agent.side_effect = [
+            agent_result(plan, records, options()),
+            agent_result(corrected, corrected_records, options()),
+        ]
         status, body = self.post()
         self.assertEqual(status, 200)
+        self.assertEqual(self.agent.call_count, 2)
+        retry = json.loads(self.agent.call_args.args[0][-1]["content"])["plan_retry"]
+        self.assertTrue(any("2일차" in reason for reason in retry["validation_errors"]))
         self.assertEqual(body["plan"]["days"][1]["items"][0]["item_type"], "visit")
-        self.agent.assert_called_once()
-        self.assertTrue(any("2일차" in warning and "제외" in warning for warning in body["warnings"]))
 
-    def test_omitted_lodging_moves_need_no_route_evidence(self):
+    def test_route_less_lodging_move_is_fed_back_instead_of_removed(self):
         plan, records = make_plan(stays=[stay()])
         records = [record for record in records if record["route_id"] in ("current-1-start", "current-2-end")]
         plan.days[1].items[0].route_id = None
         plan.days[1].items[0].transport = None
-        self.agent.return_value = agent_result(plan, records, options())
+        corrected, corrected_records = make_plan()
+        self.agent.side_effect = [
+            agent_result(plan, records, options()),
+            agent_result(corrected, corrected_records, options()),
+        ]
         status, body = self.post()
         self.assertEqual(status, 200)
         self.assertEqual(len(body["map_routes"]), 2)
-        self.assertEqual(self.agent.call_count, 1)
+        self.assertEqual(self.agent.call_count, 2)
 
     def test_invalid_internal_tourism_move_is_still_rejected(self):
         plan, records = make_plan(stays=[stay()])
@@ -288,15 +325,13 @@ class ChatLodgingPlanningTests(unittest.TestCase):
         self.assertTrue(any("관광지 사이 이동" in item["reason"] for item in body["error"]["details"]))
         self.lookup.assert_not_called()
 
-    def test_normalization_note_keeps_reply_within_saved_message_limit(self):
-        plan, records = make_plan(stays=[stay()])
+    def test_model_reply_is_returned_without_server_notes(self):
+        plan, records = make_plan()
         self.agent.return_value = agent_result(plan, records, options())
         self.agent.return_value["chat_reply"].reply = "가" * 4000
         status, body = self.post()
         self.assertEqual(status, 200)
-        self.assertLessEqual(len(body["reply"]), 4000)
-        self.assertIn("숙소 선택 후", body["reply"])
-
+        self.assertEqual(body["reply"], "가" * 4000)
 
 if __name__ == "__main__":
     unittest.main()

@@ -429,6 +429,9 @@ function TravelWorkspace() {
         content: response.reply,
         status: 'sent',
       }
+      if (response.restaurant_retry_request) {
+        assistantMessage.restaurantRetryRequest = response.restaurant_retry_request
+      }
 
       setSession((previous) => {
         if (!requestTracker.isLatest(ticket)) return previous

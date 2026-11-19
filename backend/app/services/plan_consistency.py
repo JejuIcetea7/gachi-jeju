@@ -4,7 +4,16 @@ from .plan_evaluation import convert_seconds_to_minutes, is_close_minutes
 from .plan_routes import normalize_transport_mode
 
 
-def validate_plan_moves(plan: dict, route_calls: list[dict] | None) -> list[str]:
+ALLOWED_TRAVEL_MODES = {
+    "walking": {"walking"},
+    "driving": {"driving", "walking"},
+    "transit": {"transit", "walking"},
+}
+
+
+def validate_plan_moves(
+    plan: dict, route_calls: list[dict] | None, *, transport: str | None = None,
+) -> list[str]:
     """새 일정의 이동을 이번 실행의 조회 기록과 대조합니다."""
     records = {}
     duplicate_ids = set()
@@ -68,6 +77,13 @@ def validate_plan_moves(plan: dict, route_calls: list[dict] | None) -> list[str]
                 f"{label}: 이동수단 확인 실패 "
                 f"(일정 표기={item.get('transport')!r}, "
                 f"해석 결과={mode!r}, 조회 수단={record.get('transport')!r})."
+            )
+            continue
+
+        if transport is not None and mode not in ALLOWED_TRAVEL_MODES[transport]:
+            errors.append(
+                f"{label}: 선택한 이동수단({transport})에서 {mode} 이동을 사용할 수 없습니다. "
+                "조건에 맞는 경로를 조회하고 이동시간을 다시 계산해 주세요."
             )
             continue
 

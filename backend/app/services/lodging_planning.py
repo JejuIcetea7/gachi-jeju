@@ -2,7 +2,6 @@
 
 from copy import deepcopy
 import math
-import re
 from typing import Annotated, Literal
 import unicodedata
 
@@ -65,34 +64,6 @@ def _normalized_name(value):
     return unicodedata.normalize("NFC", "".join(value.split())).casefold()
 
 
-def _matches_region_name_alias(name, user_message, keyword):
-    """지역명만 생략한 구체적 숙소명을 이번 조회 키워드와 함께 대조합니다."""
-    if not isinstance(user_message, str) or not isinstance(keyword, str):
-        return False
-    regions = ("제주특별자치도", "서귀포시", "제주시", "서귀포", "제주도", "제주")
-    region = next((value for value in regions if name.startswith(value)), None)
-    if region is None:
-        return False
-    alias = name[len(region):]
-    generic = {
-        "호텔", "모텔", "펜션", "민박", "리조트", "숙소", "게스트하우스",
-        "관광호텔", "비즈니스호텔", "숙박시설",
-        "hotel", "motel", "resort", "guesthouse", "pension", "accommodation",
-    }
-    if len(alias) < 4 or alias in generic:
-        return False
-    if _normalized_name(keyword) not in (alias, name, alias + region):
-        return False
-    literal = r"\s*".join(re.escape(character) for character in alias)
-    start = r"(?:^|(?<=\W)|(?<=숙소를)|(?<=숙소는)|(?<=숙박을))"
-    end = (
-        r"(?=$|\W|(?:으로|로|에서|을|를|은|는|이|가|에)"
-        r"(?:$|\W|변경|바꾸|바꿔|정정|묵|숙박))"
-    )
-    text = unicodedata.normalize("NFC", user_message).casefold()
-    return re.search(start + literal + end, text) is not None
-
-
 def _same_coordinate(first, second):
     for field in ("latitude", "longitude"):
         values = (first.get(field), second.get(field))
@@ -112,10 +83,12 @@ def _same_lodging(first, second):
     )
 
 
-def validate_lodging_selections(previous, current, *, user_message, tool_trace):
-    """사용자 입력 선택과 이번 요청에서 사용자가 지목한 숙소의 위치 조회만 인정합니다."""
+def validate_lodging_selections(previous, current, *, tool_trace):
+    """기존 선택과 같거나, 이번 실행의 위치 조회 결과와 이름·주소·좌표가 같은 숙소만 인정합니다.
+
+    사용자가 어떤 숙소를 지목했는지는 에이전트가 판단합니다. 식당 조회와 기존 좌표 재사용은 근거가 아닙니다.
+    """
     previous_stays = previous.get("lodging_stays") or []
-    user_text = _normalized_name(user_message)
     errors = []
     for stay in current.get("lodging_stays") or []:
         if any(_same_lodging(stay, existing) for existing in previous_stays):
@@ -123,6 +96,9 @@ def validate_lodging_selections(previous, current, *, user_message, tool_trace):
         confirmed = False
         for record in tool_trace if isinstance(tool_trace, list) else []:
             if not isinstance(record, dict) or record.get("tool") != "find_location":
+                continue
+            arguments = record.get("input")
+            if isinstance(arguments, dict) and arguments.get("purpose") == "restaurant":
                 continue
             output = record.get("output")
             if (
@@ -140,32 +116,28 @@ def validate_lodging_selections(previous, current, *, user_message, tool_trace):
                 or not _same_coordinate(stay, output)
             ):
                 continue
-            tool_input = record.get("input")
-            keyword = tool_input.get("keyword") if isinstance(tool_input, dict) else None
-            if (
-                name in user_text or (address and address in user_text)
-                or _matches_region_name_alias(name, user_message, keyword)
-            ):
-                confirmed = True
-                break
+            if _normalized_name(stay.get("address")) != address:
+                continue
+            confirmed = True
+            break
         if not confirmed:
             errors.append(
                 f"{stay['night']}번째 숙박일: 숙소 '{stay['name']}'의 사용자 선택 또는 "
-                "이번 요청에서 확인한 위치 조회 근거가 없습니다. 미정 숙소를 임의로 선택하지 마세요."
+                "이번 실행에서 확인한 위치 조회 근거가 없습니다. 조회 결과의 이름·주소·좌표를 그대로 저장하고, "
+                "provider_place_id·place_url이 응답에 없으면 null로 두세요. 미정 숙소를 임의로 선택하지 마세요."
             )
     return errors
 
 
-def prepare_lodging_retry_options(previous, current, *, user_message, tool_trace):
-    """거절된 숙소만 재확인 대상으로 두고 나머지 선택과 조건을 고정합니다."""
+def prepare_lodging_retry_options(previous, current, *, tool_trace):
+    """위치 근거가 없는 숙박일만 재확인 대상으로 두고 나머지 선택과 조건을 고정합니다."""
     locked = deepcopy(current)
-    recheck = sorted({
-        stay["night"] for stay in current.get("lodging_stays") or []
-        if validate_lodging_selections(
-            previous, {"lodging_stays": [stay]},
-            user_message=user_message, tool_trace=tool_trace,
-        )
-    })
+    recheck_nights = set()
+    for stay in current.get("lodging_stays") or []:
+        errors = validate_lodging_selections(previous, {"lodging_stays": [stay]}, tool_trace=tool_trace)
+        if errors:
+            recheck_nights.add(stay["night"])
+    recheck = sorted(recheck_nights)
     if not recheck:
         return locked, []
     days = current.get("trip_days")
@@ -231,6 +203,13 @@ def prepare_undecided_lodging_plan(plan, *, trip_days, lodging_status, lodging_s
     return prepared, warnings
 
 
+def _visit_at_stay(item, stay):
+    return (
+        (item.get("verified") is True or bool(item.get("restaurant_address")))
+        and _same_coordinate(item, stay)
+    )
+
+
 def validate_lodging_boundaries(plan, *, trip_days, lodging_status, lodging_stays):
     """숙소가 미정인 구간의 임의 이동과 선택한 숙소 이동의 누락을 막습니다.
 
@@ -252,12 +231,12 @@ def validate_lodging_boundaries(plan, *, trip_days, lodging_status, lodging_stay
         if number > 1:
             if number - 1 not in stays and first_is_move:
                 errors.append(f"{number}일차: 전날 숙소가 미정이므로 숙소 출발 이동을 임의로 넣을 수 없습니다.")
-            elif number - 1 in stays and has_visit and not first_is_move:
+            elif number - 1 in stays and has_visit and not first_is_move and not _visit_at_stay(items[0], stays[number - 1]):
                 errors.append(f"{number}일차: 선택한 전날 숙소에서 첫 방문지까지의 이동을 포함해 주세요.")
         if number < trip_days:
             if number not in stays and last_is_move:
                 errors.append(f"{number}일차: 숙소가 미정이므로 숙소 도착 이동을 임의로 넣을 수 없습니다.")
-            elif number in stays and has_visit and not last_is_move:
+            elif number in stays and has_visit and not last_is_move and not _visit_at_stay(items[-1], stays[number]):
                 errors.append(f"{number}일차: 마지막 방문지에서 선택한 숙소까지의 이동을 포함해 주세요.")
     return errors
 

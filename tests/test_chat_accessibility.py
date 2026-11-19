@@ -194,14 +194,15 @@ class ChatAccessibilityTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.details.assert_not_called()
 
-    def test_question_can_change_options_without_generating_a_plan(self):
-        options = {**self.options, "requirements": []}
-        self.agent.side_effect = [helpers.make_result(plan=None, options=options)]
-        status, body = self.post()
-        self.assertEqual(status, 200)
-        self.assertIsNone(body["plan"])
-        self.assertEqual(body["options"]["requirements"], [])
-        self.details.assert_not_called()
+
+
+
+
+
+
+
+
+
 
     def test_time_error_skips_first_lookup(self):
         self.agent.side_effect = [
@@ -273,8 +274,85 @@ class ChatAccessibilityTests(unittest.TestCase):
         self.assertEqual(status, 502)
         self.assertEqual(self.agent.call_count, 2)
         self.assertTrue(all(
-            detail["field"] == "options" for detail in body["error"]["details"]
+            detail["field"] == "response" for detail in body["error"]["details"]
         ))
+
+    def test_introduction_is_preserved_without_word_based_accessibility_gate(self):
+        reply = "접근성 정보 확인을 도와드릴 수 있어요."
+        result = helpers.make_result(options=self.options)
+        result["chat_reply"].reply = reply
+        self.request = chat_router.ChatRequest(message="어떤 도움을 줄 수 있어?", options=self.options)
+        self.agent.return_value = result
+        status, body = self.post()
+        self.assertEqual(status, 200)
+        self.assertEqual(body["reply"], reply)
+        self.details.assert_not_called()
+
+    def test_information_reply_with_keep_action_is_not_replaced(self):
+        message = "박물관을 소개해줘. 일정은 만들지 마."
+        result = helpers.make_result(options=self.options)
+        result["chat_reply"].reply = "제주의 역사와 문화를 소개하는 박물관입니다."
+        result["chat_reply"].request_actions = [chat_router.RequestAction(subject="itinerary", action="keep", evidence="일정은 만들지 마.")]
+        self.request = chat_router.ChatRequest(message=message, options=self.options)
+        self.agent.return_value = result
+        status, body = self.post()
+        self.assertEqual(status, 200)
+        self.assertEqual(body["reply"], result["chat_reply"].reply)
+
+    def test_declared_option_change_is_checked_without_reading_words(self):
+        result = helpers.make_result(options={**self.options, "requirements": []})
+        result["chat_reply"].changed_options = ["requirements"]
+        self.agent.return_value = result
+        status, body = self.post()
+        self.assertEqual(status, 200)
+        self.assertEqual(body["options"]["requirements"], [])
+
+    def test_wrong_structured_facility_value_is_returned_as_feedback(self):
+        first = helpers.make_result(options=self.options)
+        first["chat_reply"].reply = "화장실은 확인되지 않았습니다."
+        first["chat_reply"].accessibility_checks = [chat_router.AccessibilityCheck(
+            place_name="TEST_A", topics=["accessible_toilet"],
+            findings=[chat_router.FacilityFinding(topic="accessible_toilet", status="unknown")])]
+        second = copy.deepcopy(first)
+        second["chat_reply"].accessibility_checks[0].findings[0].status = "Y"
+        second["chat_reply"].reply = "조사 자료에서 화장실이 확인됐습니다."
+        self.agent.side_effect = [first, second]
+        with patch.object(chat_router, "find_unique_exact_place_id", return_value="TEST_A"):
+            status, body = self.post()
+        self.assertEqual(status, 200)
+        self.assertEqual(body["reply"], second["chat_reply"].reply)
+        self.assertEqual(self.agent.call_count, 2)
+        feedback = json.loads(self.agent.call_args_list[1].args[0][-1]["content"])["plan_retry"]
+        self.assertTrue(any("기대값" in error and "실제값" in error for error in feedback["validation_errors"]))
+
+    def test_unknown_external_facility_cannot_be_marked_confirmed(self):
+        result = helpers.make_result(options=self.options)
+        result["chat_reply"].accessibility_checks = [chat_router.AccessibilityCheck(
+            place_name="외부 식당", topics=["wheelchair"],
+            findings=[chat_router.FacilityFinding(topic="wheelchair", status="Y")])]
+        self.agent.return_value = result
+        with patch.object(chat_router, "find_unique_exact_place_id", return_value=None):
+            status, body = self.post()
+        self.assertEqual(status, 502)
+        self.assertEqual(self.agent.call_count, 2)
+        self.assertEqual(body["error"]["code"], "plan_validation_failed")
+
+
+    def test_facility_data_error_is_not_fed_back_as_model_error(self):
+        for record in ({"status": "db_error"}, {**make_details("OTHER"), "status": "ok"}):
+            with self.subTest(record=record):
+                self.agent.reset_mock()
+                self.records["TEST_A"] = record
+                result = helpers.make_result(options=self.options)
+                result["chat_reply"].accessibility_checks = [chat_router.AccessibilityCheck(
+                    place_name="TEST_A", topics=["accessible_toilet"],
+                    findings=[chat_router.FacilityFinding(topic="accessible_toilet", status="Y")])]
+                self.agent.return_value = result
+                with patch.object(chat_router, "find_unique_exact_place_id", return_value="TEST_A"):
+                    status, body = self.post()
+                self.assertEqual(status, 500)
+                self.assertEqual(body["error"]["code"], "internal_error")
+                self.agent.assert_called_once()
 
 
 if __name__ == "__main__":

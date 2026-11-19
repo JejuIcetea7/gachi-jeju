@@ -53,6 +53,41 @@ def resolve_facility_status(details: dict, requirement: str) -> str:
     return next(iter(evidence)) if len(evidence) == 1 else "unknown"
 
 
+def describe_place_accessibility(details, topics, evidence_labels):
+    name = details["name"]
+    lines = []
+    for topic in dict.fromkeys(topics):
+        if topic in DIRECT_FIELDS:
+            status = resolve_facility_status(details, topic)
+            label = REQUIREMENT_LABELS[topic]
+            finding = {"Y": "있음", "N": "없음", "unknown": "미확인"}[status]
+            lines.append(f"{name}의 {label} 설치 여부는 장소 기본정보 기준 {finding}입니다.")
+        elif topic != "other":
+            label = (REQUIREMENT_LABELS | MOBILITY_LABELS)[topic]
+            lines.append(f"{name}의 {label}은 미확인입니다. 방문 전 이용할 구간을 확인해 주세요.")
+
+    labels = set(evidence_labels)
+    facilities = [_text(REQUIREMENT_LABELS[topic]) for topic in topics if topic in DIRECT_FIELDS]
+    if "accessible_parking" in topics:
+        facilities.append("장애인주차")
+    related_spots = 0
+    for spot in details.get("spots") or []:
+        description = spot.get("description")
+        if not description or description == spot.get("name"):
+            continue
+        if spot.get("name") not in labels:
+            if related_spots >= 2 or not any(term in _text(description) for term in facilities):
+                continue
+            related_spots += 1
+        lines.append(f"{name} 현장 조사 · {spot['name']} — {description}")
+    for fact in details.get("accessibility_facts") or []:
+        if fact.get("description") in labels and fact.get("raw_value"):
+            lines.append(f"{name} 현장 조사 · {fact.get('facility_name') or fact['section']} · {fact['description']} — {fact['raw_value']}")
+    if not lines:
+        lines.append(f"{name}의 요청하신 접근 조건은 조사 자료에서 확인하지 못했습니다.")
+    return lines
+
+
 def validate_plan_accessibility(
     plan: dict,
     places_by_id: dict,

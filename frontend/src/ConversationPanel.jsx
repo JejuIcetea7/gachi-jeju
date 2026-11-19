@@ -260,6 +260,16 @@ function ConversationPanel({
                     {message.role === 'user' ? '나' : '같이 가는 제주'}
                   </p>
                   <p className="conversation-content">{message.content}</p>
+                  {message === lastMessage && message.role === 'assistant' && message.restaurantRetryRequest && (
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      disabled={isSending}
+                      onClick={() => onSend(message.restaurantRetryRequest)}
+                    >
+                      식당 검색 다시 시도
+                    </button>
+                  )}
                   {message.status === 'failed' && (
                     <p className="conversation-failed">답변 확인 실패</p>
                   )}

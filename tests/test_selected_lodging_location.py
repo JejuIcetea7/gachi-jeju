@@ -121,11 +121,11 @@ class SelectedLodgingLocationTests(unittest.TestCase):
         for changed in ({**STAY, "night": 2}, {**STAY, "latitude": 33.49}):
             errors = validate_lodging_selections(
                 previous, {"lodging_stays": [changed]},
-                user_message="테스트 숙소 A에서 묵겠습니다.", tool_trace=trace,
+                tool_trace=trace,
             )
             self.assertEqual(len(errors), 1)
         self.assertEqual(validate_lodging_selections(
-            previous, previous, user_message="그 숙소를 유지합니다.", tool_trace=trace,
+            previous, previous, tool_trace=trace,
         ), [])
         self.assertEqual((previous, trace), before)
 
@@ -137,7 +137,6 @@ class SelectedLodgingLocationTests(unittest.TestCase):
         fresh = tool(keyword=STAY["name"], refresh=True)
         self.assertEqual(validate_lodging_selections(
             {"lodging_stays": [STAY]}, {"lodging_stays": [{**STAY, "night": 2}]},
-            user_message="2일차도 테스트 숙소 A에서 묵겠습니다.",
             tool_trace=[{"tool": "find_location", "output": fresh}],
         ), [])
 

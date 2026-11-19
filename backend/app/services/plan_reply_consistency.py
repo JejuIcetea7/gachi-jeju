@@ -13,6 +13,7 @@ _REPLY_CLOCK = re.compile(
     r"|정오|자정"
 )
 _REPLY_SENTENCE_END = re.compile(r"(?<=[.!?。！？])\s+|\n+")
+_REPLY_DURATION = re.compile(r"(?:\d+\s*분|(?:\d+|한|두|세|네|다섯|여섯|일곱|여덟|아홉|열)\s*시간)")
 _MAX_CHAT_REPLY_LENGTH = 4000
 _MAX_CHAT_TIMELINE_LENGTH = 2000
 _RETURN_AFTER = re.compile(
@@ -60,12 +61,20 @@ def build_plan_chat_reply(reply: str, plan: dict, *, notice: str = "") -> str:
         for item in day["items"]:
             day_prefix = f"{day['day']}일차 " if include_day else ""
             time_range = f"{item['start_time']}~{item['end_time']}"
-            timeline_lines.append(f"- {day_prefix}{time_range} {item['title']}")
+            line = f"- {day_prefix}{time_range} {item['title']}"
+            if item.get("item_type") == "visit" and item.get("duration_minutes") is not None:
+                line += f" ({item['duration_minutes']}분)"
+                if item.get("rest_minutes"):
+                    line += f", 휴식 {item['rest_minutes']}분 포함"
+            timeline_lines.append(line)
 
     timeline = ""
     if timeline_lines:
         sentences = _REPLY_SENTENCE_END.split(reply)
-        reply = " ".join(sentence.strip() for sentence in sentences if not _REPLY_CLOCK.search(sentence))
+        reply = " ".join(
+            sentence.strip() for sentence in sentences
+            if not _REPLY_CLOCK.search(sentence) and not _REPLY_DURATION.search(sentence)
+        )
         timeline = "\n".join(["일정 시각", *timeline_lines])
         if len(timeline) > _MAX_CHAT_TIMELINE_LENGTH:
             continuation = "나머지 시각은 일정표에서 확인해 주세요."

@@ -10,8 +10,9 @@ from backend.app.routers import chat as chat_router
 from backend.app.routers import plan as plan_router
 from backend.app.services import place_verification
 
+# 기본 출발지는 서버가 좌표를 채워 Agent에 보여 주므로, 좌표 없는 출발지 이름으로 장소 복원만 검사한다.
 OPTIONS = {
-    "departure": "제주빅데이터센터",
+    "departure": "테스트 출발지",
     "start_date": "2026-11-20",
     "trip_days": 1,
     "transport": "driving",
@@ -284,11 +285,9 @@ class ChatPlaceVerificationTests(unittest.TestCase):
             }],
         )
 
-        self.assertEqual(status, 200)
-        self.assertFalse(
-            body["plan"]["days"][0]["items"][0]["verified"],
-        )
-        self.assertEqual(len(body["warnings"]), 1)
+        self.assertEqual(status, 502)
+        self.assertEqual(body["error"]["code"], "plan_validation_failed")
+        self.assertNotIn("plan", body)
         self.name_lookup.assert_not_called()
 
     def test_restored_id_is_checked_for_closed_day(self):

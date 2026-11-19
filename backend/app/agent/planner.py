@@ -86,6 +86,8 @@ class ScheduleItem(BaseModel):
         description="move일 때 일반 이동수단명만 작성: 자동차, 렌터카, 택시, 버스, 도보. 노선 번호와 승하차 설명은 포함하지 않음",
     )
     duration_minutes: int | None = Field(default=None, description="머무는 시간 또는 이동 시간(분)")
+    rest_minutes: int | None = Field(default=None, ge=0, le=1440, strict=True,
+        exclude_if=lambda value: value is None, description="사용자가 지정한 휴식을 이 방문 체류에 포함한 분 수")
     distance_km: float | None = Field(default=None, description="move일 때 이동 거리(km)")
     accessibility_notes: list[str] = Field(default_factory=list, description="주차, 경사·동선, 화장실, 대여 등 접근성 메모")
     route_id: str | None = Field(

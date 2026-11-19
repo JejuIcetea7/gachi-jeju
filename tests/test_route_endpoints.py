@@ -40,6 +40,47 @@ def plan(*items):
 
 
 class RouteEndpointTests(unittest.TestCase):
+    def test_missing_moves_between_distinct_known_points(self):
+        errors = validate_route_endpoints(
+            plan(visit(FIRST, title="해변"), visit(SECOND, title="수목원")), [],
+            departure=ORIGIN, return_to_origin=True,
+        )
+        self.assertEqual(len(errors), 3)
+        self.assertIn("해변", errors[0])
+        self.assertIn("수목원", errors[1])
+        self.assertIn("귀환", errors[2])
+
+    def test_staying_at_same_coordinates_needs_no_move(self):
+        rounded = {**FIRST, "latitude": FIRST["latitude"] + 0.0000003}
+        self.assertEqual(validate_route_endpoints(
+            plan(visit(), visit(rounded)), [], departure=FIRST, return_to_origin=True,
+        ), [])
+        nearby = {**FIRST, "latitude": FIRST["latitude"] + 0.00045}
+        self.assertEqual(len(validate_route_endpoints(plan(visit(), visit(nearby)), [])), 1)
+
+    def test_daily_departure_requires_each_days_outbound_and_return(self):
+        value = {"days": [
+            {"day": 1, "items": [move("out"), visit()]},
+            {"day": 2, "items": [visit(SECOND), move("back")]},
+        ]}
+        errors = validate_route_endpoints(
+            value, [record("out"), record("back", SECOND, ORIGIN)],
+            departure=ORIGIN, return_to_origin=True, daily_departure=True,
+        )
+        self.assertEqual(len(errors), 2)
+        self.assertIn("1일차", errors[0])
+        self.assertIn("2일차", errors[1])
+
+    def test_undecided_night_only_exempts_unknown_boundaries(self):
+        value = {"days": [
+            {"day": 1, "items": [move("out"), visit()]},
+            {"day": 2, "items": [visit(SECOND), move("back")]},
+        ]}
+        self.assertEqual(validate_route_endpoints(
+            value, [record("out"), record("back", SECOND, ORIGIN)],
+            departure=ORIGIN, return_to_origin=True,
+        ), [])
+
     def test_valid_round_trip(self):
         errors = validate_route_endpoints(
             plan(move("out"), visit(), move("back")),

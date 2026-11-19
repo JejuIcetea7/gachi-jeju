@@ -54,7 +54,7 @@ def search_places(
     category: str | None = None,
     max_count: int = 10,
 ) -> dict:
-    """기준 좌표에서 반경 안에 있는 무장애 여행지를 가까운 순으로 돌려줍니다.
+    """기준 좌표에서 반경 안에 있는 무장애 여행지를 가까운 순으로 돌려줍니다. 장소 이름을 알면 search_places_by_name을 씁니다.
     category는 공원, 기타, 박물관·전시, 산책로, 시장, 자연, 해변 중 하나이고, 비우면 전체에서 찾습니다.
     distance_km는 직선거리이며 실제 이동시간이 아닙니다."""
     query = "SELECT place_id, name, category, latitude, longitude FROM places"
@@ -250,7 +250,7 @@ def normalize_place_name(value: str) -> str:
 
 
 def search_places_by_name(*, keyword: str, max_count: int = 5) -> dict:
-    """DB 여행지 이름으로 후보를 찾습니다.
+    """DB 여행지 이름으로 후보를 찾습니다. 이름 없이 주변 여행지를 찾을 때는 search_places를 씁니다.
 
     exact는 이름 정규화 후 일치, partial은 이름 일부가 겹치는 후보입니다.
     partial을 같은 장소로 자동 확정하지 말고 후보의 이름·좌표를 확인합니다.

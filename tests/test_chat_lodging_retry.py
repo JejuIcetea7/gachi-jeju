@@ -31,13 +31,17 @@ def evidence(stay=NEW):
     ]
 
 
-def result(stays, *, days=2, prefix="current-", question=False, trace=None):
+def result(stays, *, days=2, prefix="current-", question=False, trace=None, message="숙소를 제주새숙소로 변경"):
     selected = fixture.options(days=days, status="provided", stays=stays)
     trip, routes = fixture.make_plan(days=days, stays=stays, prefix=prefix)
     value = fixture.agent_result(None if question else trip, [] if question else routes, selected)
+    value["chat_reply"].request_actions = [chat.RequestAction(subject="lodging", action="change", evidence=message)]
     value["messages"] = [] if trace is None else trace
     if question:
         value["chat_reply"].reply = "새 숙소의 정확한 이름이나 주소를 알려 주세요."
+        value["chat_reply"].needs_clarification = True
+    else:
+        value["chat_reply"].changed_options = ["lodging_stays"]
     return value
 
 
@@ -63,10 +67,10 @@ class ChatLodgingRetryTests(unittest.TestCase):
     def retry(self):
         return json.loads(self.agent.call_args_list[1].args[0][-1]["content"])
 
-    def test_unverified_canonical_name_can_return_a_question_with_original_selection(self):
-        first = result([NEW], prefix="old-", trace=evidence())
+    def test_unverified_first_proposal_can_return_a_question_with_original_selection(self):
+        first = result([WRONG], prefix="old-")
         self.agent.side_effect = [first, result([ORIGINAL], question=True)]
-        status, body = self.post(message="숙소를 새숙소로 변경")
+        status, body = self.post()
         self.assertEqual(status, 200)
         self.assertIsNone(body["plan"])
         self.assertEqual(body["map_routes"], [])
@@ -91,16 +95,16 @@ class ChatLodgingRetryTests(unittest.TestCase):
         self.assertEqual(body["meta"]["model_call_count"], 2)
         self.assertEqual(first, before)
 
-    def test_recheck_does_not_allow_an_unrequested_hotel(self):
+    def test_recheck_still_requires_fresh_location_evidence(self):
         invented = {**NEW, "name": "임의 숙소"}
         self.agent.side_effect = [
             result([WRONG], prefix="old-"),
-            result([invented], prefix="new-", trace=evidence(invented)),
+            result([invented], prefix="new-", trace=evidence()),
         ]
         status, body = self.post()
         self.assertEqual(status, 502)
         self.assertEqual(body["error"]["code"], "plan_validation_failed")
-        self.assertTrue(any("사용자 선택" in item["reason"] for item in body["error"]["details"]))
+        self.assertTrue(any("위치 조회 근거" in item["reason"] for item in body["error"]["details"]))
 
     def test_verified_first_choice_remains_locked_when_another_error_retries(self):
         first = result([NEW], prefix="old-", trace=evidence())
@@ -108,8 +112,9 @@ class ChatLodgingRetryTests(unittest.TestCase):
         self.agent.side_effect = [first, result([ORIGINAL], prefix="new-")]
         status, body = self.post()
         self.assertEqual(status, 502)
-        self.assertEqual(body["error"]["details"][0]["field"], "options")
+        self.assertTrue(any("자동 재생성에서 숙박일별 숙소" in item["reason"] for item in body["error"]["details"]))
         self.assertNotIn("lodging_recheck_nights", self.retry()["plan_retry"])
+        self.assertTrue(self.retry()["plan_retry"]["constraints_locked"])
 
     def test_recheck_cannot_drop_another_previously_selected_night(self):
         original = fixture.options(days=3, status="provided", stays=[ORIGINAL, OTHER])
@@ -119,7 +124,7 @@ class ChatLodgingRetryTests(unittest.TestCase):
         ]
         status, body = self.post(original=original)
         self.assertEqual(status, 502)
-        self.assertEqual(body["error"]["details"][0]["field"], "options")
+        self.assertTrue(any("숙박일별 숙소" in item["reason"] for item in body["error"]["details"]))
         locked = self.retry()["plan_retry"]["locked_options"]["lodging_stays"]
         self.assertEqual([stay["night"] for stay in locked], [2])
 
@@ -150,7 +155,8 @@ class ChatLodgingRetryTests(unittest.TestCase):
                 self.agent.side_effect = [first, second]
                 status, body = self.post(original=original)
                 self.assertEqual(status, 502)
-                self.assertEqual(body["error"]["details"][0]["field"], "options")
+                reasons = [item["reason"] for item in body["error"]["details"]]
+                self.assertTrue(any("이동수단" in reason or "필수 이용 조건" in reason for reason in reasons))
                 self.assertEqual(self.agent.call_count, 2)
 
 
@@ -160,7 +166,7 @@ class LodgingRetryOptionTests(unittest.TestCase):
         current = fixture.options(days=3, status="provided", stays=[WRONG])
         before = copy.deepcopy((previous, current))
         locked, recheck = lodging_planning.prepare_lodging_retry_options(
-            previous, current, user_message="숙소를 제주새숙소로 변경", tool_trace=[],
+            previous, current, tool_trace=[],
         )
         self.assertEqual(recheck, [1])
         self.assertEqual(locked["lodging_stays"], [OTHER])
@@ -171,7 +177,7 @@ class LodgingRetryOptionTests(unittest.TestCase):
     def test_valid_selections_keep_the_existing_locking_behavior(self):
         original = fixture.options(status="provided", stays=[ORIGINAL])
         locked, recheck = lodging_planning.prepare_lodging_retry_options(
-            original, original, user_message="관광 시간을 바꿔 주세요.", tool_trace=[],
+            original, original, tool_trace=[],
         )
         self.assertEqual(locked, original)
         self.assertEqual(recheck, [])

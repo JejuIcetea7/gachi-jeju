@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 LLM_MODEL = "gpt-6-luna"
-LLM_REASONING_EFFORT = "low"
+LLM_REASONING_EFFORT = "high"
 
 DEFAULT_DEPARTURE_NAME = "제주빅데이터센터"
 DEFAULT_DEPARTURE_ADDRESS = "제주특별자치도 제주시 첨단로 241"

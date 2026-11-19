@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from .chat_outcomes import evaluate_chat_outcome
 from .chat_route_points import read_confirmed_restaurants
-from .plan_consistency import validate_plan_moves
+from .plan_consistency import ALLOWED_TRAVEL_MODES, validate_plan_moves
 from .plan_evaluation import (
     calculate_visit_metrics, check_day_count, check_places_in_database,
     check_times, check_transport_tools, make_check_result, read_places_by_id,
@@ -223,10 +223,7 @@ def evaluate_chat_record(case, record):
                     item.get("route_id") for day in plan["days"] for item in day["items"]
                     if item["item_type"] == "move"
                 }
-                allowed_modes = {
-                    "walking": {"walking"}, "driving": {"driving", "walking"},
-                    "transit": {"transit", "walking"},
-                }[working_case["request"]["options"]["transport"]]
+                allowed_modes = ALLOWED_TRAVEL_MODES[working_case["request"]["options"]["transport"]]
                 for route in last["route_calls"]:
                     if route.get("route_id") in selected_ids and route.get("transport") not in allowed_modes:
                         checks["H7"]["reasons"].append("선택한 경로의 이동수단이 요청 조건과 다릅니다.")
@@ -260,6 +257,7 @@ def evaluate_chat_record(case, record):
                         "longitude": body["options"]["departure_longitude"],
                     },
                     return_to_origin=body["options"]["return_to_origin"] is True,
+                    daily_departure=body["options"].get("lodging_status") == "not_needed",
                     lodging_stays=body["options"]["lodging_stays"],
                 )
                 checks["endpoints"] = make_check_result(not endpoint_errors, endpoint_errors)
