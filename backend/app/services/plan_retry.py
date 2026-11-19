@@ -90,6 +90,7 @@ def build_plan_retry_messages(
     for day in failed_copy.get("days", []):
         for item in day.get("items", []):
             item["route_id"] = None
+            item.pop("restaurant_ref", None)
             for field in ("verified", "category", "latitude", "longitude"):
                 item.pop(field, None)
 

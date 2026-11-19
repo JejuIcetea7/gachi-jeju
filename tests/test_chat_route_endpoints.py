@@ -1,6 +1,7 @@
 import copy
 import json
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from backend.app.agent.planner import DayPlan, ScheduleItem, TripPlan
@@ -95,7 +96,7 @@ class ChatRouteEndpointTests(unittest.TestCase):
             wraps=validate_route_endpoints,
         ))
 
-    def run_request(self, plan, records):
+    def run_request(self, plan, records, messages=(), *, message="일정을 추천해 주세요."):
         self.agent.return_value = {
             "chat_reply": chat_router.ChatAgentReply(
                 reply="요청을 확인했습니다.",
@@ -103,12 +104,12 @@ class ChatRouteEndpointTests(unittest.TestCase):
                 plan=plan,
             ),
             "route_calls": copy.deepcopy(records),
-            "messages": [],
+            "messages": list(messages),
             "model_call_count": 1,
             "tool_call_counts": {},
         }
         result = chat_router.create_chat(chat_router.ChatRequest(
-            message="일정을 추천해 주세요.",
+            message=message,
             options=OPTIONS,
         ))
         if isinstance(result, dict):
@@ -122,6 +123,93 @@ class ChatRouteEndpointTests(unittest.TestCase):
         self.assertEqual(body["error"]["code"], "plan_validation_failed")
         self.assertNotIn("plan", body)
         self.assertNotIn("map_routes", body)
+
+    def restaurant_plan(self):
+        plan = make_plan()
+        visit = plan.days[0].items[1]
+        visit.place_id = None
+        visit.restaurant_ref = "found:meal"
+        return plan
+
+    def restaurant_lookup(self, *, category="FD6", reference="found:meal"):
+        return [
+            SimpleNamespace(type="ai", tool_calls=[{
+                "id": "restaurant", "name": "find_location", "args": {"keyword": "식당"},
+            }]),
+            SimpleNamespace(type="tool", tool_call_id="restaurant", content=json.dumps({
+                "status": "ok", "category_group_code": category,
+                "point_ref": reference, "name": "카카오에서 확인한 식당",
+                "address": "제주시 테스트 주소", **DESTINATION,
+            })),
+        ]
+
+    def test_restaurant_uses_current_external_location_and_marks_details_unconfirmed(self):
+        status, body = self.run_request(self.restaurant_plan(), make_records(), self.restaurant_lookup())
+
+        self.assertEqual(status, 200)
+        meal = body["plan"]["days"][0]["items"][1]
+        self.assertEqual(meal["title"], "카카오에서 확인한 식당")
+        self.assertEqual(meal["restaurant_address"], "제주시 테스트 주소")
+        self.assertEqual(meal["latitude"], DESTINATION["latitude"])
+        self.assertEqual(meal["longitude"], DESTINATION["longitude"])
+        self.assertIs(meal["verified"], False)
+        self.assertIsNone(meal["place_id"])
+        self.assertIn("영업시간과 접근성은 방문 전에 확인해 주세요.", meal["accessibility_notes"])
+        self.assertEqual([route["route_id"] for route in body["map_routes"]], ["out", "back"])
+        self.lookup.assert_not_called()
+
+    def test_restaurant_rejects_nonrestaurant_and_stale_location_references(self):
+        for messages in (self.restaurant_lookup(category="CE7"), self.restaurant_lookup(reference="found:other")):
+            with self.subTest(messages=messages):
+                status, body = self.run_request(self.restaurant_plan(), make_records(), messages)
+                self.assert_validation_error(status, body)
+                self.assertTrue(any("음식점 참조" in detail["reason"] for detail in body["error"]["details"]))
+
+    def test_restaurant_does_not_accept_wrong_or_missing_travel(self):
+        bad_records = [make_route("out", ORIGIN, OTHER), make_route("back", DESTINATION, ORIGIN)]
+        status, body = self.run_request(self.restaurant_plan(), bad_records, self.restaurant_lookup())
+        self.assert_validation_error(status, body)
+        self.assertIn("위치가", body["error"]["details"][0]["reason"])
+
+        plan = self.restaurant_plan()
+        plan.days[0].items.pop()
+        status, body = self.run_request(plan, make_records()[:1], self.restaurant_lookup())
+        self.assert_validation_error(status, body)
+        self.assertIn("식당에서 출발하는", body["error"]["details"][0]["reason"])
+
+    def test_explicit_meal_times_exclude_waiting_and_keep_route_times(self):
+        status, body = self.run_request(
+            self.restaurant_plan(), make_records(), self.restaurant_lookup(),
+            message="아침 식사만 오전 9시 20분부터 10시까지로 바꿔 주세요.",
+        )
+        self.assertEqual(status, 200)
+        inbound, meal, outbound = body["plan"]["days"][0]["items"]
+        self.assertEqual((inbound["end_time"], outbound["start_time"]), ("09:10", "10:10"))
+        self.assertEqual((meal["start_time"], meal["end_time"], meal["duration_minutes"]), ("09:20", "10:00", 40))
+
+    def test_explicit_meal_time_cannot_overlap_a_route(self):
+        status, body = self.run_request(
+            self.restaurant_plan(), make_records(), self.restaurant_lookup(),
+            message="아침 식사만 오전 9시 5분부터 10시까지로 바꿔 주세요.",
+        )
+        self.assert_validation_error(status, body)
+        self.assertIn("요청한 식사 시각 09:05~10:00", body["error"]["details"][0]["reason"])
+
+    def test_waiting_at_restaurant_is_not_counted_as_a_route(self):
+        plan = self.restaurant_plan()
+        plan.days[0].items.insert(1, ScheduleItem(
+            item_type="move", title="식당에 일찍 도착해 대기", transport="도보",
+            start_time="09:10", end_time="09:20", duration_minutes=10,
+        ))
+        status, body = self.run_request(
+            plan, make_records(), self.restaurant_lookup(),
+            message="아침 식사만 오전 9시 20분부터 10시까지로 바꿔 주세요.",
+        )
+
+        self.assertEqual(status, 200)
+        inbound, meal, outbound = body["plan"]["days"][0]["items"]
+        self.assertEqual((inbound["route_id"], outbound["route_id"]), ("out", "back"))
+        self.assertEqual((meal["start_time"], meal["end_time"]), ("09:20", "10:00"))
 
     def test_valid_route_uses_database_coordinates(self):
         status, body = self.run_request(make_plan(), make_records())

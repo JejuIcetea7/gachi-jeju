@@ -8,9 +8,10 @@ from uuid import uuid4
 import sqlite3
 
 from .chat_request_control import check_chat_request_control
+from .kakao_local import RESTAURANT_CATEGORY_CODE
 from .lodging_planning import LodgingStay, validate_lodging_options, _night_choices
 from .route_endpoints import _coordinate
-from ..tools.places import read_rows
+from ..tools.places import normalize_place_name, read_rows
 from functools import wraps
 
 def _matching_details(place_id, output):
@@ -54,6 +55,50 @@ def bind_current_place_details(details_tool):
     return get_place_details, require_details
 
 
+def read_confirmed_restaurants(tool_trace):
+    """이번 생성 시도에서 카카오가 음식점으로 반환한 위치만 읽습니다."""
+    restaurants = {}
+    for record in tool_trace:
+        if not isinstance(record, dict) or record.get("tool") != "find_location":
+            continue
+        output = record.get("output")
+        if (
+            not isinstance(output, dict) or output.get("status") != "ok"
+            or output.get("category_group_code") != RESTAURANT_CATEGORY_CODE
+            or output.get("lookup_performed") is False
+        ):
+            continue
+        reference = output.get("point_ref")
+        name = output.get("name")
+        address = output.get("address")
+        coordinates = _coordinate(output)
+        if (
+            isinstance(reference, str) and reference.startswith("found:") and 6 < len(reference) <= 80
+            and isinstance(name, str) and name.strip()
+            and isinstance(address, str) and address.strip()
+            and coordinates is not None
+        ):
+            restaurants[reference] = {
+                "name": name, "address": address,
+                "latitude": coordinates[0], "longitude": coordinates[1],
+            }
+    return restaurants
+
+
+def validate_plan_restaurants(plan, restaurants):
+    errors = []
+    for day in plan["days"]:
+        for item in day["items"]:
+            reference = item.get("restaurant_ref")
+            if reference is None:
+                continue
+            if item["item_type"] != "visit" or item.get("place_id") is not None or reference not in restaurants:
+                errors.append(
+                    f"{day['day']}일차 '{item['title']}': 식사 방문에는 이번 시도에서 확인한 음식점 참조만 사용하고 DB 장소 ID는 비워 주세요."
+                )
+    return errors
+
+
 def validate_plan_place_details(plan, tool_trace):
     """이전 대화·실패한 시도·좌표 조회만으로 상세 조회를 대신하지 않습니다."""
     if plan is None:
@@ -70,7 +115,8 @@ def validate_plan_place_details(plan, tool_trace):
     return [
         f"{day['day']}일차 '{item['title']}': 이번 요청에서 장소 상세정보를 다시 확인해 주세요."
         for day in plan["days"] for item in day["items"]
-        if item.get("item_type") == "visit" and item.get("place_id") not in confirmed
+        if item.get("item_type") == "visit" and item.get("restaurant_ref") is None
+        and item.get("place_id") not in confirmed
     ]
 
 def validate_plan_visit_order(plan, options, tool_trace):
@@ -84,7 +130,7 @@ def validate_plan_visit_order(plan, options, tool_trace):
     day_places = {
         day["day"]: [
             item.get("place_id") for item in day["items"]
-            if item.get("item_type") == "visit"
+            if item.get("item_type") == "visit" and item.get("restaurant_ref") is None
         ]
         for day in plan["days"]
     }
@@ -172,6 +218,34 @@ def read_chat_route_payload(messages):
         return None
 
 
+def _find_saved_restaurant(current_plan, keyword):
+    if not isinstance(current_plan, dict) or not isinstance(keyword, str):
+        return None
+    keyword_key = normalize_place_name(keyword)
+    matches = {}
+    for day in current_plan.get("days", []):
+        for item in day["items"]:
+            address = item.get("restaurant_address")
+            if item["item_type"] != "visit" or not address:
+                continue
+            name = item["title"]
+            full_name = normalize_place_name(f"{name} {address}")
+            if keyword_key in (normalize_place_name(name), full_name, normalize_place_name(f"{name}, {address}")):
+                matches[full_name] = (name, address)
+    if len(matches) == 1:
+        return next(iter(matches.values()))
+    return None
+
+
+def _matches_saved_restaurant(result, name, address):
+    return (
+        result.get("category_group_code") == RESTAURANT_CATEGORY_CODE
+        and isinstance(result.get("name"), str) and isinstance(result.get("address"), str)
+        and normalize_place_name(result["name"]) == normalize_place_name(name)
+        and normalize_place_name(result["address"]) == normalize_place_name(address)
+    )
+
+
 def bind_chat_route_tools(
     payload, *, location_tool, order_tool, driving_tool, bus_tool, walking_tool,
     require_details=None,
@@ -195,8 +269,10 @@ def bind_chat_route_tools(
         "latitude": options.get("departure_latitude"),
         "longitude": options.get("departure_longitude"),
     })
+    departure_name = None
     if departure is not None:
         points["departure"] = departure
+        departure_name = normalize_place_name(departure["name"])
     try:
         stays = [LodgingStay.model_validate(value)
                  for value in options.get("lodging_stays", [])]
@@ -266,14 +342,30 @@ def bind_chat_route_tools(
     def find_location(*, keyword: str, refresh: bool = False) -> dict:
         """이름·주소로 위치를 확인하고 이번 실행에서만 사용할 point_ref를 반환합니다.
 
+        검색어가 좌표가 있는 출발지 이름과 일치하면 기존 departure를 반환합니다.
+        같은 이름의 다른 지점으로 바꾸려면 주소나 입구 이름을 검색어에 넣어 주세요.
+        일정에 남은 식당을 다시 찾으면 이름으로 조회한 뒤 기존 주소와 대조합니다.
         선택한 숙소와 다른 위치 또는 주소 정정의 새 조회 근거가 필요하면 refresh=true입니다.
-        source가 selected_lodging이면 기존 선택의 재사용이며 새 조회 근거가 아닙니다.
+        lookup_performed가 false이면 기존 좌표를 재사용한 결과입니다.
         """
-        arguments = {"keyword": keyword}
+        if (
+            departure_name is not None
+            and isinstance(keyword, str)
+            and normalize_place_name(keyword) == departure_name
+        ):
+            return {"status": "ok", "lookup_performed": False, **departure}
+
+        previous_restaurant = _find_saved_restaurant(payload.get("current_plan"), keyword)
+        search_keyword = keyword
+        if previous_restaurant is not None:
+            search_keyword = previous_restaurant[0]
+        arguments = {"keyword": search_keyword}
         if has_refresh:
             arguments["refresh"] = refresh
         result = deepcopy(location_tool(**arguments))
         if isinstance(result, dict) and result.get("status") == "ok":
+            if previous_restaurant is not None and not _matches_saved_restaurant(result, *previous_restaurant):
+                return {"status": "not_found"}
             reference = "found:" + str(uuid4())
             resolved = point(reference, result.get("name"), result)
             if resolved is not None:

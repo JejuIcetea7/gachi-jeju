@@ -2,7 +2,83 @@ import re
 from datetime import date, timedelta
 
 from .closed_days import STATUS_CLOSED, WEEKDAY_NAMES, judge_closed_on_date
-from .opening_hours import find_opening_hours
+from .opening_hours import check_visit_time_window, find_opening_hours
+
+
+_MEAL_CLOCK = r"(?:오전|오후|낮)?\s*\d{1,2}(?:\s*:\s*\d{2}|\s*시(?:\s*\d{1,2}\s*분)?)"
+_MEAL_WINDOW = re.compile(rf"(?P<start>{_MEAL_CLOCK})\s*(?:부터|[~–-])\s*(?P<end>{_MEAL_CLOCK})(?:\s*까지)?")
+_MEAL_WORD = r"(?:점심|저녁|아침|식사)"
+
+
+def _read_meal_clock(value, previous_period=None):
+    match = re.fullmatch(
+        r"\s*(오전|오후|낮)?\s*(\d{1,2})(?:\s*:\s*(\d{2})|\s*시(?:\s*(\d{1,2})\s*분)?)",
+        value,
+    )
+    period, hour, colon_minutes, written_minutes = match.groups()
+    hour = int(hour)
+    minute = int(colon_minutes or written_minutes or 0)
+    if period is None and colon_minutes is None and 1 <= hour <= 12:
+        period = previous_period
+    if period and 1 <= hour <= 12:
+        hour %= 12
+        if period != "오전":
+            hour += 12
+    if hour > 23 or minute > 59:
+        return None, period
+    return f"{hour:02d}:{minute:02d}", period
+
+
+def apply_requested_meal_window(plan: dict, message: str) -> list[str]:
+    """식사에 바로 붙은 시각 범위 하나를 식사 항목 하나에 적용합니다."""
+    windows = list(_MEAL_WINDOW.finditer(message))
+    if len(windows) != 1:
+        return []
+    window = windows[0]
+    before = message[:window.start()]
+    after = message[window.end():]
+    if not (
+        re.search(rf"{_MEAL_WORD}(?:\s*(?:식사|시간))?\s*[은는을를만도]?\s*$", before)
+        or re.match(rf"\s*(?:에\s*)?{_MEAL_WORD}", after)
+    ):
+        return []
+    start, period = _read_meal_clock(window["start"])
+    end, _ = _read_meal_clock(window["end"], period)
+    if start is None or end is None or end <= start:
+        return []
+
+    meals = []
+    for day in plan["days"]:
+        for index, item in enumerate(day["items"]):
+            if item.get("restaurant_ref") is not None:
+                meals.append((day["items"], index))
+    if len(meals) != 1:
+        return []
+    items, index = meals[0]
+    if index >= 2:
+        arrival = items[index - 2]
+        waiting = items[index - 1]
+        if (
+            arrival["item_type"] == "move" and arrival.get("route_id")
+            and waiting["item_type"] == "move" and waiting.get("route_id") is None
+            and waiting["title"].strip().endswith("대기") and "→" not in waiting["title"]
+            and waiting["start_time"] == arrival["end_time"]
+            and waiting["end_time"] == start
+        ):
+            # 식당까지의 이동은 유지하고 일찍 도착한 뒤의 대기만 빈 구간으로 둡니다.
+            items.pop(index - 1)
+            index -= 1
+    if (
+        (index > 0 and items[index - 1]["end_time"] > start)
+        or (index + 1 < len(items) and items[index + 1]["start_time"] < end)
+    ):
+        return [f"요청한 식사 시각 {start}~{end}이 앞뒤 일정과 겹칩니다. 이 식사 시각을 유지하고 이동·방문 시각을 다시 계산해 주세요."]
+
+    meal = items[index]
+    meal["start_time"] = start
+    meal["end_time"] = end
+    meal["duration_minutes"] = _to_minutes(end) - _to_minutes(start)
+    return []
 
 
 def _to_minutes(value: str) -> int:
@@ -183,17 +259,20 @@ def validate_plan_opening_hours(
                 f"{day['day']}일차 {index}번째 일정: "
                 f"{item.get('title')}은(는) {visit_date.isoformat()}"
             )
-            if start_time < opening_time:
+            before_opening, after_last_entry, after_closing = check_visit_time_window(
+                hours, start_time, end_time,
+            )
+            if before_opening:
                 errors.append(
                     f"{label} {opening_time}에 여는데 "
                     f"{start_time}에 방문을 시작합니다."
                 )
-            if last_entry_time is not None and start_time > last_entry_time:
+            if after_last_entry:
                 errors.append(
                     f"{label} 입장 마감은 {last_entry_time}인데 "
                     f"{start_time}에 방문을 시작합니다."
                 )
-            if end_time > closing_time:
+            if after_closing:
                 errors.append(
                     f"{label} {closing_time}에 닫는데 {end_time}에 끝납니다."
                 )

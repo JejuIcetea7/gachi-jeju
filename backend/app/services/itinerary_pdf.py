@@ -222,10 +222,16 @@ def _render_itinerary_pdf(snapshot, *, created_at, photos):
         item_end_rows = []
         for item in day["items"]:
             kind = "방문" if item["item_type"] == "visit" else "이동"
+            restaurant_address = item.get("restaurant_address")
+            if restaurant_address:
+                kind = "식사"
             title_parts = list(cell_parts(f"[{kind}] {item['title']}", "cell"))
             details = [title_parts[0]]
             if item["item_type"] == "visit":
-                details.append(paragraph("여행지 자료 등록" if item.get("verified") is True else "여행지 정보 확인 필요", "small"))
+                if restaurant_address:
+                    details.append(paragraph(restaurant_address, "small"))
+                else:
+                    details.append(paragraph("여행지 자료 등록" if item.get("verified") is True else "여행지 정보 확인 필요", "small"))
                 photo = photos.get(item.get("place_id")) if item.get("verified") is True else None
                 if photo is not None:
                     details.extend([

@@ -126,6 +126,8 @@ class PlanItemResponse(BaseModel):
     distance_km: float | None
     accessibility_notes: list[str]
     route_id: str | None = Field(default=None, max_length=80)
+    restaurant_ref: str | None = Field(default=None, max_length=80, exclude_if=lambda value: value is None)
+    restaurant_address: str | None = Field(default=None, exclude_if=lambda value: value is None)
 
 class PlanDayResponse(BaseModel):
     day: int
@@ -229,13 +231,16 @@ def find_place_in_database(place_id: str) -> dict | None:
         place = dict(rows[0])
     return place
 
-def verify_places(trip_plan: TripPlan) -> tuple[dict, list[str]]:
-    """visit 항목의 place_id를 DB에서 확인하고, 이름·카테고리·좌표를 DB 값으로 바꿉니다."""
+def verify_places(trip_plan: TripPlan, *, restaurants=None) -> tuple[dict, list[str]]:
+    """관광지는 DB에서 확인하고 대화에서 조회한 식당은 그 위치를 연결합니다."""
     plan = trip_plan.model_dump()
     warnings = []
+    if restaurants is None:
+        restaurants = {}
 
     for day in plan["days"]:
         for item in day["items"]:
+            restaurant_ref = item.pop("restaurant_ref", None)
             item["verified"] = None
             item["category"] = None
             item["latitude"] = None
@@ -245,6 +250,16 @@ def verify_places(trip_plan: TripPlan) -> tuple[dict, list[str]]:
 
             item["verified"] = False
             place_id = item["place_id"]
+            restaurant = restaurants.get(restaurant_ref)
+            if restaurant is not None and place_id is None:
+                item["restaurant_ref"] = restaurant_ref
+                item["restaurant_address"] = restaurant["address"]
+                item["title"] = restaurant["name"]
+                item["category"] = "음식점"
+                item["latitude"] = restaurant["latitude"]
+                item["longitude"] = restaurant["longitude"]
+                item["accessibility_notes"] = ["영업시간과 접근성은 방문 전에 확인해 주세요."]
+                continue
             if not place_id:
                 warnings.append(f"{day['day']}일차 '{item['title']}': place_id가 없어 DB에서 확인하지 못했습니다.")
                 continue

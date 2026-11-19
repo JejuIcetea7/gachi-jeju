@@ -112,7 +112,7 @@ class ChatReplyConsistencyTests(unittest.TestCase):
         status, body = self.post()
         self.assertEqual(status, 200)
         self.assertEqual(self.agent.call_count, 1)
-        self.assertEqual(body["reply"], "귀환은 10:20입니다.")
+        self.assertIn("10:10~10:20 방문지 → 출발지", body["reply"])
 
     def test_explicit_departure_after_unspecified_visit_time_does_not_retry(self):
         self.agent.return_value = make_result(notes=[
@@ -123,31 +123,36 @@ class ChatReplyConsistencyTests(unittest.TestCase):
         self.assertEqual(self.agent.call_count, 1)
         self.assertEqual(body["plan"]["days"][0]["items"][1]["start_time"], "09:10")
 
-    def test_wrong_return_retries_with_fresh_routes_and_combined_metrics(self):
-        first = make_result("old-", "귀환은 14:30입니다.")
+    def test_wrong_chat_times_are_replaced_by_final_schedule_times(self):
+        first = make_result(reply=(
+            "방문지를 변경했습니다. 09:00 출발, 11:25 방문지 도착, "
+            "13:48 출발지 도착 예정입니다. 휠체어 동선은 미확인입니다."
+        ))
         before = copy.deepcopy(first)
-        self.agent.side_effect = [first, make_result("new-")]
+        self.agent.return_value = first
         status, body = self.post()
         self.assertEqual(status, 200)
-        self.assertEqual(self.agent.call_count, 2)
-        payload = json.loads(self.agent.call_args_list[1].args[0][-1]["content"])
-        self.assertTrue(any("귀환" in reason for reason in payload["plan_retry"]["validation_errors"]))
-        self.assertEqual(body["reply"], "귀환은 10:20입니다.")
-        self.assertEqual({r["route_id"] for r in body["map_routes"]}, {"new-out", "new-back"})
-        self.assertEqual(body["meta"]["model_call_count"], 2)
-        self.assertEqual(body["meta"]["tool_call_counts"]["get_driving_time"], 4)
+        self.assertEqual(self.agent.call_count, 1)
+        self.assertNotIn("11:25", body["reply"])
+        self.assertNotIn("13:48", body["reply"])
+        self.assertIn("방문지를 변경했습니다.", body["reply"])
+        self.assertIn("휠체어 동선은 미확인입니다.", body["reply"])
+        for item in body["plan"]["days"][0]["items"]:
+            self.assertIn(f"{item['start_time']}~{item['end_time']} {item['title']}", body["reply"])
         self.assertEqual(first, before)
 
-    def test_second_reply_failure_stops_after_two_attempts(self):
-        self.agent.side_effect = [
-            make_result("first-", "귀환은 14:30입니다."),
-            make_result("second-", "귀환은 14:30입니다."),
-        ]
+    def test_korean_clock_expressions_are_replaced_without_removing_durations(self):
+        self.agent.return_value = make_result(reply=(
+            "오후 세 시에 도착합니다. 오후 4시에 돌아옵니다. 한 시간 관람합니다. "
+            "한시적인 도로 통제가 있을 수 있습니다."
+        ))
         status, body = self.post()
-        self.assertEqual(status, 502)
-        self.assertEqual(body["error"]["code"], "plan_validation_failed")
-        self.assertEqual(self.agent.call_count, 2)
-        self.assertNotIn("plan", body)
+        self.assertEqual(status, 200)
+        self.assertEqual(self.agent.call_count, 1)
+        self.assertNotIn("오후 세 시", body["reply"])
+        self.assertNotIn("오후 4시", body["reply"])
+        self.assertIn("한 시간 관람합니다.", body["reply"])
+        self.assertIn("한시적인 도로 통제가 있을 수 있습니다.", body["reply"])
 
     def test_day_trip_note_retries_without_dropping_accessibility_warning(self):
         warning = "휠체어 동선은 미확인입니다."
@@ -187,10 +192,20 @@ class ChatReplyConsistencyTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIsNone(body["plan"])
         self.assertEqual(self.agent.call_count, 1)
+        self.assertEqual(body["reply"], "귀환은 14:30으로 할까요?")
+
+    def test_empty_schedule_keeps_time_in_exclusion_explanation(self):
+        result = make_result(reply="방문 시간이 17:30 입장 마감 이후입니다.")
+        result["chat_reply"].plan.days[0].items = []
+        result["route_calls"] = []
+        self.agent.return_value = result
+        status, body = self.post()
+        self.assertEqual(status, 200)
+        self.assertEqual(body["reply"], "방문 시간이 17:30 입장 마감 이후입니다.")
 
     def test_retry_can_return_a_question(self):
         self.agent.side_effect = [
-            make_result("old-", "귀환은 14:30입니다."),
+            make_result("old-", notes=["귀환은 14:30입니다."]),
             make_result(reply="귀환 시각을 다시 확인해 주세요.", question=True),
         ]
         status, body = self.post()
@@ -198,25 +213,25 @@ class ChatReplyConsistencyTests(unittest.TestCase):
         self.assertIsNone(body["plan"])
         self.assertEqual(self.agent.call_count, 2)
 
-    def test_origin_return_phrase_retries_with_new_routes(self):
+    def test_wrong_return_in_plan_notes_retries_with_new_routes(self):
         self.agent.side_effect = [
-            make_result("old-", "10:10에 출발지로 돌아옵니다."),
-            make_result("new-", "10:20에 출발지로 돌아옵니다."),
+            make_result("old-", notes=["10:10에 출발지로 돌아옵니다."]),
+            make_result("new-", notes=["10:20에 출발지로 돌아옵니다."]),
         ]
         status, body = self.post()
         self.assertEqual(status, 200)
         self.assertEqual(self.agent.call_count, 2)
         payload = json.loads(self.agent.call_args_list[1].args[0][-1]["content"])
         self.assertTrue(any("귀환" in reason for reason in payload["plan_retry"]["validation_errors"]))
-        self.assertEqual(body["reply"], "10:20에 출발지로 돌아옵니다.")
+        self.assertIn("10:10~10:20 방문지 → 출발지", body["reply"])
         self.assertEqual({r["route_id"] for r in body["map_routes"]}, {"new-out", "new-back"})
         self.assertEqual(body["meta"]["model_call_count"], 2)
         self.assertEqual(body["meta"]["tool_call_counts"]["get_driving_time"], 4)
 
-    def test_second_origin_return_phrase_failure_stops_after_two_attempts(self):
+    def test_second_wrong_return_in_plan_notes_stops_after_two_attempts(self):
         self.agent.side_effect = [
-            make_result("old-", "10:10에 출발지로 돌아옵니다."),
-            make_result("new-", "10:10에 출발지로 돌아옵니다."),
+            make_result("old-", notes=["10:10에 출발지로 돌아옵니다."]),
+            make_result("new-", notes=["10:10에 출발지로 돌아옵니다."]),
         ]
         status, body = self.post()
         self.assertEqual(status, 502)

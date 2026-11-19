@@ -115,14 +115,18 @@ def validate_scenario(scenario):
 
 
 def prepare_lodging_query(previous_record, night):
-    """화면처럼 해당 숙박일의 마지막 확인된 방문지만 검색 기준으로 사용합니다."""
+    """화면처럼 해당 숙박일의 마지막 관광지를 검색 기준으로 사용합니다."""
     state = build_followup_request(previous_record, _SELECTION_MESSAGE)
     days = state["options"]["trip_days"]
     if type(night) is not int or days is None or not 1 <= night < days:
         raise ValueError("선택할 숙박일과 여행 기간을 확인해 주세요.")
     plan = state["current_plan"]
     matches = [day for day in plan["days"] if day["day"] == night] if plan else []
-    visits = [item for item in matches[0]["items"] if item["item_type"] == "visit"] if len(matches) == 1 else []
+    visits = []
+    if len(matches) == 1:
+        for item in matches[0]["items"]:
+            if item["item_type"] == "visit" and not item.get("restaurant_address"):
+                visits.append(item)
     if not visits or visits[-1]["verified"] is not True:
         raise ValueError("숙박일의 마지막 방문지를 확인할 수 없습니다.")
     center = LodgingCoordinate.model_validate({

@@ -18,7 +18,14 @@ from pydantic import (
 
 from ..agent.chat_planner import run_chat_agent
 from ..agent.planner import TripPlan
+from ..config import (
+    DEFAULT_DEPARTURE_ADDRESS,
+    DEFAULT_DEPARTURE_LATITUDE,
+    DEFAULT_DEPARTURE_LONGITUDE,
+    DEFAULT_DEPARTURE_NAME,
+)
 from ..services.plan_validation import (
+    apply_requested_meal_window,
     validate_plan_closed_days,
     validate_plan_opening_hours,
     validate_plan_times,
@@ -29,6 +36,8 @@ from ..tools.places import (
     read_opening_hours_by_place_id,
 )
 from ..services.plan_accessibility import validate_plan_accessibility
+from ..services.chat_route_points import read_confirmed_restaurants, validate_plan_restaurants
+from ..services.opening_hours import TIME_PATTERN, build_visit_time_reply
 from .plan import (
     ErrorResponse,
     PlanBodyResponse,
@@ -61,7 +70,10 @@ from ..services.plan_retry import (
     merge_agent_metrics,
     validate_retry_options,
 )
-from ..services.plan_reply_consistency import validate_plan_reply_consistency
+from ..services.plan_reply_consistency import (
+    build_plan_chat_reply,
+    validate_plan_reply_consistency,
+)
 from ..services.chat_request_control import (
     ChatRequestStopped,
     check_chat_request_control,
@@ -239,13 +251,22 @@ def build_chat_messages(
         else datetime.now(timezone(timedelta(hours=9))).date()
     )
 
+    options = chat_request.options.model_dump(mode="json")
+    if (
+        options["departure"] == DEFAULT_DEPARTURE_NAME
+        and options["departure_latitude"] is None
+        and options["departure_longitude"] is None
+    ):
+        options["departure_latitude"] = DEFAULT_DEPARTURE_LATITUDE
+        options["departure_longitude"] = DEFAULT_DEPARTURE_LONGITUDE
+
     payload = {
         "reference_date": reference_date.isoformat(),
         "default_departure": {
-            "name": "제주빅데이터센터",
-            "address": "제주특별자치도 제주시 첨단로 241",
+            "name": DEFAULT_DEPARTURE_NAME,
+            "address": DEFAULT_DEPARTURE_ADDRESS,
         },
-        "options": chat_request.options.model_dump(mode="json"),
+        "options": options,
         "current_plan": (
             chat_request.current_plan.model_dump(mode="json")
             if chat_request.current_plan is not None
@@ -263,6 +284,7 @@ def build_chat_messages(
         for day in payload["current_plan"]["days"]:
             for item in day["items"]:
                 item["route_id"] = None
+                item.pop("restaurant_ref", None)
 
     messages = [
         message.model_dump()
@@ -273,6 +295,18 @@ def build_chat_messages(
         "content": json.dumps(payload, ensure_ascii=False),
     })
     return messages
+
+class VisitTimeCheck(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    place_id: str = Field(min_length=1, max_length=80)
+    visit_date: date
+    arrival_time: str = Field(pattern=f"^{TIME_PATTERN}$")
+    duration_minutes: int | None = Field(
+        default=None, ge=1, le=1440, strict=True,
+        description="요청이나 기존 일정에서 확인할 수 있는 관람 시간(분). 미정이면 null",
+    )
+
 
 class ChatAgentReply(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -301,6 +335,10 @@ class ChatAgentReply(BaseModel):
             "화면이 이전 일정과 지도를 보존함"
         ),
     )
+    visit_time_check: VisitTimeCheck | None = Field(
+        default=None,
+        description="일정을 바꾸지 않고 특정 장소의 특정 날짜·시각에 방문 가능한지 묻는 요청의 조건",
+    )
 
 class ChatResponse(BaseModel):
     reply: str
@@ -311,9 +349,37 @@ class ChatResponse(BaseModel):
     warnings: list[str]
     meta: PlanMetaResponse
 
+
+def answer_visit_time_check(check: VisitTimeCheck, options: ChatOptions):
+    visit_date = check.visit_date.isoformat()
+    place = read_place_details(place_id=check.place_id, visit_dates=[visit_date])
+    if place["status"] == "not_found":
+        reply = "방문하려는 장소를 확인하지 못했습니다. 정확한 장소 이름을 알려 주세요."
+    elif place["status"] != "ok" or place.get("place_id") != check.place_id:
+        return build_error_response(500, "internal_error", "장소 운영시간을 읽지 못했습니다.")
+    else:
+        closed_day_status = place.get("closed_day_checks", {}).get(visit_date)
+        reply = build_visit_time_reply(
+            place["name"], check.visit_date, check.arrival_time, check.duration_minutes,
+            opening_hours=place.get("opening_hours"), closed_day_status=closed_day_status,
+        )
+    return {
+        "reply": reply,
+        "options": options,
+        "plan": None,
+        "warnings": [],
+    }
+
+
 def _build_chat_result(
     chat_reply: ChatAgentReply, agent_result: dict, *, request_options=None, user_message="",
 ):
+    if chat_reply.visit_time_check is not None:
+        options = chat_reply.options
+        if request_options is not None:
+            options = ChatOptions.model_validate(request_options)
+        return answer_visit_time_check(chat_reply.visit_time_check, options)
+
     if request_options is not None and chat_reply.options.lodging_stays:
         selection_errors = validate_lodging_selections(
             request_options, chat_reply.options.model_dump(),
@@ -358,13 +424,19 @@ def _build_chat_result(
                 lodging_status=chat_reply.options.lodging_status,
                 lodging_stays=[stay.model_dump() for stay in chat_reply.options.lodging_stays],
             )
-            errors = validate_plan_times(plan_data)
+            tool_trace = extract_tool_trace(agent_result.get("messages") or [])
+            restaurants = read_confirmed_restaurants(tool_trace)
+            errors = validate_plan_restaurants(plan_data, restaurants)
+            if not errors:
+                errors.extend(apply_requested_meal_window(plan_data, user_message))
+            errors.extend(validate_plan_times(plan_data))
             errors.extend(agent_result.get("place_detail_errors") or [])
             errors.extend(agent_result.get("visit_order_errors") or [])
             if not errors:
                 plan_data = restore_plan_route_ids(
                     plan_data, agent_result.get("route_calls") or [],
-                    tool_trace=extract_tool_trace(agent_result.get("messages") or []),
+                    tool_trace=tool_trace,
+                    restaurants=restaurants,
                     departure={
                         "latitude": chat_reply.options.departure_latitude,
                         "longitude": chat_reply.options.departure_longitude,
@@ -403,9 +475,6 @@ def _build_chat_result(
 
             if not errors:
                 try:
-                    tool_trace = extract_tool_trace(
-                        agent_result.get("messages") or []
-                    )
                     restored_plan = restore_missing_place_ids(
                         plan_data,
                         tool_trace,
@@ -448,7 +517,7 @@ def _build_chat_result(
 
             try:
                 plan, warnings = verify_places(
-                    TripPlan.model_validate(restored_plan)
+                    TripPlan.model_validate(restored_plan), restaurants=restaurants,
                 )
             except sqlite3.Error:
                 return build_error_response(
@@ -532,11 +601,8 @@ def _build_chat_result(
         )
         warnings.extend(route_warnings)
         warnings.extend(omitted_lodging_warnings)
-        if omitted_lodging_warnings:
-            reply_text = (
-                reply_text[:4000 - len(UNDECIDED_LODGING_NOTE) - 2].rstrip()
-                + "\n\n" + UNDECIDED_LODGING_NOTE
-            )
+        lodging_notice = UNDECIDED_LODGING_NOTE if omitted_lodging_warnings else ""
+        reply_text = build_plan_chat_reply(reply_text, plan, notice=lodging_notice)
         warnings.extend(build_lodging_warnings(
             trip_days=chat_reply.options.trip_days,
             lodging_status=chat_reply.options.lodging_status,

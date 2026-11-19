@@ -101,7 +101,7 @@ def restore_missing_place_ids(plan: dict, tool_trace: list[dict] | None) -> dict
 
     for day in restored["days"]:
         for item in day["items"]:
-            if item.get("item_type") != "visit":
+            if item.get("item_type") != "visit" or item.get("restaurant_ref") is not None:
                 continue
 
             current_id = item.get("place_id")

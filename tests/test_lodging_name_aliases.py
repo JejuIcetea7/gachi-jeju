@@ -82,6 +82,7 @@ class LodgingNameAliasTests(unittest.TestCase):
     def test_lookup_success_name_coordinates_and_fresh_source_are_still_required(self):
         for changes in (
             {"status": "not_found"}, {"source": "selected_lodging"},
+            {"lookup_performed": False},
             {"latitude": HOTEL["latitude"] + 0.001}, {"name": "다른 호텔"},
         ):
             with self.subTest(changes=changes):

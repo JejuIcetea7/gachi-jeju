@@ -28,7 +28,7 @@ def _visit_coordinate(item: dict | None) -> tuple[float, float] | None:
     if (
         not isinstance(item, dict)
         or item.get("item_type") != "visit"
-        or item.get("verified") is not True
+        or (item.get("verified") is not True and not item.get("restaurant_address"))
     ):
         return None
     return _coordinate(item)
@@ -103,6 +103,24 @@ def validate_route_endpoints(
                 "이번 시도의 이동 조회 결과를 사용하고 관광지를 임의로 추가하지 마세요."
             )
         for index, item in enumerate(items):
+            previous = items[index - 1] if index > 0 else None
+            following = items[index + 1] if index + 1 < len(items) else None
+            if item.get("restaurant_address"):
+                restaurant = _visit_coordinate(item)
+                start = departure_coordinate if day["day"] == 1 else _coordinate(stay_choices.get(day["day"] - 1))
+                end = _coordinate(stay_choices.get(day["day"]))
+                if day_index == len(days) - 1 and return_to_origin is True:
+                    end = departure_coordinate
+                for neighbor, boundary, label in (
+                    (previous, start, "식당으로 가는"),
+                    (following, end, "식당에서 출발하는"),
+                ):
+                    if neighbor is None:
+                        missing = boundary is not None and boundary != restaurant
+                    else:
+                        missing = neighbor["item_type"] != "move" and _visit_coordinate(neighbor) != restaurant
+                    if missing:
+                        errors.append(f"{day['day']}일차 '{item['title']}': {label} 이동을 조회해 일정에 추가해 주세요.")
             if item.get("item_type") != "move":
                 continue
 
@@ -112,8 +130,6 @@ def validate_route_endpoints(
                 errors.append(f"{label}: 좌표를 대조할 경로 기록을 확인하지 못했습니다.")
                 continue
 
-            previous = items[index - 1] if index > 0 else None
-            following = items[index + 1] if index + 1 < len(items) else None
             origin = _visit_coordinate(previous)
             destination = _visit_coordinate(following)
 

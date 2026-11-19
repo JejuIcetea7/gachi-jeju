@@ -71,7 +71,7 @@ def _matches_move(item, record, origin, destination):
 
 def restore_plan_route_ids(
     plan, route_calls, *, tool_trace=None, departure=None,
-    return_to_origin=False, lodging_stays=None,
+    return_to_origin=False, lodging_stays=None, restaurants=None,
 ):
     """양 끝점·이동수단·시간이 일치하는 이번 시도의 미사용 경로가 하나일 때 보완합니다.
 
@@ -94,6 +94,8 @@ def restore_plan_route_ids(
         and isinstance(item.get("route_id"), str) and item["route_id"] in counts
     }
     coordinates = _place_coordinates(tool_trace)
+    if restaurants is None:
+        restaurants = {}
     origin_point = _coordinate(departure)
     stays = _night_choices(lodging_stays)
     days = restored["days"]
@@ -111,8 +113,12 @@ def restore_plan_route_ids(
             destination = None
             if previous is not None and previous.get("item_type") == "visit":
                 origin = coordinates.get(previous.get("place_id"))
+                if previous.get("restaurant_ref") is not None:
+                    origin = _coordinate(restaurants.get(previous["restaurant_ref"]))
             if following is not None and following.get("item_type") == "visit":
                 destination = coordinates.get(following.get("place_id"))
+                if following.get("restaurant_ref") is not None:
+                    destination = _coordinate(restaurants.get(following["restaurant_ref"]))
             if index == 0:
                 origin = (
                     origin_point if day["day"] == 1

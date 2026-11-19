@@ -60,7 +60,8 @@ export function getLodgingStay(options, night) {
 }
 
 export function getLodgingSearchCenter(day) {
-  const lastVisit = (day?.items ?? []).filter((item) => item.item_type === 'visit').at(-1)
+  const lastVisit = (day?.items ?? [])
+    .filter((item) => item.item_type === 'visit' && !item.restaurant_address).at(-1)
   if (lastVisit?.verified !== true || !isLodgingCoordinate(lastVisit)) return null
   return { latitude: lastVisit.latitude, longitude: lastVisit.longitude, name: lastVisit.title }
 }

@@ -62,6 +62,15 @@ class KeywordPlaceTests(unittest.TestCase):
 
         self.assertEqual(result["address"], "제주특별자치도 제주시 용담이동 2002")
 
+    def test_restaurant_category_is_kept_in_the_location_result(self):
+        sample = json.loads(SAMPLE.read_text(encoding="utf-8-sig"))
+        sample["documents"][0]["category_group_code"] = "FD6"
+        self._set_response(sample)
+
+        result = search_keyword_place(**SEARCH_INPUT)
+
+        self.assertEqual(result["category_group_code"], "FD6")
+
     def test_not_found(self):
         self._set_response({"documents": [], "meta": {"total_count": 0}})
 

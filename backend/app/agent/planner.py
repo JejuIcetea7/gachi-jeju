@@ -77,6 +77,10 @@ class ScheduleItem(BaseModel):
         default=None,
         description="visit일 때 장소 검색·상세 조회에서 확인한 place_id",
     )
+    restaurant_ref: str | None = Field(
+        default=None, max_length=80, exclude_if=lambda value: value is None,
+        description="대화형 식사 항목에서 이번 식당 조회가 반환한 point_ref. 관광지·이동이면 null",
+    )
     transport: str | None = Field(
         default=None,
         description="move일 때 일반 이동수단명만 작성: 자동차, 렌터카, 택시, 버스, 도보. 노선 번호와 승하차 설명은 포함하지 않음",

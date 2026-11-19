@@ -10,6 +10,7 @@ from .chat_request_transport import open_chat_url
 
 # 제주도 범위 (경도 최소, 위도 최소, 경도 최대, 위도 최대). 추자도는 빠진다.
 JEJU_RECT = "126.08,33.10,127.00,33.60"
+RESTAURANT_CATEGORY_CODE = "FD6"
 
 def parse_keyword_response(data: dict) -> dict:
     """카카오 키워드 장소 검색 응답에서 첫 번째 장소의 이름, 주소, 좌표를 읽습니다."""
@@ -26,13 +27,16 @@ def parse_keyword_response(data: dict) -> dict:
         if not address:
             address = first_place["address_name"]
 
-        return {
+        location = {
             "status": "ok",
             "name": first_place["place_name"],
             "address": address,
             "latitude": float(first_place["y"]),
             "longitude": float(first_place["x"]),
         }
+        if first_place.get("category_group_code") == RESTAURANT_CATEGORY_CODE:
+            location["category_group_code"] = RESTAURANT_CATEGORY_CODE
+        return location
     except (KeyError, TypeError, ValueError):
         return {"status": "api_error"}
 

@@ -128,6 +128,7 @@ def validate_lodging_selections(previous, current, *, user_message, tool_trace):
             if (
                 not isinstance(output, dict) or output.get("status") != "ok"
                 or output.get("source") == SELECTED_LODGING_SOURCE
+                or output.get("lookup_performed") is False
             ):
                 continue
             name = _normalized_name(output.get("name"))
