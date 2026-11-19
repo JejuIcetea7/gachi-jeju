@@ -1,10 +1,21 @@
-"""최종 일정과 명시적인 귀환 안내·숙소 미정 메모를 대조합니다."""
+"""최종 일정의 채팅 시각을 만들고 설명의 일치 여부를 검사합니다."""
 
 import re
 
 from .lodging_planning import UNDECIDED_LODGING_NOTE, _night_choices
 
 _CLOCK = r"(?:오전|오후)?\s*\d{1,2}\s*(?::\s*\d{2}|시\s*\d{1,2}\s*분)"
+_REPLY_CLOCK = re.compile(
+    r"(?<!\d)\d{1,2}\s*[:：]\s*\d{2}(?!\d)"
+    r"|(?<!\d)\d{1,2}\s*시(?!\s*간)"
+    r"|(?:열\s*[한두]?|아홉|여덟|일곱|여섯|다섯|네|세|두|한)\s*시"
+    r"(?!\s*간)(?=$|\s|[.,!?에쯤경반]|부터|까지|정각|도착|출발)"
+    r"|정오|자정"
+)
+_REPLY_SENTENCE_END = re.compile(r"(?<=[.!?。！？])\s+|\n+")
+_REPLY_DURATION = re.compile(r"(?:\d+\s*분|(?:\d+|한|두|세|네|다섯|여섯|일곱|여덟|아홉|열)\s*시간)")
+_MAX_CHAT_REPLY_LENGTH = 4000
+_MAX_CHAT_TIMELINE_LENGTH = 2000
 _RETURN_AFTER = re.compile(
     r"(?:귀환|복귀)(?:편)?"
     r"(?:\s*(?:은|는|이|가|의|시각|시간|도착|예정|예상|약|:))*\s*"
@@ -40,6 +51,45 @@ _MISSING_LODGING_CLAIM = re.compile(
     r"(?:제공되지\s*않(?:은|아)|제공하지\s*않(?:은|아)|"
     r"없(?:어|으므로|습니다)|미정(?:입니다|이라|이므로|으로))"
 )
+
+
+def build_plan_chat_reply(reply: str, plan: dict, *, notice: str = "") -> str:
+    """일정이 있는 답변의 시각은 검증된 일정 항목에서 가져옵니다."""
+    timeline_lines = []
+    include_day = len(plan["days"]) > 1
+    for day in plan["days"]:
+        for item in day["items"]:
+            day_prefix = f"{day['day']}일차 " if include_day else ""
+            time_range = f"{item['start_time']}~{item['end_time']}"
+            line = f"- {day_prefix}{time_range} {item['title']}"
+            if item.get("item_type") == "visit" and item.get("duration_minutes") is not None:
+                line += f" ({item['duration_minutes']}분)"
+                if item.get("rest_minutes"):
+                    line += f", 휴식 {item['rest_minutes']}분 포함"
+            timeline_lines.append(line)
+
+    timeline = ""
+    if timeline_lines:
+        sentences = _REPLY_SENTENCE_END.split(reply)
+        reply = " ".join(
+            sentence.strip() for sentence in sentences
+            if not _REPLY_CLOCK.search(sentence) and not _REPLY_DURATION.search(sentence)
+        )
+        timeline = "\n".join(["일정 시각", *timeline_lines])
+        if len(timeline) > _MAX_CHAT_TIMELINE_LENGTH:
+            continuation = "나머지 시각은 일정표에서 확인해 주세요."
+            visible_length = _MAX_CHAT_TIMELINE_LENGTH - len(continuation) - 1
+            timeline = timeline[:visible_length].rpartition("\n")[0]
+            timeline = f"{timeline}\n{continuation}"
+
+    details = "\n\n".join(part for part in (timeline, notice) if part)
+    if not details:
+        return reply
+    available_length = _MAX_CHAT_REPLY_LENGTH - len(details) - 2
+    reply = reply[:available_length].strip()
+    if not reply:
+        return details
+    return f"{reply}\n\n{details}"
 
 
 def _missing_lodging_claim(text):

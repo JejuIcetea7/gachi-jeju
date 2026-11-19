@@ -189,12 +189,13 @@ class ChatEvaluationRunnerTests(unittest.TestCase):
         self.assertNotIn("metrics", record["attempts"][1])
 
     def test_observer_failure_does_not_change_server_response(self):
+        # 서버는 plan이 없는 응답에서도 도구 기록을 읽으므로, 관찰 기록의 JSON 직렬화만 실패하는 값을 쓴다.
         result = make_result(plan=False)
-        result["messages"] = [object()]
+        result["route_calls"] = [{"route_id": "unused", "distance_m": float("nan")}]
         record = self.run_request(Mock(return_value=result))
         self.assertEqual(record["http_status"], 200)
         self.assertIsNone(record["response"]["plan"])
-        self.assertEqual(record["attempts"][0]["capture_error"], "AttributeError")
+        self.assertEqual(record["attempts"][0]["capture_error"], "ValueError")
 
     def test_geometry_is_omitted_and_snapshot_is_independent(self):
         result = make_result()

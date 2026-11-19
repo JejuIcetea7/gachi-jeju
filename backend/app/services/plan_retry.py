@@ -52,7 +52,7 @@ class PlanValidationFailure(Exception):
 def build_plan_retry_messages(
     messages: list[dict[str, str]],
     *,
-    failed_plan: dict,
+    failed_plan: dict | None,
     options: dict,
     errors: list[str],
     lodging_recheck_nights: list[int] | None = None,
@@ -66,7 +66,7 @@ def build_plan_retry_messages(
     ):
         raise ValueError("재생성할 사용자 요청을 확인하지 못했습니다.")
 
-    if not isinstance(failed_plan, dict) or not isinstance(options, dict):
+    if failed_plan is not None and not isinstance(failed_plan, dict) or not isinstance(options, dict):
         raise ValueError("실패한 일정과 여행 조건은 객체여야 합니다.")
 
     if (
@@ -87,9 +87,10 @@ def build_plan_retry_messages(
         raise ValueError("자동 재생성 요청은 한 번만 만들 수 있습니다.")
 
     failed_copy = deepcopy(failed_plan)
-    for day in failed_copy.get("days", []):
+    for day in (failed_copy or {}).get("days", []):
         for item in day.get("items", []):
             item["route_id"] = None
+            item.pop("restaurant_ref", None)
             for field in ("verified", "category", "latitude", "longitude"):
                 item.pop(field, None)
 
@@ -108,29 +109,50 @@ def build_plan_retry_messages(
     return retry_messages
 
 
+def normalize_option_value(field, value, recheck):
+    """목록 순서처럼 의미 없는 차이를 없앤 비교용 값을 만듭니다."""
+    if field in ("travel_styles", "requirements") and isinstance(value, list):
+        return sorted(value)
+    if field == "lodging_stays" and isinstance(value, list):
+        kept_stays = []
+        for stay in value:
+            if stay.get("night") not in recheck:
+                kept_stays.append(json.dumps(stay, sort_keys=True, ensure_ascii=False))
+        return sorted(kept_stays)
+    return value
+
+
+def find_changed_options(expected: dict, actual: dict, *, lodging_recheck_nights=None) -> list[dict]:
+    """기대한 조건과 실제 응답 조건이 다른 필드를 기대값·실제값과 함께 반환합니다."""
+    recheck = set(_checked_recheck_nights(lodging_recheck_nights))
+    differences = []
+    for field, label in OPTION_LABELS.items():
+        if field == "lodging_status" and recheck:
+            continue
+        expected_value = normalize_option_value(field, expected.get(field), recheck)
+        actual_value = normalize_option_value(field, actual.get(field), recheck)
+        if expected_value == actual_value:
+            continue
+        differences.append({
+            "field": field,
+            "label": label,
+            "expected": json.dumps(expected.get(field), ensure_ascii=False),
+            "actual": json.dumps(actual.get(field), ensure_ascii=False),
+        })
+    return differences
+
+
 def validate_retry_options(
     expected: dict, actual: dict, *, lodging_recheck_nights=None,
 ) -> list[str]:
     """첫 시도에서 정리한 조건을 재생성 결과가 유지하는지 검사합니다."""
     errors = []
-    recheck = set(_checked_recheck_nights(lodging_recheck_nights))
-    for field, label in OPTION_LABELS.items():
-        if field == "lodging_status" and recheck:
-            continue
-        expected_value = expected.get(field)
-        actual_value = actual.get(field)
-        if field in ("travel_styles", "requirements"):
-            if isinstance(expected_value, list) and isinstance(actual_value, list):
-                expected_value = sorted(expected_value)
-                actual_value = sorted(actual_value)
-        if field == "lodging_stays":
-            if isinstance(expected_value, list) and isinstance(actual_value, list):
-                expected_value = [stay for stay in expected_value if stay.get("night") not in recheck]
-                actual_value = [stay for stay in actual_value if stay.get("night") not in recheck]
-                expected_value = sorted(json.dumps(stay, sort_keys=True) for stay in expected_value)
-                actual_value = sorted(json.dumps(stay, sort_keys=True) for stay in actual_value)
-        if expected_value != actual_value:
-            errors.append(f"자동 재생성에서 {label} 조건을 변경할 수 없습니다.")
+    differences = find_changed_options(expected, actual, lodging_recheck_nights=lodging_recheck_nights)
+    for difference in differences:
+        errors.append(
+            f"자동 재생성에서 {difference['label']} 조건을 변경할 수 없습니다. "
+            f"기대값 {difference['expected']}, 실제값 {difference['actual']}."
+        )
     return errors
 
 

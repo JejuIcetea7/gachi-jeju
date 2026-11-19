@@ -104,6 +104,7 @@ class ChatAutoRetryTests(unittest.TestCase):
             chat_router, "read_closed_days_by_place_id", return_value={},
         ))
         self.enterContext(patch.object(chat_router.logger, "exception"))
+        self.enterContext(patch.object(chat_router.logger, "error"))
         self.request = chat_router.ChatRequest(
             message="여행 조건을 유지해 일정을 만들어 주세요.",
             options=OPTIONS,
@@ -150,6 +151,7 @@ class ChatAutoRetryTests(unittest.TestCase):
         })
         self.request = chat_router.ChatRequest(
             message="2026년 11월 23일 자동차로 공원에 가고 싶어요.",
+            options=OPTIONS,
             history=[{"role": "assistant", "content": "조건을 알려 주세요."}],
         )
         before = copy.deepcopy(self.request.model_dump(mode="json"))
@@ -179,6 +181,59 @@ class ChatAutoRetryTests(unittest.TestCase):
             self.assertIsNone(item["route_id"])
         self.assertEqual(self.request.model_dump(mode="json"), before)
         self.assertEqual(first["chat_reply"].plan.days[0].items[0].route_id, "old")
+
+    def test_explicit_window_rejects_even_a_consistent_early_plan(self):
+        self.request = chat_router.ChatRequest(
+            message="오후 1시 이후에만 여행하도록 일정을 만들어줘.", options=OPTIONS,
+        )
+        window = chat_router.ScheduleChange(kind="earliest", minutes=780, evidence="오후 1시 이후에만 여행하도록")
+        attempts = [good_result("first"), good_result("second")]
+        for attempt in attempts:
+            attempt["chat_reply"].schedule_changes = [window]
+        self.agent.side_effect = attempts
+        status, body = self.post()
+        self.assert_validation_error(status, body)
+        self.assertEqual(self.agent.call_count, 2)
+        self.assertIn("13:00", " ".join(self.retry_payload()["plan_retry"]["validation_errors"]))
+
+    def test_partial_edit_uses_current_plan_and_records_only_corrected_duration(self):
+        previous, _ = plan_router.verify_places(make_plan())
+        self.request = chat_router.ChatRequest(
+            message="첫 장소 체류시간을 45분으로 바꿔줘.", options=OPTIONS, current_plan=previous,
+            history=[{"role": "assistant", "content": "첫 장소 체류시간은 20분입니다."}],
+        )
+        duration = chat_router.ScheduleChange(
+            kind="duration", visit="TEST_A", minutes=45, evidence="첫 장소 체류시간을 45분으로",
+        )
+        unchanged = good_result("first")
+        unchanged["chat_reply"].schedule_changes = [duration]
+        corrected = good_result("second")
+        corrected["chat_reply"].schedule_changes = [duration]
+        visit = corrected["chat_reply"].plan.days[0].items[1]
+        visit.duration_minutes = 45
+        visit.end_time = "09:55"
+        corrected["chat_reply"].reply = "첫 장소 체류시간을 45분으로 바꿨습니다."
+        self.agent.side_effect = [unchanged, corrected]
+        status, body = self.post()
+        self.assertEqual(status, 200)
+        self.assertEqual(self.agent.call_count, 2)
+        retry = self.retry_payload()["plan_retry"]
+        self.assertIn("45분", " ".join(retry["validation_errors"]))
+        self.assertTrue(retry["constraints_locked"])
+        self.assertEqual(retry["schedule_changes"], [duration.model_dump(mode="json")])
+        self.assertEqual(body["plan"]["schedule_limits"], [
+            {"kind": "duration", "visit": "TEST_A", "minutes": 45, "day": None},
+        ])
+        self.assertEqual(previous["days"][0]["items"][1]["duration_minutes"], 60)
+        self.assertEqual(body["reply"], "첫 장소 체류시간을 45분으로 바꿨습니다.")
+
+    def test_first_attempt_cannot_change_selected_transport_without_a_request(self):
+        wrong = make_result(make_plan(), routes=[make_route()], options={**OPTIONS, "transport": "walking"})
+        self.agent.side_effect = [wrong, good_result()]
+        status, body = self.post()
+        self.assertEqual(status, 200)
+        self.assertEqual(body["options"]["transport"], "driving")
+        self.assertEqual(self.retry_payload()["plan_retry"]["locked_options"]["transport"], "driving")
 
     def test_second_validation_failure_stops_after_two_calls(self):
         second = make_result(
@@ -212,8 +267,8 @@ class ChatAutoRetryTests(unittest.TestCase):
 
                 self.assert_validation_error(status, body)
                 self.assertEqual(self.agent.call_count, 2)
-                self.assertTrue(all(
-                    detail["field"] == "options"
+                self.assertTrue(any(
+                    "조건을 변경할 수 없습니다" in detail["reason"]
                     for detail in body["error"]["details"]
                 ))
                 self.lookup.assert_not_called()
@@ -320,13 +375,23 @@ class ChatAutoRetryTests(unittest.TestCase):
         self.assertEqual(self.agent.call_count, 2)
         self.assertEqual(body["options"]["requirements"], OPTIONS["requirements"])
 
-    def test_invalid_response_schema_does_not_retry(self):
-        self.agent.side_effect = [{"chat_reply": None}]
+    def test_invalid_response_schema_is_fed_back_once(self):
+        self.agent.side_effect = [{"chat_reply": None}, {"chat_reply": None}]
         status, body = self.post()
 
         self.assertEqual(status, 502)
         self.assertEqual(body["error"]["code"], "llm_invalid_response")
-        self.assertEqual(self.agent.call_count, 1)
+        self.assertEqual(self.agent.call_count, 2)
+        feedback = self.retry_payload()["plan_retry"]["validation_errors"]
+        self.assertTrue(feedback[0].startswith("응답 형식 오류"))
+
+    def test_invalid_response_schema_can_be_corrected(self):
+        self.agent.side_effect = [{"chat_reply": None}, good_result()]
+        status, body = self.post()
+
+        self.assertEqual(status, 200)
+        self.assertEqual(self.agent.call_count, 2)
+        self.assertFalse(self.retry_payload()["plan_retry"]["constraints_locked"])
 
     def test_provider_error_does_not_retry(self):
         self.agent.side_effect = RuntimeError("mock provider failure")

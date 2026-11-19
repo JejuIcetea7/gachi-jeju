@@ -38,6 +38,9 @@ def make_result(*, missing=False, memo=None):
     )]
     result = fixture.agent_result(TripPlan.model_validate(value), routes, selected)
     result["messages"] = location_messages()
+    # 기간 연장 동의와 숙박 변경은 Agent가 대화에서 판단해 구조화 값으로 선언한다.
+    result["chat_reply"].period_confirmed = True
+    result["chat_reply"].changed_options = ["trip_days", "lodging_status", "lodging_stays"]
     return result
 
 
@@ -165,12 +168,13 @@ class ChatLodgingReturnOnlyTests(unittest.TestCase):
         self.assertEqual(visits[0]["duration_minutes"], 60)
         self.assertEqual(body["options"]["trip_days"], 2)
 
-    def test_stale_selected_hotel_note_is_not_delivered(self):
+    def test_stale_note_is_model_content_and_not_rewritten_by_server(self):
+        # 서버는 메모 문장의 의미를 정규식으로 판정하거나 고치지 않는다. 문구 점검은 평가 도구가 담당한다.
         self.agent.side_effect = lambda *args: make_result(memo=STALE_NOTE)
         status, body = self.post()
-        self.assertEqual(status, 502)
-        self.assertEqual(body["error"]["code"], "plan_validation_failed")
-        self.assertEqual(self.agent.call_count, 2)
+        self.assertEqual(status, 200)
+        self.assertEqual(body["plan"]["assumptions"], [STALE_NOTE])
+        self.assertEqual(self.agent.call_count, 1)
 
     def test_existing_retry_can_correct_missing_return_and_stale_note(self):
         self.agent.side_effect = [make_result(missing=True, memo=STALE_NOTE), make_result()]

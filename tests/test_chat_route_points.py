@@ -159,6 +159,52 @@ class ChatRoutePointTests(unittest.TestCase):
         self.assertEqual(other_route(origin_ref=found["point_ref"], destination_ref="departure")["status"],
                          "not_found")
 
+    def test_walking_route_reuses_confirmed_departure_for_same_name_lookup(self):
+        self.location_output.update(name="한림공원", latitude=33.39022512718131,
+                                    longitude=126.23969118079854)
+        find, _, routes = self.bind(payload(
+            departure="한림공원", departure_latitude=33.39069623,
+            departure_longitude=126.2384354,
+        ))
+        for refresh in (False, True):
+            with self.subTest(refresh=refresh):
+                found = find(keyword=" 한림 공원 ", refresh=refresh)
+                route = routes[2](origin_ref=found["point_ref"], destination_ref="place:P010")
+                self.assertEqual(found["point_ref"], "departure")
+                self.assertIs(found["lookup_performed"], False)
+                self.assertEqual(route["origin"]["latitude"], 33.39069623)
+                self.assertEqual(route["origin"]["longitude"], 126.2384354)
+        self.location.assert_not_called()
+
+    def test_specific_new_departure_can_still_be_looked_up(self):
+        find, _, routes = self.bind(payload(departure="한림공원"))
+        self.location_output.update(name="한림공원", address="한림공원 주차장 주소")
+
+        found = find(keyword="한림공원 주차장", refresh=True)
+        route = routes[2](origin_ref=found["point_ref"], destination_ref="place:P010")
+
+        self.location.assert_called_once_with(keyword="한림공원 주차장", refresh=True)
+        self.assertTrue(found["point_ref"].startswith("found:"))
+        self.assertEqual(route["origin"]["latitude"], self.location_output["latitude"])
+        self.assertEqual(route["origin"]["longitude"], self.location_output["longitude"])
+
+    def test_saved_restaurant_search_checks_the_address_before_reusing_the_name(self):
+        value = payload()
+        value["current_plan"] = {"days": [{"day": 1, "items": [{
+            "item_type": "visit", "title": "풍년밥상", "restaurant_address": "제주시 일주동로 26",
+        }]}]}
+        find, _, _ = self.bind(value)
+        self.location_output.update(
+            name="풍년밥상", address="제주시 일주동로 26", category_group_code="FD6",
+        )
+
+        result = find(keyword="풍년밥상 제주시 일주동로 26", refresh=True)
+
+        self.location.assert_called_once_with(keyword="풍년밥상", refresh=True)
+        self.assertTrue(result["point_ref"].startswith("found:"))
+        self.location_output["address"] = "제주시 다른 주소"
+        self.assertEqual(find(keyword="풍년밥상"), {"status": "not_found"})
+
     def test_selected_location_keeps_its_nonfresh_evidence_markers(self):
         self.location_output.update(source="selected_lodging", lookup_performed=False)
         found = self.find(keyword="선택 숙소")
@@ -179,6 +225,28 @@ class ChatRoutePointTests(unittest.TestCase):
         self.location_function = original
         found = self.bind(payload())[0](keyword="새 숙소", refresh=True)
         self.assertIn("point_ref", found)
+
+    def test_nearby_candidates_use_the_visit_and_can_be_routed_individually(self):
+        places = [
+            {**self.location_output, "name": name, "longitude": longitude, "category_group_code": "FD6"}
+            for name, longitude in (("첫 식당", 126.24), ("둘째 식당", 126.25))
+        ]
+        with patch.object(points, "search_nearby_restaurants", return_value={"status": "ok", "places": places}) as search:
+            result = self.find(purpose="restaurant", center_ref="place:P001", keyword="한식")
+            self.assertEqual(search.call_args.kwargs["latitude"], ROWS["P001"]["latitude"])
+            self.assertEqual(search.call_args.kwargs["longitude"], ROWS["P001"]["longitude"])
+            self.assertEqual(search.call_args.kwargs["keyword"], "한식")
+            invalid = self.find(purpose="restaurant", center_ref="found:stale")
+            self.assertIs(invalid["lookup_performed"], False)
+            search.assert_called_once()
+        first, second = result["places"]
+        self.assertNotEqual(first["point_ref"], second["point_ref"])
+        route = self.routes[0](origin_ref="place:P001", destination_ref=second["point_ref"])
+        self.assertEqual(route["destination"]["longitude"], 126.25)
+        record = {"tool": "find_location", "input": {"purpose": "restaurant"}, "output": result}
+        self.assertEqual(points.read_confirmed_restaurants([record])[second["point_ref"]]["name"], "둘째 식당")
+        self.assertIsNone(points.restaurant_lookup_failure([record]))
+        self.location.assert_not_called()
 
     def test_each_order_call_has_a_day_and_only_explicit_known_boundaries(self):
         result = self.suggest(day=2, place_ids=["P010", "P001"],

@@ -5,17 +5,7 @@ from copy import deepcopy
 
 from .lodging_planning import _night_choices
 from .plan_routes import normalize_transport_mode
-from .route_endpoints import _coordinate
-
-
-COORDINATE_TOLERANCE = 0.000001
-
-
-def _same_point(first, second):
-    return (
-        first is not None and second is not None
-        and all(abs(left - right) <= COORDINATE_TOLERANCE for left, right in zip(first, second))
-    )
+from .route_endpoints import _coordinate, _same_point
 
 
 def _place_coordinates(tool_trace):
@@ -71,7 +61,7 @@ def _matches_move(item, record, origin, destination):
 
 def restore_plan_route_ids(
     plan, route_calls, *, tool_trace=None, departure=None,
-    return_to_origin=False, lodging_stays=None,
+    return_to_origin=False, lodging_stays=None, restaurants=None, daily_departure=False,
 ):
     """양 끝점·이동수단·시간이 일치하는 이번 시도의 미사용 경로가 하나일 때 보완합니다.
 
@@ -94,6 +84,8 @@ def restore_plan_route_ids(
         and isinstance(item.get("route_id"), str) and item["route_id"] in counts
     }
     coordinates = _place_coordinates(tool_trace)
+    if restaurants is None:
+        restaurants = {}
     origin_point = _coordinate(departure)
     stays = _night_choices(lodging_stays)
     days = restored["days"]
@@ -111,18 +103,22 @@ def restore_plan_route_ids(
             destination = None
             if previous is not None and previous.get("item_type") == "visit":
                 origin = coordinates.get(previous.get("place_id"))
+                if previous.get("restaurant_ref") is not None:
+                    origin = _coordinate(restaurants.get(previous["restaurant_ref"]))
             if following is not None and following.get("item_type") == "visit":
                 destination = coordinates.get(following.get("place_id"))
+                if following.get("restaurant_ref") is not None:
+                    destination = _coordinate(restaurants.get(following["restaurant_ref"]))
             if index == 0:
                 origin = (
-                    origin_point if day["day"] == 1
+                    origin_point if day["day"] == 1 or daily_departure
                     else _coordinate(stays.get(day["day"] - 1))
                 )
             if index == len(items) - 1:
-                if day_index < len(days) - 1:
-                    destination = _coordinate(stays.get(day["day"]))
-                elif return_to_origin is True:
+                if return_to_origin and (day_index == len(days) - 1 or daily_departure):
                     destination = origin_point
+                elif day_index < len(days) - 1:
+                    destination = _coordinate(stays.get(day["day"]))
             if origin is None or destination is None:
                 continue
             candidates = [

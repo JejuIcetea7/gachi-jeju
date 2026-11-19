@@ -2,7 +2,12 @@ import os
 from pathlib import Path
 
 LLM_MODEL = "gpt-6-luna"
-LLM_REASONING_EFFORT = "low"
+LLM_REASONING_EFFORT = "high"
+
+DEFAULT_DEPARTURE_NAME = "제주빅데이터센터"
+DEFAULT_DEPARTURE_ADDRESS = "제주특별자치도 제주시 첨단로 241"
+DEFAULT_DEPARTURE_LATITUDE = 33.451146570009
+DEFAULT_DEPARTURE_LONGITUDE = 126.571824910828
 
 def read_env_value(name: str) -> str:
     """환경변수를 먼저 보고, 없으면 프로젝트 루트의 .env에서 값을 읽습니다."""

@@ -212,6 +212,33 @@ class ChatRequestTests(unittest.TestCase):
         self.assertEqual(payload["current_plan"], previous_plan)
         self.assertEqual(request.model_dump(mode="json"), original)
 
+    def test_agent_messages_fill_only_missing_center_coordinates(self):
+        for departure, coordinates, expected_coordinates in [
+            ("제주빅데이터센터", (None, None), (33.451146570009, 126.571824910828)),
+            ("제주빅데이터센터", (33.45, 126.57), (33.45, 126.57)),
+            ("제주국제공항", (None, None), (None, None)),
+            ("제주국제공항", (33.51, 126.49), (33.51, 126.49)),
+        ]:
+            with self.subTest(departure=departure, coordinates=coordinates):
+                request = ChatRequest(
+                    message="당일 여행 일정을 짜 주세요.",
+                    options={
+                        "departure": departure,
+                        "departure_latitude": coordinates[0],
+                        "departure_longitude": coordinates[1],
+                    },
+                )
+
+                messages = build_chat_messages(request)
+
+                payload = json.loads(messages[-1]["content"])
+                options = payload["options"]
+                self.assertEqual(options["departure"], departure)
+                self.assertEqual(options["departure_latitude"], expected_coordinates[0])
+                self.assertEqual(options["departure_longitude"], expected_coordinates[1])
+                self.assertEqual(request.options.departure_latitude, coordinates[0])
+                self.assertEqual(request.options.departure_longitude, coordinates[1])
+
     def test_agent_messages_allow_unselected_options(self):
         request = ChatRequest(message="부모님과 나들이하고 싶어요.")
 
@@ -221,6 +248,9 @@ class ChatRequestTests(unittest.TestCase):
         self.assertEqual(messages[0]["role"], "user")
 
         payload = json.loads(messages[0]["content"])
+        self.assertIsNone(payload["options"]["departure"])
+        self.assertIsNone(payload["options"]["departure_latitude"])
+        self.assertIsNone(payload["options"]["departure_longitude"])
         self.assertIsNone(payload["options"]["transport"])
         self.assertIsNone(payload["options"]["start_date"])
         self.assertIsNone(payload["options"]["trip_days"])

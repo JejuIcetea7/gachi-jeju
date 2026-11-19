@@ -222,18 +222,22 @@ function TravelPlan({ plan, autoFocus = true, transitRoutes = [] }) {
                       </div>
                       <div className="plan-timeline-card">
                         <div className="plan-timeline-title-row">
-                          <button
-                            type="button"
-                            className="plan-item-title plan-place-button"
-                            aria-haspopup="dialog"
-                            aria-label={`${item.title} 상세 정보 및 사진 보기`}
-                            onClick={() => setPhotoPlace(item)}
-                          >
-                            {item.title}
-                            <SvgIcon size={18} strokeWidth={2}>
-                              <path d="m9 6 6 6-6 6" />
-                            </SvgIcon>
-                          </button>
+                          {item.restaurant_address ? (
+                            <span className="plan-item-title">{item.title}</span>
+                          ) : (
+                            <button
+                              type="button"
+                              className="plan-item-title plan-place-button"
+                              aria-haspopup="dialog"
+                              aria-label={`${item.title} 상세 정보 및 사진 보기`}
+                              onClick={() => setPhotoPlace(item)}
+                            >
+                              {item.title}
+                              <SvgIcon size={18} strokeWidth={2}>
+                                <path d="m9 6 6 6-6 6" />
+                              </SvgIcon>
+                            </button>
+                          )}
                           <span
                             className={item.verified === true
                               ? 'plan-source is-verified'
@@ -249,13 +253,15 @@ function TravelPlan({ plan, autoFocus = true, transitRoutes = [] }) {
                                 <path d="M12 8v5M12 16h.01" />
                               </SvgIcon>
                             )}
-                            {item.verified === true
-                              ? '여행지 자료 등록'
-                              : '여행지 정보 확인 필요'}
+                            {item.restaurant_address
+                              ? '카카오맵 위치 확인'
+                              : item.verified === true ? '여행지 자료 등록' : '여행지 정보 확인 필요'}
                           </span>
                         </div>
                         <p className="plan-timeline-meta">
-                          <strong className="plan-visit-duration">방문 {formatDuration(item)}</strong>
+                          <strong className="plan-visit-duration">
+                            {item.restaurant_address ? '식사' : '방문'} {formatDuration(item)}
+                          </strong>
                           <span aria-hidden="true">·</span>
                           <span className="plan-visit-time">
                             <time dateTime={item.start_time}>{item.start_time}</time>
@@ -263,6 +269,9 @@ function TravelPlan({ plan, autoFocus = true, transitRoutes = [] }) {
                             <time dateTime={item.end_time}>{item.end_time}</time>
                           </span>
                         </p>
+                        {item.restaurant_address && (
+                          <p className="plan-timeline-meta">{item.restaurant_address}</p>
+                        )}
                         <VisitCardDetails
                           key={item.place_id}
                           item={item}

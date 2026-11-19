@@ -117,6 +117,7 @@ class ChatEvaluationCancellationTests(unittest.TestCase):
 
     def test_retry_timeout_keeps_captured_first_attempt(self):
         calls = []
+        self.request["options"] = {"start_date": "2026-11-20", "trip_days": 1, "transport": "driving"}
 
         def runner(*args):
             calls.append(True)

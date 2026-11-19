@@ -81,7 +81,7 @@ class ChatApiTests(unittest.TestCase):
         self.lookup.assert_not_called()
 
     def test_history_and_options_reach_agent(self):
-        self.agent.return_value = make_result()
+        self.agent.return_value = make_result(None, {**OPTIONS, "trip_days": 3})
         request_body = {
             "message": "둘째 날에는 바다를 넣어 주세요.",
             "history": [
@@ -145,8 +145,12 @@ class ChatApiTests(unittest.TestCase):
                 self.assertEqual(body["warnings"], [])
                 self.agent.assert_called_once()
 
-    def test_missing_information_becomes_question(self):
-        self.agent.return_value = make_result(make_plan())
+    def test_undeclared_required_values_are_fed_back_and_agent_asks(self):
+        # 모델이 근거 없이 채운 필수값은 서버가 문장으로 바꾸지 않고, 같은 Agent가 확인 질문을 작성한다.
+        question = make_result(None, {})
+        question["chat_reply"].reply = "출발 날짜, 여행 기간, 이동수단을 알려 주세요."
+        question["chat_reply"].needs_clarification = True
+        self.agent.side_effect = [make_result(make_plan(), OPTIONS), question]
 
         response = self.client.post(
             "/chat", json={"message": "일정을 추천해 주세요."}
@@ -155,10 +159,12 @@ class ChatApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         body = response.json()
         self.assertIsNone(body["plan"])
-        for label in ["출발 날짜", "여행 기간", "이동수단"]:
-            self.assertIn(label, body["reply"])
+        self.assertIsNone(body["options"]["start_date"])
+        self.assertEqual(body["reply"], "출발 날짜, 여행 기간, 이동수단을 알려 주세요.")
         self.lookup.assert_not_called()
-        self.agent.assert_called_once()
+        self.assertEqual(self.agent.call_count, 2)
+        retry = json.loads(self.agent.call_args.args[0][-1]["content"])["plan_retry"]
+        self.assertTrue(any("changed_options" in reason for reason in retry["validation_errors"]))
 
     def test_invalid_generated_plan_is_rejected(self):
         wrong_duration = make_plan()
@@ -178,7 +184,7 @@ class ChatApiTests(unittest.TestCase):
                 self.agent.return_value = make_result(plan, options)
 
                 response = self.client.post(
-                    "/chat", json={"message": "일정을 추천해 주세요."}
+                    "/chat", json={"message": "일정을 추천해 주세요.", "options": options}
                 )
 
                 self.assertEqual(response.status_code, 502)
@@ -195,6 +201,18 @@ class ChatApiTests(unittest.TestCase):
                 self.lookup.assert_not_called()
                 self.assertEqual(self.agent.call_count, 2)
 
+    def test_user_message_can_supply_required_values_without_selected_options(self):
+        self.agent.return_value = make_result(make_plan(2), {**OPTIONS, "trip_days": 2})
+        self.agent.return_value["chat_reply"].changed_options = ["start_date", "trip_days", "transport"]
+        response = self.client.post("/chat", json={
+            "message": "2026년 11월 20일부터 21일까지 자동차로 여행할 일정을 만들어줘.",
+        })
+        body = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(body["plan"]["days"]), 2)
+        self.assertEqual(body["options"]["start_date"], "2026-11-20")
+        self.assertEqual(body["options"]["transport"], "driving")
+
     def test_closed_day_visit_is_rejected(self):
         # 2026-11-23 월요일, P092 국립제주박물관은 매주 월요일 휴관 (실제 DB 값)
         options = {**OPTIONS, "start_date": "2026-11-23"}
@@ -202,7 +220,7 @@ class ChatApiTests(unittest.TestCase):
         plan.days[0].items[0].place_id = "P092"
         self.agent.return_value = make_result(plan, options)
 
-        response = self.client.post("/chat", json={"message": "일정을 추천해 주세요."})
+        response = self.client.post("/chat", json={"message": "일정을 추천해 주세요.", "options": options})
 
         self.assertEqual(response.status_code, 502)
         error = response.json()["error"]
@@ -223,7 +241,7 @@ class ChatApiTests(unittest.TestCase):
         plan.days[0].items[0].end_time = "18:30"
         self.agent.return_value = make_result(plan, options)
 
-        response = self.client.post("/chat", json={"message": "일정을 추천해 주세요."})
+        response = self.client.post("/chat", json={"message": "일정을 추천해 주세요.", "options": options})
 
         self.assertEqual(response.status_code, 502)
         error = response.json()["error"]
@@ -247,7 +265,7 @@ class ChatApiTests(unittest.TestCase):
         )
 
         response = self.client.post(
-            "/chat", json={"message": "일정을 추천해 주세요."}
+            "/chat", json={"message": "일정을 추천해 주세요.", "options": {**OPTIONS, "trip_days": 3}}
         )
 
         self.assertEqual(response.status_code, 200)
@@ -324,7 +342,7 @@ class ChatApiTests(unittest.TestCase):
         )
 
         response = self.client.post(
-            "/chat", json={"message": "일정을 추천해 주세요."}
+            "/chat", json={"message": "일정을 추천해 주세요.", "options": OPTIONS}
         )
 
         self.assertEqual(response.status_code, 500)

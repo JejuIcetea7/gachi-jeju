@@ -79,6 +79,10 @@ export function isChatResponse(data) {
     && isChatOptions(data.options)
     && Array.isArray(data.warnings)
     && data.warnings.every((value) => typeof value === 'string')
+    && (data.restaurant_retry_request == null || (
+      data.plan === null && typeof data.restaurant_retry_request === 'string'
+      && data.restaurant_retry_request.trim().length > 0 && data.restaurant_retry_request.length <= 1000
+    ))
     && (data.plan === null || isPlanResponse(data))
 }
 

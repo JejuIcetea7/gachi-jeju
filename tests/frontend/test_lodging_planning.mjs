@@ -101,6 +101,13 @@ test('조회 기준은 확인된 마지막 관광지이며 앞선 방문지나 �
   assert.equal(getLodgingSearchCenter({ items: [] }), null)
 })
 
+test('마지막 일정이 식사면 앞서 방문한 마지막 관광지를 기준으로 숙소를 검색합니다', () => {
+  const restaurant = visit({ title: '식당', verified: false, restaurant_address: '제주시 식당 주소' })
+  assert.deepEqual(getLodgingSearchCenter({ items: [visit(), restaurant] }), {
+    latitude: 33.41, longitude: 126.51, name: '마지막 관광지',
+  })
+})
+
 test('미정인 중간 날짜의 지도에 원래 출발지나 가짜 숙소를 넣지 않습니다', () => {
   const selected = { ...options(), lodging_status: 'undecided' }
   assert.deepEqual(getLodgingMapAnchors({ day: 2 }, selected), [])

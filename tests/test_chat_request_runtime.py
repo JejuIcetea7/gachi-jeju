@@ -169,9 +169,9 @@ class RequestHttpTests(unittest.TestCase):
         ))
         self.client = self.enterContext(TestClient(app, raise_server_exceptions=False))
 
-    def post(self, request_id=None):
+    def post(self, request_id=None, *, options=None):
         headers = {"X-Chat-Request-ID": request_id} if request_id is not None else {}
-        return self.client.post("/chat", json={"message": "테스트 요청입니다."}, headers=headers)
+        return self.client.post("/chat", json={"message": "테스트 요청입니다.", "options": options or {}}, headers=headers)
 
     def blocked_agent(self, *args):
         self.entered.set()
@@ -273,7 +273,7 @@ class RequestHttpTests(unittest.TestCase):
         with patch.object(chat, "_build_chat_result", side_effect=[
             chat.PlanValidationFailure(["test-only"]), body,
         ]):
-            response = self.post()
+            response = self.post(options=result["chat_reply"].options.model_dump(mode="json"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(controls), 2)
         self.assertIs(controls[0], controls[1])
@@ -293,7 +293,7 @@ class RequestHttpTests(unittest.TestCase):
             raise chat.PlanValidationFailure(["test-only"])
 
         with patch.object(chat, "_build_chat_result", side_effect=fail):
-            response = self.post()
+            response = self.post(options=result["chat_reply"].options.model_dump(mode="json"))
         self.assertEqual(response.status_code, 504)
         self.assertEqual(response.json()["error"]["code"], "request_timeout")
         self.agent.assert_called_once()

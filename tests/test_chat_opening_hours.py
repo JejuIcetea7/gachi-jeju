@@ -161,6 +161,13 @@ class ChatOpeningHoursTests(unittest.TestCase):
         self.assertIsNone(body["plan"])
         self.hours.assert_not_called()
 
+
+
+
+
+
+
+
     def test_seasonal_opening_uses_the_requested_month(self):
         self.hours.return_value = {
             "TEST": "3-10월 09:00-18:00;11-2월 10:00-18:00"
@@ -186,8 +193,97 @@ class ChatOpeningHoursTests(unittest.TestCase):
         self.assertEqual(status, 502)
         self.assertEqual(self.agent.call_count, 2)
         self.assertTrue(all(
-            detail["field"] == "options" for detail in body["error"]["details"]
+            detail["field"] == "response" for detail in body["error"]["details"]
         ))
+
+    def time_reply(self, arrival, duration, available, text="모델이 조회 자료로 작성한 답변입니다."):
+        result = self.result(question=True)
+        result["chat_reply"].reply = text
+        result["chat_reply"].visit_time_check = chat_router.VisitTimeCheck(
+            place_id="TEST", visit_date="2026-11-20", arrival_time=arrival,
+            duration_minutes=duration, available=available)
+        return result
+
+    def test_last_entry_and_closing_boundaries_are_numeric_checks(self):
+        place = {"status": "ok", "place_id": "TEST", "name": "박물관",
+                 "opening_hours": "09:00-18:00 입장마감 17:30",
+                 "closed_day_checks": {"2026-11-20": "영업"}}
+        for arrival, duration, available in (("17:30", 30, True), ("17:40", 15, False), ("17:30", 45, False)):
+            with self.subTest(arrival=arrival, duration=duration):
+                result = self.time_reply(arrival, duration, available)
+                self.agent.side_effect = None
+                self.agent.return_value = result
+                self.agent.reset_mock()
+                with patch.object(chat_router, "read_place_details", return_value=place):
+                    status, body = self.post()
+                self.assertEqual(status, 200)
+                self.assertEqual(body["reply"], result["chat_reply"].reply)
+                self.agent.assert_called_once()
+
+    def test_wrong_visit_verdict_returns_fact_feedback_to_agent(self):
+        place = {"status": "ok", "place_id": "TEST", "opening_hours": "09:00-18:00 입장마감 17:30"}
+        first = self.time_reply("17:40", 15, True, "방문할 수 있습니다.")
+        second = self.time_reply("17:40", 15, False, "입장 마감 이후 도착하므로 방문할 수 없습니다.")
+        self.agent.side_effect = [first, second]
+        with patch.object(chat_router, "read_place_details", return_value=place):
+            status, body = self.post()
+        self.assertEqual(status, 200)
+        self.assertEqual(body["reply"], second["chat_reply"].reply)
+        self.assertTrue(any("기대값" in reason for reason in self.feedback()["validation_errors"]))
+
+    def test_closed_day_and_unknown_hours_remain_distinct(self):
+        for hours, closed, available in (("09:00-18:00", "휴무", False), ("확인 안 됨", None, None)):
+            with self.subTest(hours=hours):
+                result = self.time_reply("10:00", 60, available)
+                self.agent.side_effect = None
+                self.agent.return_value = result
+                place = {"status": "ok", "place_id": "TEST", "opening_hours": hours,
+                         "closed_day_checks": {"2026-11-20": closed}}
+                with patch.object(chat_router, "read_place_details", return_value=place):
+                    status, body = self.post()
+                self.assertEqual(status, 200)
+                self.assertEqual(body["reply"], result["chat_reply"].reply)
+
+
+    def test_midnight_and_always_open_verdicts(self):
+        cases = (
+            ("상시 개방", "23:00", 60, True),
+            ("상시 개방", "23:30", 60, None),
+            ("09:00-24:00", "23:30", 30, True),
+            ("09:00-24:00", "23:30", 60, False),
+        )
+        for hours, arrival, duration, available in cases:
+            with self.subTest(hours=hours, arrival=arrival, duration=duration):
+                result = self.time_reply(arrival, duration, available)
+                self.agent.side_effect = None
+                self.agent.return_value = result
+                self.agent.reset_mock()
+                place = {"status": "ok", "place_id": "TEST", "opening_hours": hours,
+                         "closed_day_checks": {"2026-11-20": "영업"}}
+                with patch.object(chat_router, "read_place_details", return_value=place):
+                    status, body = self.post()
+                self.assertEqual(status, 200)
+                self.agent.assert_called_once()
+
+    def test_missing_place_expects_unknown_verdict(self):
+        result = self.time_reply("10:00", 60, True)
+        self.agent.side_effect = [result, self.time_reply("10:00", 60, None)]
+        with patch.object(chat_router, "read_place_details", return_value={"status": "not_found"}):
+            status, body = self.post()
+        self.assertEqual(status, 200)
+        self.assertTrue(any("찾지 못함" in reason for reason in self.feedback()["validation_errors"]))
+
+    def test_visit_time_data_error_is_not_fed_back_as_model_error(self):
+        self.agent.side_effect = None
+        self.agent.return_value = self.time_reply("10:00", 60, True)
+        self.agent.reset_mock()
+        for place in ({"status": "db_error"}, {"status": "ok", "place_id": "OTHER"}):
+            with self.subTest(place=place):
+                with patch.object(chat_router, "read_place_details", return_value=place):
+                    status, body = self.post()
+                self.assertEqual(status, 500)
+                self.assertEqual(body["error"]["code"], "internal_error")
+        self.assertEqual(self.agent.call_count, 2)
 
 
 if __name__ == "__main__":

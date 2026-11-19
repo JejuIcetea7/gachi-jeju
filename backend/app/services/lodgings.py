@@ -1,7 +1,6 @@
 """제주 여행 동선 주변의 숙소 후보를 카카오 장소 검색으로 조회합니다."""
 
 import json
-import math
 import re
 import ssl
 from datetime import datetime, timezone
@@ -11,35 +10,14 @@ from urllib.request import Request, urlopen
 
 import truststore
 
-from .kakao_local import JEJU_RECT
+from .kakao_local import (
+    JEJU_RECT, MAX_LATITUDE, MAX_LONGITUDE, MIN_LATITUDE, MIN_LONGITUDE,
+    distance_meters, is_jeju_coordinate,
+)
 
 
-MIN_LONGITUDE, MIN_LATITUDE, MAX_LONGITUDE, MAX_LATITUDE = map(float, JEJU_RECT.split(","))
 MAX_RADIUS_M = 20_000
 MAX_RESULTS = 10
-
-
-def _jeju_coordinate(latitude, longitude):
-    return (
-        type(latitude) in (int, float)
-        and type(longitude) in (int, float)
-        and math.isfinite(latitude)
-        and math.isfinite(longitude)
-        and MIN_LATITUDE <= latitude <= MAX_LATITUDE
-        and MIN_LONGITUDE <= longitude <= MAX_LONGITUDE
-    )
-
-
-def _distance_m(latitude, longitude, other_latitude, other_longitude):
-    latitude, other_latitude = map(math.radians, (latitude, other_latitude))
-    latitude_difference = other_latitude - latitude
-    longitude_difference = math.radians(other_longitude - longitude)
-    value = (
-        math.sin(latitude_difference / 2) ** 2
-        + math.cos(latitude) * math.cos(other_latitude)
-        * math.sin(longitude_difference / 2) ** 2
-    )
-    return 2 * 6_371_000 * math.asin(math.sqrt(min(1.0, max(0.0, value))))
 
 
 def _text(value, maximum):
@@ -69,9 +47,9 @@ def parse_lodging_response(data, *, latitude, longitude, radius_m, max_count):
             candidate_longitude = float(document["x"])
         except (KeyError, TypeError, ValueError, OverflowError):
             continue
-        if not name or not _jeju_coordinate(candidate_latitude, candidate_longitude):
+        if not name or not is_jeju_coordinate(candidate_latitude, candidate_longitude):
             continue
-        distance = _distance_m(latitude, longitude, candidate_latitude, candidate_longitude)
+        distance = distance_meters(latitude, longitude, candidate_latitude, candidate_longitude)
         if distance > radius_m:
             continue
         candidate = {
@@ -103,7 +81,7 @@ def search_nearby_lodgings(*, latitude, longitude, api_key, radius_m=5000, max_c
     검색 실패와 후보 없음은 구분하며, 결과를 숙소 확정이나 예약으로 취급하지 않습니다.
     """
     if (
-        not _jeju_coordinate(latitude, longitude)
+        not is_jeju_coordinate(latitude, longitude)
         or type(radius_m) is not int or not 1 <= radius_m <= MAX_RADIUS_M
         or type(max_count) is not int or not 1 <= max_count <= MAX_RESULTS
     ):

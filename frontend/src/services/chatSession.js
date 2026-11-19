@@ -59,6 +59,10 @@ function isMessage(value) {
     && typeof value.content === 'string'
     && value.content.trim().length > 0
     && value.content.length <= (value.role === 'user' ? 1000 : 4000)
+    && (value.restaurantRetryRequest == null || (
+      value.role === 'assistant' && typeof value.restaurantRetryRequest === 'string'
+      && value.restaurantRetryRequest.trim().length > 0 && value.restaurantRetryRequest.length <= 1000
+    ))
     && ['sent', 'pending', 'failed', 'cancelled'].includes(value.status)
 }
 

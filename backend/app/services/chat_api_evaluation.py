@@ -6,7 +6,8 @@ import sqlite3
 from pydantic import ValidationError
 
 from .chat_outcomes import evaluate_chat_outcome
-from .plan_consistency import validate_plan_moves
+from .chat_route_points import read_confirmed_restaurants
+from .plan_consistency import ALLOWED_TRAVEL_MODES, validate_plan_moves
 from .plan_evaluation import (
     calculate_visit_metrics, check_day_count, check_places_in_database,
     check_times, check_transport_tools, make_check_result, read_places_by_id,
@@ -83,6 +84,7 @@ def _record_errors(case, record):
 
 
 def _place_lookup_errors(plan, trace):
+    restaurants = read_confirmed_restaurants(trace)
     known_ids = set()
     for item in trace:
         output = item["output"]
@@ -99,11 +101,26 @@ def _place_lookup_errors(plan, trace):
             place_id = output.get("place_id")
             if isinstance(place_id, str) and item["input"].get("place_id") == place_id:
                 known_ids.add(place_id)
-    return [
-        f"{day['day']}일차 '{item['title']}': 마지막 시도의 장소 조회 근거가 없습니다."
-        for day in plan["days"] for item in day["items"]
-        if item["item_type"] == "visit" and item.get("place_id") not in known_ids
-    ]
+    errors = []
+    for day in plan["days"]:
+        for item in day["items"]:
+            if item["item_type"] != "visit":
+                continue
+            reference = item.get("restaurant_ref")
+            if reference is not None:
+                restaurant = restaurants.get(reference)
+                if (
+                    restaurant is None or item.get("place_id") is not None
+                    or item.get("verified") is not False
+                    or item["title"] != restaurant["name"]
+                    or item.get("restaurant_address") != restaurant["address"]
+                    or item.get("latitude") != restaurant["latitude"]
+                    or item.get("longitude") != restaurant["longitude"]
+                ):
+                    errors.append(f"{day['day']}일차 '{item['title']}': 마지막 시도의 식당 조회 결과와 일치하지 않습니다.")
+            elif item.get("place_id") not in known_ids:
+                errors.append(f"{day['day']}일차 '{item['title']}': 마지막 시도의 장소 조회 근거가 없습니다.")
+    return errors
 
 
 def _option_errors(request_options, expected_options, actual_options, *, has_plan):
@@ -206,10 +223,7 @@ def evaluate_chat_record(case, record):
                     item.get("route_id") for day in plan["days"] for item in day["items"]
                     if item["item_type"] == "move"
                 }
-                allowed_modes = {
-                    "walking": {"walking"}, "driving": {"driving", "walking"},
-                    "transit": {"transit", "walking"},
-                }[working_case["request"]["options"]["transport"]]
+                allowed_modes = ALLOWED_TRAVEL_MODES[working_case["request"]["options"]["transport"]]
                 for route in last["route_calls"]:
                     if route.get("route_id") in selected_ids and route.get("transport") not in allowed_modes:
                         checks["H7"]["reasons"].append("선택한 경로의 이동수단이 요청 조건과 다릅니다.")
@@ -220,10 +234,14 @@ def evaluate_chat_record(case, record):
                     evaluation_errors.append("평가용 장소 DB를 읽지 못했습니다.")
                     checks["H4"] = make_check_result(False, ["평가용 장소 DB를 읽지 못했습니다."])
                 else:
-                    checks["H4"] = check_places_in_database(plan, places)
+                    tourism_plan = {"days": [
+                        {**day, "items": [item for item in day["items"] if item.get("restaurant_ref") is None]}
+                        for day in plan["days"]
+                    ]}
+                    checks["H4"] = check_places_in_database(tourism_plan, places)
                     unverified = [
                         f"{day['day']}일차 '{item['title']}': DB 확인 표시가 없습니다."
-                        for day in plan["days"] for item in day["items"]
+                        for day in tourism_plan["days"] for item in day["items"]
                         if item["item_type"] == "visit" and item.get("verified") is not True
                     ]
                     checks["H4"]["reasons"].extend(unverified)
@@ -239,6 +257,7 @@ def evaluate_chat_record(case, record):
                         "longitude": body["options"]["departure_longitude"],
                     },
                     return_to_origin=body["options"]["return_to_origin"] is True,
+                    daily_departure=body["options"].get("lodging_status") == "not_needed",
                     lodging_stays=body["options"]["lodging_stays"],
                 )
                 checks["endpoints"] = make_check_result(not endpoint_errors, endpoint_errors)

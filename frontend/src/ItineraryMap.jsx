@@ -59,7 +59,7 @@ function getMapPlaces(day, options) {
     if (item.item_type !== 'visit') continue
     visitNumber += 1
 
-    if (item.verified !== true || !hasCoordinates(item)) {
+    if ((!item.restaurant_address && item.verified !== true) || !hasCoordinates(item)) {
       missing.push(`${visitNumber}. ${item.title}`)
       continue
     }

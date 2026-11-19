@@ -138,10 +138,10 @@ class LodgingSelectionEvidenceTests(unittest.TestCase):
             "status": "ok", "name": "선택한 숙소", "address": "제주시 테스트 도로 1", **HOTEL, **changes,
         }}]
 
-    def check(self, previous=None, current=None, message="선택한 숙소에서 묵습니다.", trace=None):
+    def check(self, previous=None, current=None, trace=None):
         return validate_lodging_selections(
             previous or {"lodging_stays": []}, current or {"lodging_stays": [stay()]},
-            user_message=message, tool_trace=self.trace() if trace is None else trace,
+            tool_trace=self.trace() if trace is None else trace,
         )
 
     def test_user_selected_stay_needs_no_additional_location_call(self):
@@ -150,8 +150,9 @@ class LodgingSelectionEvidenceTests(unittest.TestCase):
     def test_user_named_stay_with_current_location_evidence_is_allowed(self):
         self.assertEqual(self.check(), [])
 
-    def test_user_provided_full_address_can_identify_stay(self):
-        self.assertEqual(self.check(message="숙소 주소는 제주시 테스트 도로 1입니다."), [])
+    def test_stay_address_must_match_the_lookup_address(self):
+        moved = {"lodging_stays": [{**stay(), "address": "제주시 다른 도로 2"}]}
+        self.assertEqual(len(self.check(current=moved)), 1)
 
     def test_coordinate_rounding_is_allowed_but_different_locations_are_not(self):
         rounded = {"lodging_stays": [{**stay(), "latitude": HOTEL["latitude"] + 0.0000001}]}
@@ -160,8 +161,11 @@ class LodgingSelectionEvidenceTests(unittest.TestCase):
         changed = {"lodging_stays": [{**stay(), "latitude": HOTEL["latitude"] + 0.0001}]}
         self.assertEqual(len(self.check(current=changed)), 1)
 
-    def test_lookup_without_user_named_stay_is_not_a_selection(self):
-        self.assertEqual(len(self.check(message="숙소는 아직 미정입니다.")), 1)
+    def test_restaurant_lookup_is_not_lodging_evidence(self):
+        # 사용자가 어떤 숙소를 골랐는지는 Agent가 판단하고, 서버는 조회 목적과 위치 값만 확인한다.
+        trace = self.trace()
+        trace[0]["input"]["purpose"] = "restaurant"
+        self.assertEqual(len(self.check(trace=trace)), 1)
 
     def test_name_without_current_location_evidence_is_not_enough(self):
         for trace in ([], [None], [{"tool": "find_location", "output": None}],

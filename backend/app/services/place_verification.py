@@ -29,7 +29,7 @@ def _successful_records(tool_trace, tool_names):
             yield record, output
 
 
-def _unique_exact_place_id(name):
+def find_unique_exact_place_id(name):
     result = search_places_by_name(keyword=name, max_count=10)
 
     if result.get("status") == "db_error":
@@ -101,7 +101,7 @@ def restore_missing_place_ids(plan: dict, tool_trace: list[dict] | None) -> dict
 
     for day in restored["days"]:
         for item in day["items"]:
-            if item.get("item_type") != "visit":
+            if item.get("item_type") != "visit" or item.get("restaurant_ref") is not None:
                 continue
 
             current_id = item.get("place_id")
@@ -117,7 +117,7 @@ def restore_missing_place_ids(plan: dict, tool_trace: list[dict] | None) -> dict
                 continue
 
             if name_key not in resolved_ids:
-                resolved_ids[name_key] = _unique_exact_place_id(item["title"])
+                resolved_ids[name_key] = find_unique_exact_place_id(item["title"])
 
             place_id = resolved_ids[name_key]
             if place_id in candidates:
