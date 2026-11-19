@@ -2481,6 +2481,8 @@
   order: 3;
   margin: 0;
   text-align: right;
+  /* 안내 문구 길이가 버튼 묶음 폭을 넓혀 제목 줄을 밀어내지 않게 합니다. */
+  contain: inline-size;
 }
 
 /* 일정 PDF 이메일로 받기 창 */
